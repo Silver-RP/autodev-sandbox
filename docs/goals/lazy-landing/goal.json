@@ -1,24 +1,56 @@
 {
   "slug": "lazy-landing",
-  "goal": "Landing page tĩnh, tối giản cho dịch vụ làm web của một vibe coder lười",
+  "goal": "Landing page đẹp, có cá tính cho dịch vụ làm web của một vibe coder lười: thiết kế theo frontend-design, tự chụp màn hình để kiểm, SEO, hiệu năng, song ngữ, triển khai",
   "status": "approved",
   "done_when": [
     {"id": "L1", "cmd": "uv run pytest -q tests/test_site.py", "threshold": "== 0 failed, >= 6 passed"},
-    {"id": "L2", "cmd": "uv run pytest -q tests/test_site_polish.py", "threshold": "== 0 failed, >= 6 passed"},
+    {"id": "L2", "cmd": "uv run pytest -q tests/test_site_policy.py", "threshold": "== 0 failed, >= 6 passed"},
     {"id": "L3", "cmd": "uv run pytest -q", "threshold": "== 0 failed"},
     {"id": "L4", "cmd": "uv run ruff check .", "threshold": "== 0 errors"},
-    {"id": "L5", "cmd": "smoke HTTP trong docs/goals/lazy-landing/criteria.md (http.server phục vụ site/, tải / và /style.css)", "threshold": "in 200 hai dòng, exit 0"}
+    {"id": "L5", "cmd": "smoke HTTP trong docs/goals/lazy-landing/criteria.md (http.server phục vụ site/, tải / và /style.css)", "threshold": "in 200 hai dòng, exit 0"},
+    {"id": "D1", "cmd": "uv run pytest -q tests/test_tools.py", "threshold": "== 0 failed, >= 5 passed"},
+    {"id": "D2", "cmd": "uv run pytest -q tests/test_design_doc.py", "threshold": "== 0 failed; dòng 'Hướng đã chọn:' không rỗng"},
+    {"id": "D3", "cmd": "uv run pytest -q tests/test_site_visual.py", "threshold": "== 0 failed, >= 5 passed"},
+    {"id": "D4", "cmd": "uv run python scripts/page_metrics.py --check-overflow", "threshold": "exit 0 (4/4 không tràn)"},
+    {"id": "D5", "cmd": "uv run python scripts/contrast.py", "threshold": "exit 0 (0 cặp dưới AA)"},
+    {"id": "D6", "cmd": "uv run pytest -q tests/test_site_motion.py", "threshold": "== 0 failed, >= 4 passed"},
+    {"id": "D7", "cmd": "grep -q '^Leader duyệt: đạt' docs/design/lazy-landing.md", "threshold": "exit 0"},
+    {"id": "E1", "cmd": "uv run pytest -q tests/test_site_seo.py", "threshold": "== 0 failed, >= 6 passed"},
+    {"id": "E2", "cmd": "uv run python scripts/lh_check.py", "threshold": "Performance >= 90, Accessibility/Best Practices/SEO >= 95, tổng tải <= 300 KB"},
+    {"id": "E3", "cmd": "uv run python scripts/smoke_pages.py", "threshold": "200, có 'Lười Code Studio', SHA khớp main"},
+    {"id": "E4", "cmd": "uv run pytest -q tests/test_site_content.py", "threshold": "== 0 failed, >= 4 passed"},
+    {"id": "E5", "cmd": "uv run pytest -q tests/test_site_i18n.py", "threshold": "== 0 failed, >= 4 passed"}
   ],
   "milestones": [
-    {"id": "R3", "title": "Trang dùng được: site/index.html 4 phần + style.css + test cấu trúc", "depends_on": [], "metrics": ["L1", "L5", "L3", "L4"],
-     "est_usd": 1.6, "est_hours": 0.2, "status": "planned"},
-    {"id": "R4", "title": "Hoàn thiện tối giản: chế độ tối, 360px, 0 tài nguyên ngoài, ≤ 30 KB, truy cập", "depends_on": ["R3"], "metrics": ["L2", "L3", "L4"],
-     "est_usd": 1.6, "est_hours": 0.2, "status": "planned"}
+    {"id": "R3", "title": "Landing page dùng được (cấu trúc, test, smoke)", "depends_on": [], "metrics": ["L1", "L5", "L3", "L4"],
+     "est_usd": 1.6, "est_hours": 0.2, "status": "done", "plan_file": "plan/R3.md"},
+    {"id": "R4", "title": "Công cụ nhìn (screenshot 360 thật/1280, sáng/tối, page_metrics) + luật tài nguyên mới", "depends_on": ["R3"], "metrics": ["D1", "L2"],
+     "est_usd": 1.8, "est_hours": 0.2, "status": "planned"},
+    {"id": "R5", "title": "Ba hướng thiết kế theo frontend-design, bản phác + ảnh, dừng chờ leader chọn", "depends_on": ["R4"], "metrics": ["D2"],
+     "est_usd": 2.8, "est_hours": 0.3, "status": "planned"},
+    {"id": "R6", "title": "Dựng trang theo hướng đã chọn: token, font, bố cục, minh hoạ SVG, nội dung mới", "depends_on": ["R5"], "metrics": ["D3", "L1"],
+     "est_usd": 3.3, "est_hours": 0.4, "status": "planned"},
+    {"id": "R7", "title": "Chuyển động (GSAP qua CDN, SRI) + một tương tác, an toàn khi không JS", "depends_on": ["R6"], "metrics": ["D6"],
+     "est_usd": 2.3, "est_hours": 0.3, "status": "planned"},
+    {"id": "R8", "title": "Chế độ tối + truy cập (tương phản AA, focus, bàn phím, không tràn 360)", "depends_on": ["R6"], "metrics": ["D4", "D5"],
+     "est_usd": 2.8, "est_hours": 0.3, "status": "planned"},
+    {"id": "R12", "title": "Mở rộng nội dung: FAQ, 3 dự án ví dụ", "depends_on": ["R6"], "metrics": ["E4"],
+     "est_usd": 2.3, "est_hours": 0.2, "status": "planned"},
+    {"id": "R9", "title": "SEO và chia sẻ: OG/Twitter, og.png 1200x630, favicon, robots, sitemap, JSON-LD", "depends_on": ["R6", "R12"], "metrics": ["E1"],
+     "est_usd": 1.8, "est_hours": 0.2, "status": "planned"},
+    {"id": "R13", "title": "Song ngữ Việt/Anh: site/en/, hreflang, nút chuyển", "depends_on": ["R12", "R9"], "metrics": ["E5"],
+     "est_usd": 1.9, "est_hours": 0.3, "status": "planned"},
+    {"id": "R10", "title": "Hiệu năng: Lighthouse mobile >= 90/95, tổng tải <= 300 KB", "depends_on": ["R7", "R8", "R13"], "metrics": ["E2"],
+     "est_usd": 1.5, "est_hours": 0.3, "status": "planned"},
+    {"id": "R11", "title": "Triển khai GitHub Pages + smoke URL thật", "depends_on": ["R10"], "metrics": ["E3"],
+     "est_usd": 1.3, "est_hours": 0.2, "status": "planned"}
   ],
-  "cut_order": ["R4"],
+  "cut_order": ["R11", "R13", "R10", "R9", "R12", "R7"],
   "human_only": [
-    "Leader duyệt bằng mắt site/index.html: sáng, tối, điện thoại 360px",
+    "Sau R5: chọn hướng thiết kế (điền 'Hướng đã chọn:' trong docs/design/lazy-landing.md)",
+    "Sau R8 và sau R13: duyệt bằng mắt (D7), ghi 'Leader duyệt: đạt' hoặc ý sửa",
+    "Trước R11: bật GitHub Pages (repo private cần gói trả phí hoặc đổi public) và cho biết URL",
     "Thay tên, email, giá giữ chỗ bằng thông tin thật",
-    "Thêm lệnh L5 vào smoke của .autodev/config.json nếu muốn verify.py --smoke tự chạy"
+    "Tuỳ chọn: thêm screenshot.py và lệnh L5 vào smoke của .autodev/config.json"
   ]
 }
