@@ -1,0 +1,24 @@
+{
+  "slug": "lazy-landing",
+  "goal": "Landing page tĩnh, tối giản cho dịch vụ làm web của một vibe coder lười",
+  "status": "approved",
+  "done_when": [
+    {"id": "L1", "cmd": "uv run pytest -q tests/test_site.py", "threshold": "== 0 failed, >= 6 passed"},
+    {"id": "L2", "cmd": "uv run pytest -q tests/test_site_polish.py", "threshold": "== 0 failed, >= 6 passed"},
+    {"id": "L3", "cmd": "uv run pytest -q", "threshold": "== 0 failed"},
+    {"id": "L4", "cmd": "uv run ruff check .", "threshold": "== 0 errors"},
+    {"id": "L5", "cmd": "smoke HTTP trong docs/goals/lazy-landing/criteria.md (http.server phục vụ site/, tải / và /style.css)", "threshold": "in 200 hai dòng, exit 0"}
+  ],
+  "milestones": [
+    {"id": "R3", "title": "Trang dùng được: site/index.html 4 phần + style.css + test cấu trúc", "depends_on": [], "metrics": ["L1", "L5", "L3", "L4"],
+     "est_usd": 1.6, "est_hours": 0.2, "status": "planned"},
+    {"id": "R4", "title": "Hoàn thiện tối giản: chế độ tối, 360px, 0 tài nguyên ngoài, ≤ 30 KB, truy cập", "depends_on": ["R3"], "metrics": ["L2", "L3", "L4"],
+     "est_usd": 1.6, "est_hours": 0.2, "status": "planned"}
+  ],
+  "cut_order": ["R4"],
+  "human_only": [
+    "Leader duyệt bằng mắt site/index.html: sáng, tối, điện thoại 360px",
+    "Thay tên, email, giá giữ chỗ bằng thông tin thật",
+    "Thêm lệnh L5 vào smoke của .autodev/config.json nếu muốn verify.py --smoke tự chạy"
+  ]
+}
