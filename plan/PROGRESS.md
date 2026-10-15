@@ -18,5 +18,6 @@
 ## R4
 - dev-01 DONE (1 vòng, commit c77b877): `scripts/screenshot.py` (360 qua iframe, 1280 trực tiếp, sáng/tối), `png_size`, 7 test Chrome thật không skip. 76 test pass. Ghi chú reviewer (không chặn): `site/` chưa có CSS dark nên 360-dark = 360-light; ảnh 360 không hiện cuộn ngang của iframe (dev-02 đo tràn).
 - dev-02 DONE (1 vòng, commit 28f51b6): `scripts/page_metrics.py` (tràn đo theo `getBoundingClientRect().right` nên bắt được `overflow-x:hidden`; svg theo section; h1/body font; màu). `site/` hiện: không tràn ở 4 tổ hợp, svg toàn 0, h1 32px system-ui, màu sáng = tối. Ghi chú reviewer (không chặn): `test_dark_mode_applied_only_in_dark[1280]` (dev-01) đỏ một lần trong verify rồi xanh khi chạy lại (nghi chập chờn, cần theo dõi); `--widths` không kiểm số.
+- dev-03 DONE (1 vòng, commit cae7cab): `tests/_policy.py` (`check(html, css)`) và `tests/test_site_policy.py` (16 test, 6 ca âm, ca dương). 95 test pass. Ghi chú reviewer (không chặn): `srcset` và `javascript:` chưa kiểm.
 
 ## Đề xuất chờ duyệt
