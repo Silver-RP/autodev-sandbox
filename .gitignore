@@ -6,3 +6,4 @@ todo.json
 *.egg-info/
 .autodev/runs/
 .autodev/env.local.json
+.claude/settings.local.json
