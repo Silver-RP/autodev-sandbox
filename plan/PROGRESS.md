@@ -7,5 +7,6 @@
 
 ## R2
 - dev-01 DONE (1 vòng, commit 0e97636): siết `store.valid_due` (H-01), CLI bỏ `_ok_date`. 40 test pass.
+- dev-02 DONE (1 vòng, commit 8bcc4e5): `store.today` (TODO_TODAY) và `store.overdue`. 47 test pass. Ghi chú reviewer (không chặn): tham số `today` che tên hàm `today()`.
 
 ## Đề xuất chờ duyệt

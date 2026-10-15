@@ -9,9 +9,9 @@
       "commit": "0e97636"
     },
     "dev-02": {
-      "status": "TODO",
-      "round": 0,
-      "commit": null
+      "status": "DONE",
+      "round": 1,
+      "commit": "8bcc4e5"
     },
     "dev-03": {
       "status": "TODO",
@@ -21,8 +21,8 @@
   },
   "verify": {
     "last_status": "PASS",
-    "hook_runs": 4,
-    "last_hook_at": "2026-10-15T15:23:39Z",
+    "hook_runs": 5,
+    "last_hook_at": "2026-10-15T15:24:42Z",
     "last_hook_agent": "autodev:developer",
     "consecutive_blocks": 0
   },
