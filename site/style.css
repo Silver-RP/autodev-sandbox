@@ -100,6 +100,13 @@ a {
   align-items: center;
 }
 
+/* Ở 360 nút trên header rơi xuống dòng riêng, trùng nút ngay dưới tiêu đề hero: bỏ bớt */
+@media (max-width: 40rem) {
+  header .nut {
+    display: none;
+  }
+}
+
 @media (min-width: 64rem) {
   #hero {
     grid-template-columns: 1fr 1fr;
