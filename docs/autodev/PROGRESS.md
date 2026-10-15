@@ -121,5 +121,47 @@ Phút vượt cận trên do test Chrome (~40 giây mỗi lần chạy `test_too
 - Worker báo `test_dark_mode_applied_only_in_dark[1280]` đỏ một lần rồi xanh; supervisor không tái hiện (3/3 xanh). Theo dõi ở R6–R8.
 - Luật L2 chưa kiểm `srcset`, `javascript:` (ngoài phạm vi plan).
 
+## R6: Dựng trang "Quán cóc đầu ngõ" — merged 2026-10-16 (PR #22, `ecd64d0`)
+
+Kiểm trên nhánh `milestone/R6` (`9e29775`), supervisor tự chạy (chế độ B, `--review-only`):
+`verify.py` → "sạch (không có lỗi mới so với baseline)", test_guard báo 1 thay đổi đã giải trình (`skipif` ở `tests/test_site_visual.py`, file mới, đúng dev-01.3); `verify.py --smoke` → `ok A5 overdue`, "sạch". CI `test` pass 2 lần; main không có check bắt buộc.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | exit 0, sạch |
+| 2 | 4 file test 0 failed; `test_site_visual.py` ≥ 5 (D3); `test_design_doc.py` xanh (D2); `test_site.py` không sửa (L1) | `uv run pytest -q -rs tests/test_design_doc.py tests/test_site_visual.py tests/test_site.py tests/test_site_policy.py`; `--collect-only tests/test_site_visual.py`; `git diff --stat 13a10f1 origin/milestone/R6 -- tests/test_site.py tests/test_site_policy.py` | 42 passed, 0 skipped; 8 test; diff rỗng |
+| 3 | `page_metrics.py --check-overflow --modes light` exit 0 | lệnh đó | exit 0; 360 và 1280 `overflow: []`; SVG theo phần: hero 1, dich-vu 3, lien-he 1; `<h1>` 40px (360) / 64px (1280) "Baloo 2" |
+| 4 | Reviewer nhìn 4 ảnh, ghi nhận xét | đọc `.autodev/reviews/dev-05-r2.json`; supervisor tự chụp `screenshot.py --height 3000` và xem 360-light, 1280-light | có nhận xét; ảnh: đúng bố cục doc (bảng hiệu gạch trà đá, hero 2 cột / 1 cột, menu bảng liền viền 3px, số trong tròn trà đá, ghế trống), dấu tiếng Việt đúng. Tối = sáng (R8) |
+| 5 | L5 in `200` hai dòng | lệnh L5 trong `criteria.md` | `200` `200` |
+
+L3: `uv run pytest -q` → 126 passed; L4: ruff "All checks passed!".
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 5 | 5 | 0 |
+| Phút worker | ~20–35 | 44 | B3 1,25 |
+| USD (worker + supervisor) | ~3,3 | 2,25 + ~0,89 | B3 ~0,95 |
+| Số vòng review | 5–8 | 6 (dev-05 2 vòng) | trong khoảng |
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. SVG cho có | test SVG trong `tests/test_site_hero.py`, `tests/test_site_menu.py` (≥ 3 phần tử vẽ, `<title>`/`aria-hidden`, `viewBox`); supervisor xem ảnh: ghế, ly, nồi lẩu có hình rõ |
+| 2. Lệch hướng | `test_root_hex_equal_light_palette_from_doc` (đọc doc), `test_no_loose_hex_outside_root`; supervisor: 6 hex `:root` đúng doc, 0 hex ngoài `:root`, 0 gradient/bóng. **Lệch wireframe 360 không test nào bắt:** H-03 |
+| 3. Phá cấu trúc R3 | `test_site.py` 11 passed, diff rỗng |
+| 4. Font không tải mà test xanh | **chưa chặn bằng test**: `test_h1_font_loaded_and_differs_from_body` đọc chuỗi `font-family` khai báo. Chỉ chặn bằng mắt (ảnh có chữ Baloo 2). H-04 |
+
+### Kiểm biên độc lập
+- CSS: `:root` có đúng 6 hex của doc; không hex ngoài `:root`; `white` (chữ trên nút đỏ) đúng doc dòng 23. Không `text-transform: uppercase`; "LƯỜI CODE STUDIO" viết hoa bằng nội dung, doc dòng 76 cho phép.
+- 5 SVG: hero `role="img"` + `<title>`; 4 SVG trang trí `aria-hidden`; tất cả `stroke="currentColor"`, nét 2,5.
+- Ảnh 360: **dấu chấm dẫn bị ẩn** (`.cham {display:none}` ≤ 40rem) trong khi doc (wireframe 360) ghi "dấu chấm dẫn co lại" và đó là điểm nhấn duy nhất; **nút header bị ẩn** ở 360 trong khi wireframe 360 có `[Gửi thư]`. Ghi H-03 (vừa), giao R8 (mốc 360/responsive).
+
+### Quyết định
+- Merge: 5/5 tiêu chí cấp mốc có bằng chứng tự chạy; lệch wireframe 360 là chi tiết responsive, không làm sai D2/D3/L1.
+- Đề xuất (c) 1 của worker (sửa doc cho khớp việc ẩn nút header): **không duyệt**; doc là nguồn, R8 khôi phục theo doc (H-03).
+- Đề xuất (c) 2 (`document.fonts.check`): duyệt hướng, ghi H-04 cho R8.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->

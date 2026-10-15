@@ -30,7 +30,7 @@
      "reason": "Cắt 2026-10-16: leader chọn hướng 2 'Quán cóc đầu ngõ' trước khi chạy; spec ở docs/design/lazy-landing.md; D2 chuyển sang R6",
      "est_usd": 2.8, "est_hours": 0.3, "status": "cut", "plan_file": "plan/R5.md"},
     {"id": "R6", "title": "Dựng trang theo spec 'Quán cóc đầu ngõ': test spec, token, font, bố cục, minh hoạ SVG, nội dung mới", "depends_on": ["R4"], "metrics": ["D2", "D3", "L1"],
-     "est_usd": 3.3, "est_hours": 0.4, "status": "planned", "plan_file": "plan/R6.md"},
+     "est_usd": 3.3, "est_hours": 0.4, "status": "done", "plan_file": "plan/R6.md"},
     {"id": "R7", "title": "Chuyển động (GSAP qua CDN, SRI) + một tương tác, an toàn khi không JS", "depends_on": ["R6"], "metrics": ["D6"],
      "est_usd": 2.3, "est_hours": 0.3, "status": "planned"},
     {"id": "R8", "title": "Chế độ tối + truy cập (tương phản AA, focus, bàn phím, không tràn 360)", "depends_on": ["R6"], "metrics": ["D4", "D5"],

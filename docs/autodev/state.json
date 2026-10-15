@@ -2,10 +2,12 @@
   "updated": "2026-10-16",
   "goals": [
     {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 100, "metrics": ["A1", "A2", "A3", "A4", "A5"]},
-    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 35, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1"]}
+    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 47, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3"]}
   ],
   "open_gaps": [
-    {"id": "H-02", "severity": "low", "text": "_policy bỏ qua @latest khi URL cũng có đoạn /X.Y.Z/", "milestone": "R7"}
+    {"id": "H-02", "severity": "low", "text": "_policy bỏ qua @latest khi URL cũng có đoạn /X.Y.Z/", "milestone": "R7"},
+    {"id": "H-03", "severity": "medium", "text": "Ở 360 dấu chấm dẫn menu và nút header bị ẩn, lệch wireframe 360 của doc", "milestone": "R8"},
+    {"id": "H-04", "severity": "low", "text": "Test font h1 chỉ đọc font-family khai báo, chưa chứng minh Baloo 2 đã tải", "milestone": "R8"}
   ],
   "milestones": {
     "runs": [
@@ -13,12 +15,14 @@
       {"id": "R2", "status": "merged", "pr": 8, "merge_commit": "0aa2992"},
       {"id": "R3", "status": "merged", "pr": 14, "merge_commit": "e00fa79"},
       {"id": "R4", "status": "merged", "pr": 20, "merge_commit": "34b1066"},
-      {"id": "R5", "status": "cut"}
+      {"id": "R5", "status": "cut"},
+      {"id": "R6", "status": "merged", "pr": 22, "merge_commit": "ecd64d0"}
     ],
     "plugin": []
   },
-  "outlook": ["R6", "R7", "R8", "R12", "R9", "R13", "R10", "R11"],
+  "outlook": ["R7", "R8", "R12", "R9", "R13", "R10", "R11"],
   "decisions": [
+    {"date": "2026-10-16", "text": "Merge R6; không duyệt sửa doc để hợp thức ẩn nút header 360; ghi H-03, H-04 cho R8; lazy-landing 8/17"},
     {"date": "2026-10-16", "text": "Merge R4; chấp nhận đổi tên test_balanced_tags (dev-04); ghi H-02 cho R7; lazy-landing 6/17"},
     {"date": "2026-10-16", "text": "Merge R3; lazy-landing bản 2; cắt R5"},
     {"date": "2026-10-16", "text": "Merge R2; đóng H-01; chấp nhận (a) test ở file mới; due-overdue 5/5"},
