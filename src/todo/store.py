@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import tempfile
 from datetime import date
 from pathlib import Path
 
@@ -11,8 +12,25 @@ def load(path: Path) -> list[dict]:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
 
 
+def _umask() -> int:
+    mask = os.umask(0)
+    os.umask(mask)
+    return mask
+
+
 def save(path: Path, items: list[dict]) -> None:
-    path.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    """Ghi nguyên tử: file tạm cùng thư mục, fsync, rồi os.replace; lỗi giữa chừng không làm hỏng file cũ."""
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            os.chmod(tmp, path.stat().st_mode & 0o777 if path.exists() else 0o666 & ~_umask())
+            f.write(json.dumps(items, ensure_ascii=False, indent=2) + "\n")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        os.unlink(tmp)
+        raise
 
 
 def valid_due(text: str) -> bool:
