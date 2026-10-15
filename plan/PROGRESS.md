@@ -21,4 +21,11 @@
 - dev-03 DONE (1 vòng, commit cae7cab): `tests/_policy.py` (`check(html, css)`) và `tests/test_site_policy.py` (16 test, 6 ca âm, ca dương). 95 test pass. Ghi chú reviewer (không chặn): `srcset` và `javascript:` chưa kiểm.
 - dev-04 DONE (1 vòng, commit a3b18ec): dọn `test_css_content` (bỏ `system-ui`, bỏ cấm tài nguyên) và đổi `test_balanced_tags_no_script` thành `test_balanced_tags` (bỏ `scripts == 0`). verify lần đầu bị test_guard chặn vì đổi tên; developer thêm `allow-test-change` có giải trình, reviewer xác nhận. 11 test trong `test_site.py`; đột biến `evil.example` làm `test_site_policy` đỏ.
 
+## R6
+- dev-01 DONE (1 vòng, commit ad06983): `tests/test_design_doc.py` (7 test, D2), `tests/test_site_visual.py` (8 test), token `:root` khớp bảng sáng của doc, Google Fonts (preconnect ở HTML, URL font trong `@import` đầu `style.css` vì `test_site.py` giới hạn 1 stylesheet), khung bố cục. 110 test pass. Ghi chú reviewer (không chặn): `allow-test-change` ở ad06983 chính đáng (`skipif` ở file mới); `@import` làm font tải muộn một nhịp; mailto header lấn nhẹ dev-02.
+- dev-02 DONE (1 vòng, commit c298790): viết lại chữ 4 phần ("Menu hôm nay", "Gọi món thế nào", "Ghé quán"), nút `mailto:` "Gửi thư cho tôi" ở hero và liên hệ, `tests/test_site_content.py` (4 test). 114 test pass. Ghi chú reviewer (không chặn): parser mailto phân biệt hoa thường; class `nut` chưa có CSS.
+- dev-03 DONE (1 vòng, commit bb21b76): SVG hero (hai ghế nhựa xanh/đỏ, bàn thấp, ly trà đá), `tests/test_site_hero.py`. 117 test pass. Ghi chú reviewer (không chặn): h2 ở 1280 đang xanh ghế giống link (dev-05 xét); khoảng trắng nút–SVG ở 360 lớn; SVG hero chưa có màu tối (R8).
+- dev-04 DONE (1 vòng, commit 5eec07f): menu một bảng viền 3px với 3 biểu tượng SVG, chấm dẫn, giá đỏ; 3 bước đánh số trong hình tròn Trà đá; `tests/test_site_menu.py` (7 test). 124 test pass. Ghi chú reviewer (không chặn): ở 360 chấm dẫn bị ẩn; `test_mobile_price_wraps_below_name` yếu (dùng `or`); `#lien-he` chưa có SVG ghế trống; khoảng trắng bên phải ở 1280.
+- dev-05 DONE (2 vòng, commit 1f6b02e): vòng 1 (2086d21) ẩn nút header trùng ở ≤40rem; reviewer FAIL vì `#lien-he` thiếu SVG ghế trống mà doc/plan yêu cầu. Vòng 2 (6a3c824, 1f6b02e) thêm SVG ghế trống + 2 test. 126 test pass. Ghi chú reviewer (không chặn): ghế trống ở 360 hơi nhỏ; chế độ tối giống sáng (R8).
+
 ## Đề xuất chờ duyệt
