@@ -113,6 +113,38 @@ a {
   }
 }
 
+/* Ghế trống ở Ghé quán: nét Mực bảng, phẳng, cùng thể loại ghế hero */
+#lien-he .ghe-trong {
+  display: block;
+  width: 7rem;
+  max-width: 100%;
+  height: auto;
+  margin-top: var(--space-3);
+  color: var(--color-muc-bang);
+}
+
+@media (min-width: 64rem) {
+  #lien-he {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--space-3);
+    align-items: start;
+  }
+
+  #lien-he > :not(svg) {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  #lien-he .ghe-trong {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    justify-self: center;
+    width: 9rem;
+    margin-top: 0;
+  }
+}
+
 .hero-hinh {
   color: var(--color-muc-bang);
   min-width: 0;
