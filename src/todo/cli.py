@@ -44,7 +44,7 @@ def main(argv: list[str] | None = None) -> int:
         return _add(path, argv[1:])
     if argv == ["list"]:
         for i in store.load(path):
-            print(f"{i['id']}\t{'x' if i['done'] else ' '}\t{i['title']}")
+            print(f"{i['id']}\t{'x' if i['done'] else ' '}\t{i.get('due') or ''}\t{i['title']}")
         return 0
     if argv[:1] == ["done"] and len(argv) == 2 and argv[1].isdigit():
         return 0 if store.complete(path, int(argv[1])) else 1
