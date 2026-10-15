@@ -1,6 +1,7 @@
 """Todo items stored as a JSON list in one file."""
 
 import json
+import os
 import re
 from datetime import date
 from pathlib import Path
@@ -51,3 +52,23 @@ def complete(path: Path, item_id: int) -> bool:
             i["done"], found = True, True
     save(path, items)
     return found
+
+
+def today() -> date:
+    raw = os.environ.get("TODO_TODAY")
+    if raw is None:
+        return date.today()
+    if not valid_due(raw):
+        raise ValueError(f"TODO_TODAY không hợp lệ: {raw!r}")
+    return date.fromisoformat(raw)
+
+
+def overdue(items: list[dict], today: date) -> list[dict]:
+    out = []
+    for i in items:
+        due = i.get("due")
+        if i.get("done") or not valid_due(due):
+            continue
+        if date.fromisoformat(due) < today:
+            out.append(i)
+    return sorted(out, key=lambda i: (i["due"], i["id"]))
