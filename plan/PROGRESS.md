@@ -23,5 +23,6 @@
 
 ## R6
 - dev-01 DONE (1 vòng, commit ad06983): `tests/test_design_doc.py` (7 test, D2), `tests/test_site_visual.py` (8 test), token `:root` khớp bảng sáng của doc, Google Fonts (preconnect ở HTML, URL font trong `@import` đầu `style.css` vì `test_site.py` giới hạn 1 stylesheet), khung bố cục. 110 test pass. Ghi chú reviewer (không chặn): `allow-test-change` ở ad06983 chính đáng (`skipif` ở file mới); `@import` làm font tải muộn một nhịp; mailto header lấn nhẹ dev-02.
+- dev-02 DONE (1 vòng, commit c298790): viết lại chữ 4 phần ("Menu hôm nay", "Gọi món thế nào", "Ghé quán"), nút `mailto:` "Gửi thư cho tôi" ở hero và liên hệ, `tests/test_site_content.py` (4 test). 114 test pass. Ghi chú reviewer (không chặn): parser mailto phân biệt hoa thường; class `nut` chưa có CSS.
 
 ## Đề xuất chờ duyệt
