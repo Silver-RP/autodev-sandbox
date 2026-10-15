@@ -28,4 +28,7 @@
 - dev-04 DONE (1 vòng, commit 5eec07f): menu một bảng viền 3px với 3 biểu tượng SVG, chấm dẫn, giá đỏ; 3 bước đánh số trong hình tròn Trà đá; `tests/test_site_menu.py` (7 test). 124 test pass. Ghi chú reviewer (không chặn): ở 360 chấm dẫn bị ẩn; `test_mobile_price_wraps_below_name` yếu (dùng `or`); `#lien-he` chưa có SVG ghế trống; khoảng trắng bên phải ở 1280.
 - dev-05 DONE (2 vòng, commit 1f6b02e): vòng 1 (2086d21) ẩn nút header trùng ở ≤40rem; reviewer FAIL vì `#lien-he` thiếu SVG ghế trống mà doc/plan yêu cầu. Vòng 2 (6a3c824, 1f6b02e) thêm SVG ghế trống + 2 test. 126 test pass. Ghi chú reviewer (không chặn): ghế trống ở 360 hơi nhỏ; chế độ tối giống sáng (R8).
 
+## R7
+- dev-01 DONE (1 vòng, commit 8569e6d, dc954cb): GSAP 3.12.5 qua jsdelivr (SRI sha384, `crossorigin`, `defer`), `site/main.js` thêm class `js` khi có `gsap`, `tests/test_site_motion.py`, siết `_pinned` trong `_policy` (đóng H-02). 135 test pass. verify bị test_guard chặn 1 lần vì 2 `pytest.skip` khi không có mạng; thêm `allow-test-change` ở dc954cb, reviewer xác nhận. Điều chỉnh (a): `--blink-settings=scriptEnabled=false` không chạy được ở Chrome headless này (dump-dom rỗng), test tắt JS dùng iframe `sandbox` không `allow-scripts`. Ghi chú reviewer (không chặn): test Chrome có CDN nên `assert` thay vì `skip` khi online mà `gsap` không nạp.
+
 ## Đề xuất chờ duyệt
