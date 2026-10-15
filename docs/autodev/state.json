@@ -1,18 +1,26 @@
 {
   "updated": "2026-10-16",
   "goals": [
-    {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 100, "metrics": ["A1", "A2", "A3", "A4", "A5"]}
+    {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 100, "metrics": ["A1", "A2", "A3", "A4", "A5"]},
+    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 35, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1"]}
   ],
-  "open_gaps": [],
+  "open_gaps": [
+    {"id": "H-02", "severity": "low", "text": "_policy bỏ qua @latest khi URL cũng có đoạn /X.Y.Z/", "milestone": "R7"}
+  ],
   "milestones": {
     "runs": [
       {"id": "R1", "status": "merged", "pr": 5, "merge_commit": "63cc7b0"},
-      {"id": "R2", "status": "merged", "pr": 8, "merge_commit": "0aa2992"}
+      {"id": "R2", "status": "merged", "pr": 8, "merge_commit": "0aa2992"},
+      {"id": "R3", "status": "merged", "pr": 14, "merge_commit": "e00fa79"},
+      {"id": "R4", "status": "merged", "pr": 20, "merge_commit": "34b1066"},
+      {"id": "R5", "status": "cut"}
     ],
     "plugin": []
   },
-  "outlook": [],
+  "outlook": ["R6", "R7", "R8", "R12", "R9", "R13", "R10", "R11"],
   "decisions": [
+    {"date": "2026-10-16", "text": "Merge R4; chấp nhận đổi tên test_balanced_tags (dev-04); ghi H-02 cho R7; lazy-landing 6/17"},
+    {"date": "2026-10-16", "text": "Merge R3; lazy-landing bản 2; cắt R5"},
     {"date": "2026-10-16", "text": "Merge R2; đóng H-01; chấp nhận (a) test ở file mới; due-overdue 5/5"},
     {"date": "2026-10-15", "text": "Merge R1; đề xuất (c) siết valid_due ghi thành H-01 cho R2"}
   ]
