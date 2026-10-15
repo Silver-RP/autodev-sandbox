@@ -48,7 +48,9 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
   3. *Kiểm tràn đạt sẵn* nhờ `overflow-x: hidden`: đo `scrollWidth` của mọi phần tử; ca âm có `overflow-x: hidden`.
   4. *Nới luật quá tay*: script inline lạ phải bị trượt (ca âm); `@latest` hoặc thiếu `integrity` phải bị trượt.
 
-## R5: Ba hướng thiết kế (dừng chờ leader)
+## R5: Ba hướng thiết kế (dừng chờ leader) — CẮT
+
+> **Cắt 2026-10-16:** leader muốn chốt spec trước để chạy một mạch. Phiên leader đề xuất 3 hướng theo `frontend-design`, leader chọn hướng 2 "Quán cóc đầu ngõ". Spec ở `docs/design/lazy-landing.md`. D2 chuyển sang R6 dev-01 (test spec). R6 phụ thuộc R4. Phần dưới giữ lại để tham khảo.
 - **Mục tiêu:** leader có 3 hướng khác hẳn nhau để chọn, mỗi hướng có bản phác và ảnh thật.
 - **Phạm vi:**
   1. `docs/design/lazy-landing.md` theo quy trình `frontend-design`:
@@ -78,7 +80,7 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
 - **Chỉ số đẩy lên:** D3; giữ L1 (không cắt).
 - **Ước tính:** 5 × 0,25 × 2 + 0,75 = **3,3 USD**, **0,4 giờ**.
 - **Xong khi:** `uv run pytest -q tests/test_site_visual.py tests/test_site.py tests/test_site_policy.py` 0 failed; reviewer đã xem 4 ảnh.
-- **Phụ thuộc:** R5 **và** dòng `Hướng đã chọn:` đã được leader điền.
+- **Phụ thuộc:** R4 (spec đã chốt; sửa 2026-10-16, trước là R5 + leader chọn).
 - **Pre-mortem:**
   1. *SVG cho có*: mỗi SVG ≥ 3 phần tử vẽ và có `<title>`; reviewer nhìn ảnh.
   2. *Lệch hướng đã chọn*: test so token màu và font với hướng trong doc.
@@ -196,8 +198,8 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
 |---|---|---|---|---|---|
 | – | R3 (xong) | – | L1, L5 | – | – |
 | 1 | R4 | R3 | D1, L2 | 1,8 | 0,2 |
-| 2 | R5 | R4 | D2 | 2,8 | 0,3 |
-| 3 | R6 | R5 + leader chọn | D3 | 3,3 | 0,4 |
+| – | R5 (cắt) | – | – | – | – |
+| 2 | R6 | R4 | D2, D3 | 3,3 | 0,4 |
 | 4 | R7 | R6 | D6 | 2,3 | 0,3 |
 | 5 | R8 | R6 | D4, D5 (+ D7 lần 1) | 2,8 | 0,3 |
 | 6 | R12 | R6 | E4 | 2,3 | 0,2 |
@@ -205,7 +207,7 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
 | 8 | R13 | R12, R9 | E5 (+ D7 lần 2) | 1,9 | 0,3 |
 | 9 | R10 | R7, R8, R13 | E2 | 1,5 | 0,3 |
 | 10 | R11 | R10 + leader bật Pages | E3 | 1,3 | 0,2 |
-| | **Tổng (R4–R13)** | | | **21,8** | **2,7** |
+| | **Tổng (R4–R13, trừ R5 đã cắt)** | | | **19,0** | **2,4** |
 
 ## Thứ tự cắt
 1. R11 Triển khai
@@ -220,7 +222,7 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
 - Ở mọi mốc: L1, L3, L4, L5; luật tài nguyên L2 (danh sách cho phép, SRI); nội dung đủ khi tắt JS.
 
 ## Việc chỉ người làm
-- Sau R5: chọn hướng thiết kế, điền `Hướng đã chọn:` trong `docs/design/lazy-landing.md`.
+- ~~Sau R5: chọn hướng thiết kế~~ — đã làm 2026-10-16 (hướng 2 "Quán cóc đầu ngõ").
 - Sau R8 và sau R13: duyệt bằng mắt (D7); ghi `Leader duyệt: đạt` hoặc ý sửa.
 - Trước R11: bật GitHub Pages (repo private cần gói trả phí, hoặc đổi sang public) và cho biết URL.
 - Thay tên, email, giá giữ chỗ khi cần.
