@@ -1,0 +1,21 @@
+{
+  "updated": "2026-10-15",
+  "goals": [
+    {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 60, "metrics": ["A1", "A3", "A4"]}
+  ],
+  "open_gaps": [
+    {"id": "H-01", "severity": "vừa", "summary": "store.valid_due nhận ISO tuần (2026-W01-1) và chuỗi có khoảng trắng; chỉ CLI chặn"}
+  ],
+  "milestones": {
+    "runs": [
+      {"id": "R1", "status": "merged", "pr": 5, "merge_commit": "63cc7b0"}
+    ],
+    "plugin": []
+  },
+  "outlook": [
+    {"id": "R2", "goal": "due-overdue", "needs_team": false, "status": "chưa chạy"}
+  ],
+  "decisions": [
+    {"date": "2026-10-15", "text": "Merge R1; đề xuất (c) siết valid_due ghi thành H-01 cho R2"}
+  ]
+}
