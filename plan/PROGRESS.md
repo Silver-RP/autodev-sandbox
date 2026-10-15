@@ -21,4 +21,7 @@
 - dev-03 DONE (1 vòng, commit cae7cab): `tests/_policy.py` (`check(html, css)`) và `tests/test_site_policy.py` (16 test, 6 ca âm, ca dương). 95 test pass. Ghi chú reviewer (không chặn): `srcset` và `javascript:` chưa kiểm.
 - dev-04 DONE (1 vòng, commit a3b18ec): dọn `test_css_content` (bỏ `system-ui`, bỏ cấm tài nguyên) và đổi `test_balanced_tags_no_script` thành `test_balanced_tags` (bỏ `scripts == 0`). verify lần đầu bị test_guard chặn vì đổi tên; developer thêm `allow-test-change` có giải trình, reviewer xác nhận. 11 test trong `test_site.py`; đột biến `evil.example` làm `test_site_policy` đỏ.
 
+## R6
+- dev-01 DONE (1 vòng, commit ad06983): `tests/test_design_doc.py` (7 test, D2), `tests/test_site_visual.py` (8 test), token `:root` khớp bảng sáng của doc, Google Fonts (preconnect ở HTML, URL font trong `@import` đầu `style.css` vì `test_site.py` giới hạn 1 stylesheet), khung bố cục. 110 test pass. Ghi chú reviewer (không chặn): `allow-test-change` ở ad06983 chính đáng (`skipif` ở file mới); `@import` làm font tải muộn một nhịp; mailto header lấn nhẹ dev-02.
+
 ## Đề xuất chờ duyệt
