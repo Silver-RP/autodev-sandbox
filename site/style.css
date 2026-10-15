@@ -106,6 +106,35 @@ a {
   }
 }
 
+.hero-hinh {
+  color: var(--color-muc-bang);
+  min-width: 0;
+}
+
+.hero-hinh svg {
+  display: block;
+  width: 100%;
+  max-width: 28rem;
+  height: auto;
+  margin: 0 auto;
+}
+
+.hero-hinh .ghe-xanh {
+  fill: var(--color-ghe-xanh);
+}
+
+.hero-hinh .ghe-do {
+  fill: var(--color-ghe-do);
+}
+
+.hero-hinh .ly {
+  fill: var(--color-tra-da);
+}
+
+.hero-hinh .da {
+  fill: var(--color-tuong-voi);
+}
+
 footer {
   color: var(--color-bui-duong);
   font-size: 15px;
