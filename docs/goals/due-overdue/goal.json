@@ -1,0 +1,20 @@
+{
+  "slug": "due-overdue",
+  "goal": "Thêm hạn chót cho việc và lệnh lọc việc quá hạn",
+  "status": "approved",
+  "done_when": [
+    {"id": "A1", "cmd": "uv run pytest -q tests/test_due.py", "threshold": "== 0 failed, >= 7 passed"},
+    {"id": "A2", "cmd": "uv run pytest -q tests/test_overdue.py", "threshold": "== 0 failed, >= 6 passed"},
+    {"id": "A3", "cmd": "uv run pytest -q", "threshold": "== 0 failed"},
+    {"id": "A4", "cmd": "uv run ruff check .", "threshold": "== 0 errors"},
+    {"id": "A5", "cmd": "smoke trong docs/goals/due-overdue/criteria.md (TODO_TODAY=2026-10-15, uv run todo overdue)", "threshold": "đúng 1 dòng chứa 'qua-han', exit 0"}
+  ],
+  "milestones": [
+    {"id": "R1", "title": "Hạn chót: add --due, todo due <id> <ngày>, cột hạn trong list", "depends_on": [], "metrics": ["A1", "A3", "A4"],
+     "est_usd": 4, "est_hours": 0.5, "status": "planned"},
+    {"id": "R2", "title": "Lọc việc quá hạn: todo overdue", "depends_on": ["R1"], "metrics": ["A2", "A5", "A3", "A4"],
+     "est_usd": 4, "est_hours": 0.4, "status": "planned"}
+  ],
+  "cut_order": ["R2"],
+  "human_only": ["Leader thử tay add --due / due / overdue trên todo.json thật", "Quyết ghi nguyên tử cho store.save (ngoài phạm vi)"]
+}
