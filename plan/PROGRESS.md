@@ -10,4 +10,7 @@
 - dev-02 DONE (1 vòng, commit 8bcc4e5): `store.today` (TODO_TODAY) và `store.overdue`. 47 test pass. Ghi chú reviewer (không chặn): tham số `today` che tên hàm `today()`.
 - dev-03 DONE (1 vòng, commit b3bc04a): lệnh `todo overdue`, `_line` dùng chung với `list`; smoke A5 ok. 52 test pass.
 
+## R3
+- dev-01 DONE (1 vòng, commit ad0e85e): `site/index.html` (4 section, tiếng Việt) và `tests/test_site.py` (8 test, có ca âm). 63 test pass. Ghi chú reviewer (không chặn): kiểm `lorem/todo/placeholder` quét cả nguồn thô, chặt hơn plan.
+
 ## Đề xuất chờ duyệt
