@@ -94,28 +94,24 @@ def test_layout_frame():
     assert HTML.count("<section") == 4
 
 
-@pytest.fixture(scope="module")
-def metrics():
-    from scripts import page_metrics as pm
+def _can_measure():
+    import socket
+
     from scripts import screenshot as sh
 
     try:
         sh.chrome_path()
-    except RuntimeError:
-        pytest.skip("không có Chrome")
-    try:
-        return pm.collect(SITE, [1280], ["light"])[0]
-    except Exception as e:  # noqa: BLE001
-        pytest.skip(f"không đo được: {e}")
-
-
-def test_h1_font_loaded_and_differs_from_body(metrics):
-    import socket
-
-    try:
         socket.create_connection(("fonts.googleapis.com", 443), timeout=3).close()
-    except OSError:
-        pytest.skip("không có mạng")
+    except (RuntimeError, OSError):
+        return False
+    return True
+
+
+@pytest.mark.skipif(not _can_measure(), reason="không có Chrome hoặc không có mạng")
+def test_h1_font_loaded_and_differs_from_body():
+    from scripts import page_metrics as pm
+
+    metrics = pm.collect(SITE, [1280], ["light"])[0]
     h1 = metrics["h1"]
     assert h1["font_size"] >= 40
     assert h1["font_family"] != metrics["body_font"]
