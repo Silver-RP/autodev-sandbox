@@ -63,12 +63,12 @@ def today() -> date:
     return date.fromisoformat(raw)
 
 
-def overdue(items: list[dict], today: date) -> list[dict]:
+def overdue(items: list[dict], ref: date) -> list[dict]:
     out = []
     for i in items:
         due = i.get("due")
         if i.get("done") or not valid_due(due):
             continue
-        if date.fromisoformat(due) < today:
+        if date.fromisoformat(due) < ref:
             out.append(i)
     return sorted(out, key=lambda i: (i["due"], i["id"]))

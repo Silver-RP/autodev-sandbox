@@ -1,4 +1,13 @@
-"""todo add <title...> [--due YYYY-MM-DD] | todo list | todo overdue | todo done <id> | todo due <id> <YYYY-MM-DD>   (file: $TODO_FILE or ./todo.json; $TODO_TODAY=YYYY-MM-DD đặt ngày hôm nay cho overdue)"""
+"""CLI todo.
+
+    todo add <title...> [--due YYYY-MM-DD]
+    todo list
+    todo overdue
+    todo done <id>
+    todo due <id> <YYYY-MM-DD>
+
+File: $TODO_FILE hoặc ./todo.json. $TODO_TODAY=YYYY-MM-DD đặt ngày hôm nay cho overdue.
+"""
 
 import os
 import sys
