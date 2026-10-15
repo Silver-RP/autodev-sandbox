@@ -7,3 +7,4 @@ todo.json
 .autodev/runs/
 .autodev/env.local.json
 .claude/settings.local.json
+.autodev/shots/
