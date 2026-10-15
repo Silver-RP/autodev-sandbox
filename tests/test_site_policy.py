@@ -30,6 +30,7 @@ def test_current_site_has_no_violations():
         {"html": '<link rel="stylesheet" href="https://evil.example/x.css">'},
         {"css": "@import url(https://evil.example/x.css);"},
         {"html": GSAP.replace("gsap@3.12.5", "gsap@latest")},
+        {"html": GSAP.replace("gsap@3.12.5", "gsap@latest/3.12.5")},  # H-02
         {"html": GSAP.replace(' integrity="sha384-abc"', "")},
         {"html": "<script>alert(1)</script>"},
         {"html": '<link href="HTTP://fonts.googleapis.com/css2?family=X">'},
