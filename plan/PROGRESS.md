@@ -15,4 +15,7 @@
 - dev-02 DONE (1 vòng, commit 2a71b92): `site/style.css` (`:root`, `max-width: 40rem`, `system-ui`), link từ `index.html`, 3 test. 66 test pass. Developer không chạy test đỏ trước; reviewer thử 11 đột biến, test đỏ đúng chỗ. Ghi chú (không chặn): kiểm `http:` phân biệt hoa thường (R4 nên quét không phân biệt); `href="../site/style.css"` vẫn qua.
 - dev-03 DONE (1 vòng, commit 5328535): `tests/test_site_http.py` (3 test, `ThreadingHTTPServer` thật, 200 / `text/css` / 404, tắt server trong fixture). L5 in `200` hai dòng. Test xanh ngay lần đầu; reviewer thử 4 đột biến, đều đỏ. Ghi chú (không chặn): nên assert `Content-Type text/html` cho `/`.
 
+## R4
+- dev-01 DONE (1 vòng, commit c77b877): `scripts/screenshot.py` (360 qua iframe, 1280 trực tiếp, sáng/tối), `png_size`, 7 test Chrome thật không skip. 76 test pass. Ghi chú reviewer (không chặn): `site/` chưa có CSS dark nên 360-dark = 360-light; ảnh 360 không hiện cuộn ngang của iframe (dev-02 đo tràn).
+
 ## Đề xuất chờ duyệt
