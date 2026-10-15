@@ -1,6 +1,7 @@
 """Todo items stored as a JSON list in one file."""
 
 import json
+from datetime import date
 from pathlib import Path
 
 
@@ -12,11 +13,33 @@ def save(path: Path, items: list[dict]) -> None:
     path.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def add(path: Path, title: str) -> dict:
+def valid_due(text: str) -> bool:
+    if not isinstance(text, str) or len(text) != 10:
+        return False
+    try:
+        date.fromisoformat(text)
+    except ValueError:
+        return False
+    return True
+
+
+def add(path: Path, title: str, due: str | None = None) -> dict:
     items = load(path)
     item = {"id": max((i["id"] for i in items), default=0) + 1, "title": title, "done": False}
+    if due is not None:
+        item["due"] = due
     save(path, [*items, item])
     return item
+
+
+def set_due(path: Path, item_id: int, due: str) -> bool:
+    items = load(path)
+    for i in items:
+        if i["id"] == item_id:
+            i["due"] = due
+            save(path, items)
+            return True
+    return False
 
 
 def complete(path: Path, item_id: int) -> bool:
