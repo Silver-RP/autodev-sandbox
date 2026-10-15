@@ -139,3 +139,131 @@ footer {
   color: var(--color-bui-duong);
   font-size: 15px;
 }
+
+/* Menu hôm nay: một bảng liền */
+#dich-vu ul {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border: 3px solid var(--color-muc-bang);
+  border-radius: 6px;
+}
+
+#dich-vu li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-2) 0;
+}
+
+#dich-vu li + li {
+  border-top: 3px dotted var(--color-muc-bang);
+}
+
+#dich-vu li svg {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  color: var(--color-muc-bang);
+}
+
+#dich-vu li svg .do-tra {
+  fill: var(--color-tra-da);
+}
+
+.mon {
+  flex: 1;
+  min-width: 0;
+}
+
+.mon p {
+  margin: 0;
+}
+
+.mon-dong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-1);
+  max-width: none;
+}
+
+.ten {
+  font-family: var(--font-bang-hieu);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.cham {
+  flex: 1 1 1rem;
+  min-width: 1rem;
+  border-bottom: 3px dotted var(--color-muc-bang);
+  transform: translateY(-0.3em);
+}
+
+.gia {
+  color: var(--color-ghe-do);
+  font-weight: 600;
+}
+
+.mo-ta {
+  color: var(--color-bui-duong);
+  font-size: 15px;
+}
+
+@media (max-width: 40rem) {
+  .gia {
+    flex-basis: 100%;
+    order: 3;
+  }
+
+  .cham {
+    display: none;
+  }
+}
+
+@media (min-width: 64rem) {
+  .ten {
+    font-size: 26px;
+  }
+}
+
+/* Gọi món thế nào: số thứ tự trong hình tròn Trà đá */
+#cach-lam ol {
+  list-style: none;
+  counter-reset: buoc;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+@media (min-width: 64rem) {
+  #cach-lam ol {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+#cach-lam li {
+  counter-increment: buoc;
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+#cach-lam li::before {
+  content: counter(buoc);
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-tra-da);
+  color: var(--color-muc-bang);
+  font-family: var(--font-bang-hieu);
+  font-weight: 800;
+  font-size: 22px;
+}
