@@ -12,5 +12,6 @@
 
 ## R3
 - dev-01 DONE (1 vòng, commit ad0e85e): `site/index.html` (4 section, tiếng Việt) và `tests/test_site.py` (8 test, có ca âm). 63 test pass. Ghi chú reviewer (không chặn): kiểm `lorem/todo/placeholder` quét cả nguồn thô, chặt hơn plan.
+- dev-02 DONE (1 vòng, commit 2a71b92): `site/style.css` (`:root`, `max-width: 40rem`, `system-ui`), link từ `index.html`, 3 test. 66 test pass. Developer không chạy test đỏ trước; reviewer thử 11 đột biến, test đỏ đúng chỗ. Ghi chú (không chặn): kiểm `http:` phân biệt hoa thường (R4 nên quét không phân biệt); `href="../site/style.css"` vẫn qua.
 
 ## Đề xuất chờ duyệt
