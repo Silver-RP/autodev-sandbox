@@ -1,4 +1,4 @@
-"""todo add <title...> [--due YYYY-MM-DD] | todo list | todo done <id> | todo due <id> <YYYY-MM-DD>   (file: $TODO_FILE or ./todo.json)"""
+"""todo add <title...> [--due YYYY-MM-DD] | todo list | todo overdue | todo done <id> | todo due <id> <YYYY-MM-DD>   (file: $TODO_FILE or ./todo.json; $TODO_TODAY=YYYY-MM-DD đặt ngày hôm nay cho overdue)"""
 
 import os
 import sys
@@ -10,6 +10,10 @@ from todo import store
 def _usage() -> int:
     print(__doc__, file=sys.stderr)
     return 2
+
+
+def _line(i: dict) -> str:
+    return f"{i['id']}\t{'x' if i['done'] else ' '}\t{i.get('due') or ''}\t{i['title']}"
 
 
 def _bad_date(text: str) -> int:
@@ -40,7 +44,16 @@ def main(argv: list[str] | None = None) -> int:
         return _add(path, argv[1:])
     if argv == ["list"]:
         for i in store.load(path):
-            print(f"{i['id']}\t{'x' if i['done'] else ' '}\t{i.get('due') or ''}\t{i['title']}")
+            print(_line(i))
+        return 0
+    if argv == ["overdue"]:
+        try:
+            today = store.today()
+        except ValueError as e:
+            print(e, file=sys.stderr)
+            return 2
+        for i in store.overdue(store.load(path), today):
+            print(_line(i))
         return 0
     if argv[:1] == ["done"] and len(argv) == 2 and argv[1].isdigit():
         return 0 if store.complete(path, int(argv[1])) else 1
