@@ -1,6 +1,7 @@
 """Todo items stored as a JSON list in one file."""
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 
@@ -14,7 +15,7 @@ def save(path: Path, items: list[dict]) -> None:
 
 
 def valid_due(text: str) -> bool:
-    if not isinstance(text, str) or len(text) != 10:
+    if not isinstance(text, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", text):
         return False
     try:
         date.fromisoformat(text)

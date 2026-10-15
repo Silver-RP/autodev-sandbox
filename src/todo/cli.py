@@ -7,10 +7,6 @@ from pathlib import Path
 from todo import store
 
 
-def _ok_date(text: str) -> bool:
-    return store.valid_due(text) and text[4] == "-" and text[7] == "-"
-
-
 def _usage() -> int:
     print(__doc__, file=sys.stderr)
     return 2
@@ -29,7 +25,7 @@ def _add(path: Path, args: list[str]) -> int:
             return _usage()
         due = args[k + 1]
         args = args[:k]
-        if not _ok_date(due):
+        if not store.valid_due(due):
             return _bad_date(due)
     if not args:
         return _usage()
@@ -49,7 +45,7 @@ def main(argv: list[str] | None = None) -> int:
     if argv[:1] == ["done"] and len(argv) == 2 and argv[1].isdigit():
         return 0 if store.complete(path, int(argv[1])) else 1
     if argv[:1] == ["due"] and len(argv) == 3 and argv[1].isdigit():
-        if not _ok_date(argv[2]):
+        if not store.valid_due(argv[2]):
             return _bad_date(argv[2])
         if store.set_due(path, int(argv[1]), argv[2]):
             return 0
