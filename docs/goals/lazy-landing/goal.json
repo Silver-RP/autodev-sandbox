@@ -25,7 +25,7 @@
     {"id": "R3", "title": "Landing page dùng được (cấu trúc, test, smoke)", "depends_on": [], "metrics": ["L1", "L5", "L3", "L4"],
      "est_usd": 1.6, "est_hours": 0.2, "status": "done", "plan_file": "plan/R3.md"},
     {"id": "R4", "title": "Công cụ nhìn (screenshot 360 thật/1280, sáng/tối, page_metrics) + luật tài nguyên mới", "depends_on": ["R3"], "metrics": ["D1", "L2"],
-     "est_usd": 1.8, "est_hours": 0.2, "status": "planned"},
+     "est_usd": 1.8, "est_hours": 0.2, "status": "done", "plan_file": "plan/R4.md"},
     {"id": "R5", "title": "Ba hướng thiết kế theo frontend-design, bản phác + ảnh, dừng chờ leader chọn", "depends_on": ["R4"], "metrics": [],
      "reason": "Cắt 2026-10-16: leader chọn hướng 2 'Quán cóc đầu ngõ' trước khi chạy; spec ở docs/design/lazy-landing.md; D2 chuyển sang R6",
      "est_usd": 2.8, "est_hours": 0.3, "status": "cut", "plan_file": "plan/R5.md"},

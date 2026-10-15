@@ -2,7 +2,7 @@
 
 Nguyên tắc: ưu tiên auto-dev nhưng không làm sai mục tiêu dự án thử.
 
-Cập nhật: 2026-10-16 (phiên leader, sau khi chốt plan R4–R13).
+Cập nhật: 2026-10-16 (supervisor, sau khi merge R4).
 
 **Lộ trình chi tiết:**
 - `docs/goals/due-overdue/roadmap.md`: R1–R2, xong.
@@ -15,7 +15,7 @@ Cập nhật: 2026-10-16 (phiên leader, sau khi chốt plan R4–R13).
 | R1 | due-overdue | Hạn chót (`add --due`, `todo due`, cột hạn) | merged 2026-10-15, PR #5 | 3 | A1, A3, A4 | – | 4 | chế độ B: worker 4,2 phút / 0,71 USD; supervisor 2,5 phút / 0,75 USD |
 | R2 | due-overdue | Lọc việc quá hạn (`todo overdue`) + H-01 | merged 2026-10-16, PR #8 | 3 | A2, A5, A3, A4 | R1 | 4 | chế độ B: worker 4 phút / 0,72 USD; supervisor 2,8 phút / 0,80 USD |
 | R3 | lazy-landing | Landing page dùng được (`site/` 4 phần, test cấu trúc, smoke HTTP) | merged 2026-10-16, PR #14 | 3 | L1, L5, L3, L4 | – | 1,6 | chế độ A: ~5 phút cả mốc; USD chưa đo |
-| R4 | lazy-landing | Công cụ nhìn (`screenshot.py` 360 thật qua iframe / 1280, sáng / tối; `page_metrics.py`) + luật tài nguyên mới | plan đã duyệt (PR #16) | 4 | D1, L2 | R3 | 1,8 | – |
+| R4 | lazy-landing | Công cụ nhìn (`screenshot.py` 360 thật qua iframe / 1280, sáng / tối; `page_metrics.py`) + luật tài nguyên mới | merged 2026-10-16, PR #20 | 4 | D1, L2 | R3 | 1,8 | chế độ B: worker 20 phút / 1,06 USD; supervisor ~0,77 USD (tạm) |
 | R5 | lazy-landing | Ba hướng thiết kế, dừng chờ chọn | **cắt** 2026-10-16: leader chọn trước hướng "Quán cóc đầu ngõ" | – | (D2 → R6) | – | – | – |
 | R6 | lazy-landing | Dựng trang theo spec "Quán cóc đầu ngõ" (test spec, token, font, SVG, nội dung) | plan đã duyệt (PR #17, #18) | 5 | D2, D3, L1 | R4 | 3,3 | – |
 | R7 | lazy-landing | Chuyển động (GSAP qua CDN, SRI) + một tương tác; an toàn khi không JS | plan đã duyệt | 3 | D6 | R6 | 2,3 | – |
@@ -27,9 +27,9 @@ Cập nhật: 2026-10-16 (phiên leader, sau khi chốt plan R4–R13).
 | R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | plan đã duyệt; **chờ leader bật Pages** | 2 | E3 | R10 | 1,3 | – |
 
 **Tổng:**
-- Đã xong: R1–R3, 9 task.
-- Còn lại: R4, R6–R13, **31 task**, khoảng **19,0 USD** (R11 chạy riêng).
-- Mục tiêu `lazy-landing` hiện đạt 4/17 chỉ số; `due-overdue` đạt 5/5.
+- Đã xong: R1–R4, 13 task.
+- Còn lại: R6–R13, **27 task**, khoảng **17,2 USD** (R11 chạy riêng).
+- Mục tiêu `lazy-landing` hiện đạt 6/17 chỉ số (sau R4); `due-overdue` đạt 5/5.
 
 ## Chạy tiếp (sau khi reset hạn mức)
 

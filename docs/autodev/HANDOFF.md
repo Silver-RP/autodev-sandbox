@@ -1,17 +1,16 @@
 # Bàn giao
 
-Cập nhật: 2026-10-16 · Supervisor (headless, `--review-only`) sau mốc R2.
+Cập nhật: 2026-10-16 · Supervisor (headless, `--review-only`) sau mốc R4.
 
 ## Trạng thái
-- R2 (Lọc việc quá hạn + H-01) **đã merge** vào `main` (PR #8, merge commit `0aa2992`). Mục tiêu `due-overdue`: 5/5 chỉ số đạt = **100%**, mục tiêu xong.
-- H-01 đã đóng (test tái hiện: đỏ trên code cũ, xanh trên code mới).
-- Hồ sơ duyệt: `docs/autodev/PROGRESS.md` mục R2 (bảng tiêu chí, ước tính ↔ thực tế, pre-mortem, kiểm biên).
+- R4 (Công cụ nhìn + luật tài nguyên mới) **đã merge** vào `main` (PR #20, merge commit `34b1066`). D1 và L2 đạt; `lazy-landing` 6/17 ≈ 35%.
+- Hồ sơ duyệt: `docs/autodev/PROGRESS.md` mục R4 (bảng tiêu chí, ước tính ↔ thực tế, pre-mortem, kiểm biên).
+- `goal.json` của `lazy-landing`: R4 `done`, `plan_file: plan/R4.md`.
 
 ## Việc mở
-- Không có lỗ hổng mở. Nợ không chặn: `store.save` chưa ghi nguyên tử; tham số `today` che `store.today()`; docstring `cli.py` dài.
-- Reviewer trả "placeholder" thay vì JSON ở R1 dev-03 (lỗi quy trình plugin, xem bên repo plugin); R2 không gặp lại.
-- Ước tính phút/USD cao hơn thực tế > 2 lần hai mốc liền: mốc cùng cỡ sau nên ước tính ~5 phút, ~0,8 USD worker.
-- Số USD thật của R2: chạy `/autodev:session-end` (`metrics.py --write`).
+- H-02 (thấp): `tests/_policy.py` bỏ qua `@latest` khi URL cũng có `/X.Y.Z/`. Giao R7 (mốc đầu dùng GSAP qua CDN).
+- Theo dõi `test_dark_mode_applied_only_in_dark[1280]` (worker thấy đỏ 1 lần; supervisor 3/3 xanh).
+- Số USD thật của R4: `/autodev:session-end` (`metrics.py --write`); hiện supervisor là số tạm `~0,77`.
 
 ## Mốc kế tiếp
-- Chưa có. Mục tiêu `due-overdue` xong; leader chọn mục tiêu mới (`/autodev:autodev-goal`) hoặc quyết nợ `store.save`.
+- R6 (dựng trang theo spec "Quán cóc đầu ngõ"), theo chuỗi trong `ROADMAP.md`: R6 R7 R8 R12 R9 R13 R10; R11 chờ leader bật Pages.
