@@ -4,3 +4,5 @@ __pycache__/
 .ruff_cache/
 todo.json
 *.egg-info/
+.autodev/runs/
+.autodev/env.local.json
