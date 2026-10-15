@@ -135,3 +135,41 @@ def test_balanced_tags_no_script(page):
 def test_balance_detects_unclosed():
     p = parse("<main><section id='hero'>x</main>")
     assert p.opens["section"] != p.closes.get("section", 0)
+
+
+def stylesheet_hrefs(src):
+    class L(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.found = []
+
+        def handle_starttag(self, tag, attrs):
+            a = dict(attrs)
+            if tag == "link" and "stylesheet" in (a.get("rel") or "").lower().split():
+                self.found.append(a.get("href"))
+
+    p = L()
+    p.feed(src)
+    p.close()
+    return p.found
+
+
+def test_single_relative_stylesheet_exists(src):
+    hrefs = stylesheet_hrefs(src)
+    assert len(hrefs) == 1
+    href = hrefs[0]
+    assert href and "://" not in href and not href.startswith(("/", "//"))
+    assert (SITE / href).is_file()
+
+
+def test_stylesheet_link_detection_negative():
+    assert stylesheet_hrefs("<p>no link</p>") == []
+    assert stylesheet_hrefs('<link rel="icon" href="a.ico">') == []
+
+
+def test_css_content():
+    css = (SITE / "style.css").read_text(encoding="utf-8")
+    assert "max-width" in css and "system-ui" in css
+    assert ":root" in css
+    for bad in ("@import", "http:", "https:", "//"):
+        assert bad not in css
