@@ -58,10 +58,10 @@ def test_hero_svg_no_wide_fixed_width():
 
 
 def lien_he_svgs(src=HTML):
-    m = re.search(r'<section id="lien-he">(.*?)</section>', src, re.S)
+    m = re.search(r'<section id="lien-he">(.*?)</section>', src, re.DOTALL)
     if not m:
         return []
-    return re.findall(r"<svg\b(.*?)</svg>", m.group(1), re.S)
+    return re.findall(r"<svg\b(.*?)</svg>", m.group(1), re.DOTALL)
 
 
 def test_lien_he_empty_chair_svg():
