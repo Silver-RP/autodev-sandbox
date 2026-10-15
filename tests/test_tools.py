@@ -94,3 +94,56 @@ def test_chrome_path_env_and_missing(monkeypatch):
 def test_default_main_rejects_bad_mode(sample_site, tmp_path):
     with pytest.raises(SystemExit):
         sh.main(["--site", str(sample_site), "--out", str(tmp_path), "--modes", "blue"])
+
+
+# ---- page_metrics (dev-02) ----
+from scripts import page_metrics as pm
+
+METRIC_OK = """<!doctype html><meta charset=utf-8><title>t</title>
+<style>h1{font-size:48px;font-family:Georgia,serif}body{font-family:Arial,sans-serif;margin:0}</style>
+<body><section id="hero"><h1>Hi</h1><svg width="10" height="10"></svg><svg width="10" height="10"></svg></section>
+<section id="b"><p>text</p></section></body>"""
+
+METRIC_WIDE = """<!doctype html><meta charset=utf-8><title>t</title>
+<style>body{overflow-x:hidden;margin:0}</style>
+<body><div id="wide" style="width:600px">x</div></body>"""
+
+
+def _site(tmp_path, content):
+    d = tmp_path / "s"
+    d.mkdir()
+    (d / "index.html").write_text(content, encoding="utf-8")
+    return d
+
+
+@needs_chrome
+def test_metrics_svg_h1_font_and_repeat(tmp_path):
+    site = _site(tmp_path, METRIC_OK)
+    for _ in range(2):
+        res = pm.collect(site, [360, 1280], ["light", "dark"])
+        assert len(res) == 4
+        for r in res:
+            assert r["svg_by_section"] == {"hero": 2, "b": 0}
+            assert r["h1"]["font_size"] == 48
+            assert "Georgia" in r["h1"]["font_family"]
+            assert "Arial" in r["body_font"]
+            assert r["overflow"] == []
+            assert r["colors"]
+        assert [r["innerWidth"] for r in res] == [360, 360, 1280, 1280]
+
+
+@needs_chrome
+def test_metrics_overflow_caught_despite_overflow_hidden(tmp_path, capsys):
+    site = _site(tmp_path, METRIC_WIDE)
+    res = pm.collect(site, [360], ["light"])
+    assert "div#wide" in res[0]["overflow"]
+    assert pm.main(["--site", str(site), "--check-overflow"]) == 1
+
+
+@needs_chrome
+def test_metrics_no_overflow_exit_0(tmp_path, capsys):
+    site = _site(tmp_path, METRIC_OK)
+    assert pm.main(["--site", str(site), "--check-overflow"]) == 0
+    lines = [ln for ln in capsys.readouterr().out.splitlines() if ln.strip()]
+    assert len(lines) == 4
+    assert all(json.loads(ln)["width"] in (360, 1280) for ln in lines)
