@@ -11,7 +11,13 @@
       "parser": "pytest"
     }
   ],
-  "smoke": [],
+  "smoke": [
+    {
+      "name": "A5 overdue",
+      "cmd": "d=$(mktemp -d) && export TODO_FILE=\"$d/t.json\" TODO_TODAY=2026-10-15 && uv run -q todo add qua-han --due 2026-10-14 >/dev/null && uv run -q todo add hom-nay --due 2026-10-15 >/dev/null && uv run -q todo add tuong-lai --due 2026-10-16 >/dev/null && uv run -q todo add xong-roi --due 2026-10-01 >/dev/null && uv run -q todo done 4 >/dev/null && uv run -q todo add khong-han >/dev/null && out=$(uv run -q todo overdue) && test \"$(printf '%s\\n' \"$out\" | grep -c .)\" -eq 1 && printf '%s\\n' \"$out\" | grep -q qua-han",
+      "timeout": 120
+    }
+  ],
   "max_rounds": 3,
   "max_verify_blocks": 3,
   "blocked_policy": "continue_independent",
