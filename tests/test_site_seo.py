@@ -83,6 +83,28 @@ def test_og_png_size_and_fresh():
     assert png.stat().st_mtime >= (SITE / "og.svg").stat().st_mtime
 
 
+def test_favicon_valid_svg_and_linked():
+    import xml.etree.ElementTree as ET
+
+    root = ET.parse(SITE / "favicon.svg").getroot()
+    assert root.tag.endswith("svg")
+    icons = [l for l in parse().links if l.get("rel") == "icon"]
+    assert len(icons) == 1
+    assert icons[0]["type"] == "image/svg+xml"
+    assert (SITE / icons[0]["href"]).exists()
+
+
+def test_robots_and_sitemap_use_site_url():
+    import xml.etree.ElementTree as ET
+
+    robots = (SITE / "robots.txt").read_text(encoding="utf-8").splitlines()
+    assert "Allow: /" in robots
+    assert f"Sitemap: {SITE_URL}sitemap.xml" in robots
+    root = ET.parse(SITE / "sitemap.xml").getroot()
+    locs = [e.text for e in root.iter() if e.tag.endswith("loc")]
+    assert SITE_URL in locs
+
+
 def test_parse_size():
     import pytest
 
