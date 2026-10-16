@@ -36,5 +36,6 @@
 ## R8
 - dev-01 DONE (1 vòng, commit 1495e89): `scripts/contrast.py` (WCAG 2.x, nền tổ tiên đặc, chữ lớn 3:1, sáng + tối), `page_metrics.py` thêm `font_size`/`font_weight`/`selector` vào `colors`, 5 test mới trong `test_tools.py`. 154 test pass. Ghi chú reviewer (không chặn): alpha của màu chữ bị bỏ qua; màu tên ném ValueError. Chạy mặc định chỉ width 1280.
 - dev-02 DONE (1 vòng, commit 55397e3, 6068d7f): khối `@media (prefers-color-scheme: dark)` gán lại 6 token theo bảng "Tối" của doc, thêm token `--color-chu-nut`, `--color-chu-tren-tra`, `tests/test_site_dark.py`. 159 test pass. Verify bị test_guard chặn 1 lần (`pytest.skip` mới); đổi sang `@needs_chrome` ở 6068d7f. `allow-test-change` ở 55397e3 cho `test_no_loose_hex_outside_root` (bỏ qua khối tối, hex tối kiểm riêng). Ghi chú reviewer (không chặn): nét ghế/bàn SVG hero ở tối 1280 hơi mờ.
+- dev-03 DONE (1 vòng, commit de5c430, 3495b6b): `a:focus-visible, button:focus-visible` trong `style.css`; `tests/test_site_a11y.py` (6 test, có ca âm cho outline, svg, heading, tên link/nút). HTML đã đạt sẵn nên không sửa. 165 test pass. Ghi chú reviewer (không chặn): regex outline lọt `outline:0px`; kiểm `:focus-visible` chưa gắn từng selector.
 
 ## Đề xuất chờ duyệt
