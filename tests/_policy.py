@@ -79,7 +79,10 @@ class _Html(HTMLParser):
                         self.v.append(f"script src chưa ghim phiên bản: {src}")
         elif tag == "link":
             # canonical là siêu dữ liệu điều hướng, không tải tài nguyên
-            if "href" in a and a.get("rel", "").strip().lower() != "canonical":
+            # alternate + hreflang cũng chỉ là siêu dữ liệu ngôn ngữ
+            rel = a.get("rel", "").strip().lower()
+            nav_meta = rel == "canonical" or (rel == "alternate" and "hreflang" in a)
+            if "href" in a and not nav_meta:
                 self.v += check_url(a["href"], "link href")
         elif tag in ("img", "source", "iframe", "audio", "video", "embed"):
             if "src" in a:

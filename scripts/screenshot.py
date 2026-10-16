@@ -198,6 +198,12 @@ def parse_size(text: str) -> tuple[int, int]:
     return w, h
 
 
+def shot_prefix(page: str) -> str:
+    """/index.html -> '' ; /en/index.html -> 'en-' (tiền tố tên tệp ảnh)."""
+    parts = [x for x in page.split("/") if x and x != "index.html"]
+    return "".join(f"{x}-" for x in parts)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     g = ap.add_mutually_exclusive_group()
@@ -207,6 +213,8 @@ def main(argv=None) -> int:
     ap.add_argument("--widths", default="360,1280")
     ap.add_argument("--modes", default="light,dark")
     ap.add_argument("--height", type=int, default=800)
+    ap.add_argument("--pages", default="/index.html",
+                    help="các trang chụp; trang con ra <tên>-<w>-<mode>.png (vd en-360-light.png)")
     ap.add_argument("--page", help="chụp đúng một trang/tệp (vd /og.svg) ra --file, cỡ --size")
     ap.add_argument("--size", default="1200x630", help="WxH cho --page")
     ap.add_argument("--file", help="tệp PNG đầu ra cho --page")
@@ -217,6 +225,7 @@ def main(argv=None) -> int:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
     out = Path(a.out)
+    pages = [p if p.startswith("/") else "/" + p for p in a.pages.split(",") if p]
 
     if a.page:
         if not a.file:
@@ -242,11 +251,13 @@ def main(argv=None) -> int:
         return 0
 
     def run(base: str) -> None:
-        for w in widths:
-            for m in modes:
-                path = out / f"{w}-{m}.png"
-                shoot(page_url(base, "/index.html", w, a.height), path, w, a.height, m)
-                print(path)
+        for pg in pages:
+            prefix = shot_prefix(pg)
+            for w in widths:
+                for m in modes:
+                    path = out / f"{prefix}{w}-{m}.png"
+                    shoot(page_url(base, pg, w, a.height), path, w, a.height, m)
+                    print(path)
 
     if a.url:
         run(a.url.rstrip("/"))

@@ -24,7 +24,9 @@
     var ly = document.querySelector("#hero .ly");
     function apply(on) {
       btn.setAttribute("aria-pressed", on ? "true" : "false");
-      btn.textContent = on ? "Đang lười giúp…" : "Bấm thử cho vui";
+      btn.textContent = on
+        ? btn.getAttribute("data-on") || "Đang lười giúp…"
+        : btn.getAttribute("data-off") || "Bấm thử cho vui";
       var move = shouldAnimate() ? gsap.to : gsap.set;
       function opts(o) {
         return shouldAnimate() ? Object.assign({ duration: 0.4, ease: "power2.out" }, o) : o;

@@ -206,3 +206,17 @@ def test_contrast_large_text_uses_3_to_1(tmp_path):
     large = _site(tmp_path / "b", _page(css + "p{font-size:24px}", "<p>lon</p>"))
     assert ct.main(["--site", str(small), "--modes", "light"]) == 1
     assert ct.main(["--site", str(large), "--modes", "light"]) == 0
+
+
+def test_shot_prefix_and_default_pages(tmp_path):
+    from scripts import page_metrics as pm2
+    from scripts import screenshot as sh2
+
+    assert sh2.shot_prefix("/index.html") == ""
+    assert sh2.shot_prefix("/en/index.html") == "en-"
+    assert sh2.shot_prefix("/en/") == "en-"
+    assert pm2.default_pages(tmp_path) == ["/index.html"]  # rỗng -> mặc định
+    (tmp_path / "index.html").write_text("x")
+    (tmp_path / "en").mkdir()
+    (tmp_path / "en" / "index.html").write_text("x")
+    assert pm2.default_pages(tmp_path) == ["/index.html", "/en/index.html"]
