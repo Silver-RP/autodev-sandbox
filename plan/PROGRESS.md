@@ -46,5 +46,7 @@
 
 ## R9
 - dev-01 DONE (1 vòng, commit 679763f): `scripts/site_config.py` (`SITE_URL`), meta OG/Twitter + canonical trong `site/index.html`, `tests/test_site_seo.py` (4 test). 177 test pass. Điều chỉnh (a): `tests/_policy.py` miễn trừ hẹp cho `<link rel="canonical">` (không tải tài nguyên; domain example.github.io không nằm trong danh sách). Ghi chú reviewer (không chặn): chưa có test bảo vệ miễn trừ canonical (nên thêm `rel="stylesheet canonical"` vẫn bị bắt); `test_site_motion.py::test_js_disabled_sections_visible` đỏ một lần trong verify rồi xanh (flake Chrome/mạng).
+- dev-02 DONE (1 vòng, commit 87e537f): `site/og.svg` + `site/og.png` (1200×630, 320 KB, Chrome chụp), `screenshot.py` thêm `--page`, `--size WxH`, `--file`; 3 test mới (180 test pass). Ghi chú reviewer (không chặn): test so mtime `og.png` ≥ `og.svg` có thể đỏ ngẫu nhiên sau checkout CI; chưa có test chạy `--page` thật; og.png 320 KB hơi nặng.
 
 ## Đề xuất chờ duyệt
+- (c) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime, dễ lệch sau git checkout/CI. Đề xuất đổi sang kiểm nội dung (vd. ảnh không trống hoặc hash nguồn nhúng trong PNG).
