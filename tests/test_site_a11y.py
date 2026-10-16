@@ -49,7 +49,7 @@ def parse(html=HTML):
 
 
 def strip_comments(css):
-    return re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    return re.sub(r"/\*.*?\*/", "", css, flags=re.DOTALL)
 
 
 def rules(css):
@@ -96,11 +96,9 @@ def name_ok(n):
 
 
 def test_focus_visible_cho_link_va_nut():
-    bad, has_fv = check_outline(CSS)
+    _bad, has_fv = check_outline(CSS)
     assert has_fv
     sels = " ".join(s for s, _ in rules(CSS) if ":focus-visible" in s)
-    assert "a:focus-visible" in sels or ".nut:focus-visible" in sels
-    assert "button:focus-visible" in sels or ".nut:focus-visible" in sels
     assert "a:focus-visible" in sels and "button:focus-visible" in sels
 
 
