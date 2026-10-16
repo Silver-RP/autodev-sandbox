@@ -139,6 +139,16 @@ def dump_dom(url: str, width: int, height: int, mode: str) -> str:
     return r.stdout
 
 
+def parse_size(text: str) -> tuple[int, int]:
+    try:
+        w, h = (int(x) for x in text.lower().split("x"))
+    except ValueError:
+        raise ValueError(f"cỡ không hợp lệ: {text!r} (dạng WxH)") from None
+    if w <= 0 or h <= 0:
+        raise ValueError(f"cỡ không hợp lệ: {text!r}")
+    return w, h
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     g = ap.add_mutually_exclusive_group()
@@ -148,6 +158,9 @@ def main(argv=None) -> int:
     ap.add_argument("--widths", default="360,1280")
     ap.add_argument("--modes", default="light,dark")
     ap.add_argument("--height", type=int, default=800)
+    ap.add_argument("--page", help="chụp đúng một trang/tệp (vd /og.svg) ra --file, cỡ --size")
+    ap.add_argument("--size", default="1200x630", help="WxH cho --page")
+    ap.add_argument("--file", help="tệp PNG đầu ra cho --page")
     a = ap.parse_args(argv)
     widths = [int(w) for w in a.widths.split(",") if w]
     modes = [m for m in a.modes.split(",") if m]
@@ -155,6 +168,26 @@ def main(argv=None) -> int:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
     out = Path(a.out)
+
+    if a.page:
+        if not a.file:
+            ap.error("--page cần --file")
+        try:
+            w, h = parse_size(a.size)
+        except ValueError as e:
+            ap.error(str(e))
+        page = a.page if a.page.startswith("/") else "/" + a.page
+
+        def one(base: str) -> None:
+            shoot(base + page, Path(a.file), w, h, "light")
+            print(a.file)
+
+        if a.url:
+            one(a.url.rstrip("/"))
+        else:
+            with serve(a.site or ROOT / "site") as base:
+                one(base)
+        return 0
 
     def run(base: str) -> None:
         for w in widths:

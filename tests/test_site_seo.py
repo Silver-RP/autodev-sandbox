@@ -63,3 +63,32 @@ def test_absolute_urls_start_with_site_url():
     for u in urls:
         assert u.startswith(SITE_URL), u
     assert p.meta["og:image"].endswith("og.png")
+
+
+SITE = Path(__file__).parent.parent / "site"
+
+
+def test_og_svg_has_viewbox_and_brand():
+    svg = (SITE / "og.svg").read_text(encoding="utf-8")
+    assert 'viewBox="0 0 1200 630"' in svg
+    assert "Lười Code Studio" in svg
+
+
+def test_og_png_size_and_fresh():
+    from scripts.screenshot import png_size
+
+    png = SITE / "og.png"
+    assert png_size(png) == (1200, 630)
+    assert png.stat().st_size > 5 * 1024
+    assert png.stat().st_mtime >= (SITE / "og.svg").stat().st_mtime
+
+
+def test_parse_size():
+    import pytest
+
+    from scripts.screenshot import parse_size
+
+    assert parse_size("1200x630") == (1200, 630)
+    for bad in ("", "abc", "0x5", "10", "-1x5"):
+        with pytest.raises(ValueError):
+            parse_size(bad)
