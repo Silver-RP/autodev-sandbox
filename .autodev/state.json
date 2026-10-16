@@ -1,33 +1,52 @@
 {
-  "milestone": "R13",
+  "milestone": "R10",
   "current_task": null,
-  "started_at": "2026-10-16T20:35:12+09:00",
+  "started_at": "2026-10-16T21:20:25+09:00",
   "tasks": {
     "dev-01": {
       "status": "DONE",
       "round": 1,
-      "commit": "62bbfa3"
+      "commit": "ea1e670"
     },
     "dev-02": {
-      "status": "DONE",
-      "round": 1,
-      "commit": "2c80e57"
+      "status": "TODO",
+      "round": 0,
+      "commit": null
     },
     "dev-03": {
-      "status": "DONE",
-      "round": 1,
-      "commit": "67cea47"
+      "status": "TODO",
+      "round": 0,
+      "commit": null
     }
   },
   "verify": {
     "last_status": "PASS",
-    "hook_runs": 42,
-    "last_hook_at": "2026-10-16T12:05:15Z",
+    "hook_runs": 43,
+    "last_hook_at": "2026-10-16T12:26:04Z",
     "last_hook_agent": "autodev:developer",
     "consecutive_blocks": 0
   },
   "consecutive_blocks": 0,
   "history": {
+    "R13": {
+      "tasks": {
+        "dev-01": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "62bbfa3"
+        },
+        "dev-02": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "2c80e57"
+        },
+        "dev-03": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "67cea47"
+        }
+      }
+    },
     "R9": {
       "tasks": {
         "dev-01": {

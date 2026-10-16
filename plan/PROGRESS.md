@@ -57,5 +57,8 @@
 - dev-02 DONE (1 vòng, commit 2c80e57): `hreflang` vi/en/x-default hai chiều, URL tuyệt đối; canonical riêng; `og:locale:alternate` ở bản Việt; `sitemap.xml` hai URL; 4 test mới ở `test_site_i18n.py`. `tests/_policy.py` miễn trừ thêm `link rel=alternate` có `hreflang` (reviewer chấp nhận; có thể thu hẹp chỉ cho href thuộc `SITE_URL`). 199 test pass. Hai lần chạy `verify.py` liền bị lỗi Chrome chập chờn khác nhau (`test_hero_settled_after_2s`, `test_click_toggles_aria_pressed`), chạy riêng và cả bộ đều xanh.
 - dev-03 DONE (1 vòng, commit 67cea47): link `.doi-ngon-ngu` ở header hai trang (`hreflang`/`lang` đúng, test qua HTTP thật); `page_metrics.py`, `contrast.py`, `screenshot.py` nhận `--pages` (mặc định đo cả `/` và `/en/`, ảnh `en-<w>-<mode>.png`); 204 test pass. Reviewer đã xem ảnh 360/1280 và đọc bản Anh: dịch tốt, giọng đùa còn. Ghi chú (không chặn): ở 360 bản Anh link "Tiếng Việt" rớt xuống dòng riêng dưới logo, không đối xứng với bản Việt.
 
+## R10
+- dev-01 DONE (1 vòng, commit ea1e670): `scripts/lh_check.py` (dựng lệnh, đọc JSON, trung vị, exit 0/1/2) + 4 test `test_lh_*` trong `tests/test_tools.py`; 208 test pass. Điểm nền thật: `/` perf 89/89/93 (trung vị 89), a11y/bp/seo 100, 172677 B; `/en/` perf 89. Chỉ perf trượt (89 < 90), dev-02 xử lý. Ghi chú reviewer (không chặn): `--runs 0` ném `StatisticsError`; fixture JSON dựng trong test, không là file riêng.
+
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
