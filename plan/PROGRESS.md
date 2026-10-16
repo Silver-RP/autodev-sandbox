@@ -44,4 +44,7 @@
 - dev-02 DONE (1 vòng, commit 6196960): `#du-an` giữa `#cach-lam` và `#hoi-dap`, 3 `<article>` hư cấu (Hẻm Nhỏ, Bác Tư, Nét Mực), mỗi cái có "(ví dụ)" ở h3, SVG `aria-hidden` ≥ 3 phần tử vẽ, một câu kết quả; 3 test + ca âm, test cấm từ khen giả. 173 test pass. Đã đối chiếu FAQ với `#dich-vu` (khớp). Ghi chú reviewer (không chặn): SVG thứ 3 vừa đủ 3 phần tử vẽ; parser test dựa vào thẻ `article`.
 - dev-03 DONE (1 vòng, không có commit mã): `contrast.py` và `page_metrics.py --check-overflow` (360, 1280 × sáng, tối) đều exit 0 với `#du-an` và `#hoi-dap`; chụp 4 ảnh + 1 ảnh FAQ mở (`.autodev/shots/r12/`, `r12-faq-open/`), reviewer xem đủ 5, không thấy chỗ vỡ. Điều chỉnh (a): diff rỗng không coi là vòng FAIL (như R8 dev-04). Ghi chú reviewer (không chặn): hero 1280 tối mờ (có thể do intro GSAP dở, xem lại ở D7); ảnh 360 chỉ cao 800px nên `#du-an`/`#hoi-dap` ở 360 chỉ phủ bằng số đo.
 
+## R9
+- dev-01 DONE (1 vòng, commit 679763f): `scripts/site_config.py` (`SITE_URL`), meta OG/Twitter + canonical trong `site/index.html`, `tests/test_site_seo.py` (4 test). 177 test pass. Điều chỉnh (a): `tests/_policy.py` miễn trừ hẹp cho `<link rel="canonical">` (không tải tài nguyên; domain example.github.io không nằm trong danh sách). Ghi chú reviewer (không chặn): chưa có test bảo vệ miễn trừ canonical (nên thêm `rel="stylesheet canonical"` vẫn bị bắt); `test_site_motion.py::test_js_disabled_sections_visible` đỏ một lần trong verify rồi xanh (flake Chrome/mạng).
+
 ## Đề xuất chờ duyệt
