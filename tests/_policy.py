@@ -78,7 +78,8 @@ class _Html(HTMLParser):
                     if not _pinned(src):
                         self.v.append(f"script src chưa ghim phiên bản: {src}")
         elif tag == "link":
-            if "href" in a:
+            # canonical là siêu dữ liệu điều hướng, không tải tài nguyên
+            if "href" in a and a.get("rel", "").strip().lower() != "canonical":
                 self.v += check_url(a["href"], "link href")
         elif tag in ("img", "source", "iframe", "audio", "video", "embed"):
             if "src" in a:
