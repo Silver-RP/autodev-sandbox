@@ -147,3 +147,62 @@ def test_metrics_no_overflow_exit_0(tmp_path, capsys):
     lines = [ln for ln in capsys.readouterr().out.splitlines() if ln.strip()]
     assert len(lines) == 4
     assert all(json.loads(ln)["width"] in (360, 1280) for ln in lines)
+
+
+# ---- contrast (R8/dev-01) ----
+from scripts import contrast as ct
+
+
+def _page(style, body):
+    return f"<!doctype html><meta charset=utf-8><title>t</title><style>{style}</style><body>{body}</body>"
+
+
+def test_contrast_ratio_known_values():
+    assert ct.ratio("#000", "#fff") == pytest.approx(21)
+    assert ct.ratio("#777", "#fff") == pytest.approx(4.48, abs=0.01)
+    assert ct.ratio("rgb(255, 255, 255)", "rgb(0, 0, 0)") == pytest.approx(21)
+
+
+def test_contrast_thresholds_pure():
+    assert ct.threshold(24, 400) == 3.0
+    assert ct.threshold(19, 700) == 3.0
+    assert ct.threshold(19, 400) == 4.5
+    assert ct.threshold(16, 700) == 4.5
+    mid = [{"width": 1, "mode": "light", "colors": [
+        {"color": "#777", "background": "#fff", "font_size": 16, "font_weight": 400},
+        {"color": "#777", "background": "#fff", "font_size": 24, "font_weight": 400}]}]
+    assert len(ct.failures(mid)) == 1
+    assert ct.failures([]) == []
+
+
+@needs_chrome
+def test_contrast_low_contrast_page_fails(tmp_path, capsys):
+    site = _site(tmp_path, _page("body{background:#888;color:#777;margin:0}", "<p>xin chao</p>"))
+    assert ct.main(["--site", str(site), "--modes", "light"]) == 1
+    assert "p" in capsys.readouterr().out
+
+
+@needs_chrome
+def test_contrast_transparent_block_uses_ancestor_bg(tmp_path):
+    site = _site(tmp_path, _page(
+        "body{background:#fff;margin:0}div{background:transparent;color:#eee}",
+        "<div><p>chu sang</p></div>"))
+    assert ct.main(["--site", str(site), "--modes", "light"]) == 1
+
+
+@needs_chrome
+def test_contrast_good_page_passes_and_repeatable(tmp_path):
+    site = _site(tmp_path, _page("body{background:#fff;color:#111;margin:0}", "<p>ok</p>"))
+    for _ in range(2):
+        assert ct.main(["--site", str(site), "--modes", "light"]) == 0
+
+
+@needs_chrome
+def test_contrast_large_text_uses_3_to_1(tmp_path):
+    css = "body{background:#fff;margin:0}p{color:#777}"
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    small = _site(tmp_path / "a", _page(css + "p{font-size:16px}", "<p>nho</p>"))
+    large = _site(tmp_path / "b", _page(css + "p{font-size:24px}", "<p>lon</p>"))
+    assert ct.main(["--site", str(small), "--modes", "light"]) == 1
+    assert ct.main(["--site", str(large), "--modes", "light"]) == 0
