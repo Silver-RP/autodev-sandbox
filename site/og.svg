@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&amp;family=Be+Vietnam+Pro:wght@400;600&amp;subset=vietnamese&amp;display=swap");
+  </style>
+  <rect width="1200" height="630" fill="#F2F5F0"/>
+  <text x="80" y="160" font-family="'Baloo 2', 'Arial Rounded MT Bold', sans-serif" font-size="96" font-weight="800" fill="#22313F">Lười Code Studio</text>
+  <text x="80" y="236" font-family="'Be Vietnam Pro', system-ui, sans-serif" font-size="34" font-weight="600" fill="#2B6CB0">Làm web cho bạn. Ngồi xuống uống ly trà đá đã.</text>
+  <rect x="80" y="276" width="160" height="8" rx="4" fill="#C42F2F"/>
+  <g transform="translate(660 262) scale(1.2)" fill="none" stroke="#22313F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 262H380" stroke="#5B6B7A"/>
+    <g stroke="#2B6CB0">
+      <path d="M52 150Q48 112 66 98H108Q122 112 118 150Z"/>
+      <rect x="46" y="150" width="82" height="22" rx="6"/>
+      <path d="M58 172L50 262M116 172L124 262"/>
+    </g>
+    <g>
+      <rect x="150" y="190" width="100" height="12" rx="3"/>
+      <path d="M162 202V262M238 202V262"/>
+      <path d="M184 190L190 148H214L220 190Z" fill="#F4B942"/>
+      <path d="M188 162H216"/>
+      <rect x="195" y="152" width="9" height="9" rx="2"/>
+      <rect x="205" y="156" width="8" height="8" rx="2"/>
+      <path d="M208 148L224 120" stroke="#C42F2F"/>
+    </g>
+    <g stroke="#C42F2F">
+      <path d="M348 150Q352 112 334 98H292Q278 112 282 150Z"/>
+      <rect x="272" y="150" width="82" height="22" rx="6"/>
+      <path d="M342 172L350 262M284 172L276 262"/>
+    </g>
+  </g>
+</svg>
