@@ -22,12 +22,22 @@
       "status": "DONE",
       "round": 2,
       "commit": "abf2927"
+    },
+    "dev-05": {
+      "status": "DONE",
+      "round": 1,
+      "commit": "5bf9dbd"
+    },
+    "dev-06": {
+      "status": "TODO",
+      "round": 0,
+      "commit": null
     }
   },
   "verify": {
     "last_status": "PASS",
-    "hook_runs": 37,
-    "last_hook_at": "2026-10-16T03:50:27Z",
+    "hook_runs": 38,
+    "last_hook_at": "2026-10-16T11:12:21Z",
     "last_hook_agent": "autodev:developer",
     "consecutive_blocks": 0
   },
