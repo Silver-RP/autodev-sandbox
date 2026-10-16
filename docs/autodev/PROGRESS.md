@@ -251,5 +251,43 @@ Phút lệch dưới 2 lần; nguyên nhân: Chrome headless (mỗi lần đo 4 
 - Bài học: giao H-xx cho một mốc mà plan mốc đó đã duyệt thì phải thêm task vào plan ngay lúc giao, nếu không mốc sẽ chạy hết mà không đóng H nào.
 - Không có đề xuất (c).
 
+## R12: Mở rộng nội dung (FAQ, dự án ví dụ) — merged 2026-10-16 (PR #28, `b7e2529`)
+
+Kiểm trên nhánh `milestone/R12` (`b49a0bc`), supervisor tự chạy (chế độ B, `--review-only`):
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass; main không có check bắt buộc.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | sạch |
+| 2 | `test_site_content.py` 0 failed, ≥ 4 test (E4) | `uv run pytest -q tests/test_site_content.py` | 12 passed |
+| 3 | `contrast.py`, `page_metrics.py --check-overflow` exit 0; `test_site_a11y.py`, `test_site.py` xanh | `uv run python scripts/contrast.py`; `uv run python scripts/page_metrics.py --check-overflow`; `uv run pytest -q tests/test_site_a11y.py tests/test_site.py` | "OK: mọi cặp màu đạt WCAG AA" exit 0; overflow exit 0; 17 passed |
+
+L3: `uv run pytest -q` lần đầu 172 passed, 1 failed (`test_tools.py::test_metrics_svg_h1_font_and_repeat`, lỗi subprocess Chrome); chạy lại riêng → passed; `verify.py` (chạy trước đó) sạch. Ghi nợ flaky cùng họ `test_tools.py` (Chrome headless). L4: ruff sạch. E4 đạt.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 3 | 3 | 0 |
+| Phút worker | ~10–20 | 31 | B3 1,53 |
+| USD (worker + supervisor) | ~2,3 | 0,99 + ~1,16 | B3 ~0,94 |
+| Số vòng review | 3–5 | 3 | trong khoảng |
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Dự án hư cấu trông như thật | test `test_site_content.py` (chữ "ví dụ" mỗi `article`, từ cấm toàn trang); supervisor đọc 3 thẻ: tên đều có "(ví dụ)", `grep -ic "khách hàng nói\|đánh giá\|testimonial"` → 0 |
+| 2. FAQ dài vỡ 360 / tụt tương phản | `contrast.py`, `--check-overflow` exit 0 với FAQ **đóng**; supervisor thêm bản sao `<details open>` (xem kiểm biên) |
+| 3. `summary` bị ẩn | `test_css_does_not_hide_summary`; supervisor đọc `style.css`: 3 rule `display: none` (`button.nut[hidden]`, `header .nut`, `.cham` trong `@media`) không chạm `summary`/`details`; `summary:focus-visible` có `outline`. Còn hở: regex không bắt rule lồng trong `@media` (reviewer ghi) |
+
+### Kiểm biên độc lập
+- Mở cả 4 `<details>` (bản sao `.autodev/tmp/r12open/`, `<details open>`): `contrast.py --widths 360,1280` → exit 0; `page_metrics.py --check-overflow` → exit 0, 4/4 tổ hợp `overflow: []`. Câu trả lời FAQ (ẩn khi đóng) cũng đạt AA.
+- Nội dung: FAQ trả lời thẳng giá, thời gian, sửa, tên miền ("Của bạn…"); thứ tự section `hero, dich-vu, cach-lam, du-an, hoi-dap, lien-he` đúng quy ước; heading `h2` → `h3` không nhảy cấp.
+
+### Quyết định
+- Merge: 3/3 tiêu chí cấp mốc có bằng chứng tự chạy; E4 đạt. `lazy-landing` 12/17 ≈ 71%.
+- Chấp nhận (a) dev-01 nới 3 test cũ từ `== 4` section sang `>= 4` (thêm section là đúng phạm vi; số assert giữ nguyên).
+- Không đóng H nào (R12 không nhận H). Không có đề xuất (c).
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
