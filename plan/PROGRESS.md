@@ -60,6 +60,7 @@
 ## R10
 - dev-01 DONE (1 vòng, commit ea1e670): `scripts/lh_check.py` (dựng lệnh, đọc JSON, trung vị, exit 0/1/2) + 4 test `test_lh_*` trong `tests/test_tools.py`; 208 test pass. Điểm nền thật: `/` perf 89/89/93 (trung vị 89), a11y/bp/seo 100, 172677 B; `/en/` perf 89. Chỉ perf trượt (89 < 90), dev-02 xử lý. Ghi chú reviewer (không chặn): `--runs 0` ném `StatisticsError`; fixture JSON dựng trong test, không là file riêng.
 - dev-02 DONE (2 vòng, commit 2a7444f, 0629d7e, 66dfc72): bỏ `@import` font trong `style.css`, thêm `<link rel="preload" as="style" onload>` + `<noscript><link rel="stylesheet">` ở `<head>` hai trang. Perf `/` 89/92/89 → 100/100/100, `/en/` 95 → 100; a11y/bp/seo 100; ~173 KB. Vòng 1 FAIL: thiếu `<noscript>` (mất font khi tắt JS); vòng 2 thêm `<noscript>` + `test_font_noscript_fallback`, `tests/test_site.py::stylesheet_hrefs` bỏ qua link trong `<noscript>` (reviewer xác nhận không làm yếu test). 210 test pass. Ghi chú reviewer (không chặn): điểm 100 đo với font Google từ mạng ngoài; regex noscript hơi cứng.
+- dev-03 DONE (1 vòng, commit 3b76837): không cần sửa code; `.autodev/reports/R10-dev-03.md` ghi bảng điểm. `/` ×3 và `/en/` ×1 đều 100/100/100/100, ~173 KB / ~165 KB. Reviewer tự chạy: `/` 100/100/99 (trung vị 100), `/en/` 100; 210 test pass. Ghi chú reviewer (không chặn): perf dao động 99–100.
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
