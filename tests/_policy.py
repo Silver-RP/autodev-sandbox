@@ -27,6 +27,16 @@ def _host(url):
     return host.split(":")[0]
 
 
+def _pinned(src):
+    """Đã ghim phiên bản: nếu có đoạn @tag thì mọi tag phải là X.Y.Z; ngược lại cần /X.Y.Z/."""
+    path = re.split(r"[?#]", src, 1)[0]
+    path = re.sub(r"^(?:https?:)?//[^/]*", "", path, flags=re.IGNORECASE)
+    tags = re.findall(r"@([^/]*)", path)
+    if tags:
+        return all(re.fullmatch(r"\d+\.\d+\.\d+", t) for t in tags)
+    return bool(PIN.search(path))
+
+
 def check_url(url, where):
     """Luật cho URL tài nguyên (không phải <a>)."""
     if not _is_external(url):
@@ -65,7 +75,7 @@ class _Html(HTMLParser):
                         self.v.append(f"script src thiếu integrity hợp lệ: {src}")
                     if "crossorigin" not in a:
                         self.v.append(f"script src thiếu crossorigin: {src}")
-                    if not PIN.search(src):
+                    if not _pinned(src):
                         self.v.append(f"script src chưa ghim phiên bản: {src}")
         elif tag == "link":
             if "href" in a:
