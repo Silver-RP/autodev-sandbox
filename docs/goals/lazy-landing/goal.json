@@ -38,7 +38,7 @@
     {"id": "R12", "title": "Mở rộng nội dung: FAQ, 3 dự án ví dụ", "depends_on": ["R6"], "metrics": ["E4"],
      "est_usd": 2.3, "est_hours": 0.2, "status": "done", "plan_file": "plan/R12.md"},
     {"id": "R9", "title": "SEO và chia sẻ: OG/Twitter, og.png 1200x630, favicon, robots, sitemap, JSON-LD", "depends_on": ["R6", "R12"], "metrics": ["E1"],
-     "est_usd": 1.8, "est_hours": 0.2, "status": "planned"},
+     "est_usd": 1.8, "est_hours": 0.2, "status": "done", "plan_file": "plan/R9.md"},
     {"id": "R13", "title": "Song ngữ Việt/Anh: site/en/, hreflang, nút chuyển", "depends_on": ["R12", "R9"], "metrics": ["E5"],
      "est_usd": 1.9, "est_hours": 0.3, "status": "planned"},
     {"id": "R10", "title": "Hiệu năng: Lighthouse mobile >= 90/95, tổng tải <= 300 KB", "depends_on": ["R7", "R8", "R13"], "metrics": ["E2"],
