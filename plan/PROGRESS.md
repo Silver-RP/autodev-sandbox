@@ -41,5 +41,6 @@
 
 ## R12
 - dev-01 DONE (1 vòng, commit 79f01b5): `#hoi-dap` 4 `<details>` (giá, thời gian, sửa đổi, tên miền), style summary có `:focus-visible`, `tests/test_site_content.py` (4 test, có ca âm). Điều chỉnh (a): ba test cũ (`test_site.py`, `test_site_motion.py`, `test_site_visual.py`) đổi số section cứng `== 4` thành `>= 4` / `[1] * số section` vì R12 thêm section (cờ `allow-test-change`). 169 test pass. Ghi chú reviewer (không chặn): regex "không ẩn summary" không bắt rule lồng trong `@media`; câu trả lời giá nhắc "Gói Cà Phê/Trà Sữa", dev-03 đối chiếu với trang. `test_dark_mode_applied_only_in_dark[1280]` đỏ một lần rồi xanh khi chạy lại (nợ đã biết).
+- dev-02 DONE (1 vòng, commit 6196960): `#du-an` giữa `#cach-lam` và `#hoi-dap`, 3 `<article>` hư cấu (Hẻm Nhỏ, Bác Tư, Nét Mực), mỗi cái có "(ví dụ)" ở h3, SVG `aria-hidden` ≥ 3 phần tử vẽ, một câu kết quả; 3 test + ca âm, test cấm từ khen giả. 173 test pass. Đã đối chiếu FAQ với `#dich-vu` (khớp). Ghi chú reviewer (không chặn): SVG thứ 3 vừa đủ 3 phần tử vẽ; parser test dựa vào thẻ `article`.
 
 ## Đề xuất chờ duyệt
