@@ -175,7 +175,7 @@ def test_font_noscript_fallback(path):
     s = (SITE / path).read_text(encoding="utf-8")
     m = re.search(r'<link rel="preload" as="style" href="([^"]+)"', s)
     assert m
-    ns = re.findall(r"<noscript>(.*?)</noscript>", s, re.S)
+    ns = re.findall(r"<noscript>(.*?)</noscript>", s, re.DOTALL)
     assert any('rel="stylesheet"' in n and m.group(1) in n for n in ns)
 
 
