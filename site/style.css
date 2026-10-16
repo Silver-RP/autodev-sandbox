@@ -7,6 +7,8 @@
   --color-ghe-do: #C42F2F;
   --color-tra-da: #F4B942;
   --color-bui-duong: #5B6B7A;
+  --color-chu-nut: white;
+  --color-chu-tren-tra: var(--color-muc-bang);
   --font-bang-hieu: "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
   --font-than-bai: "Be Vietnam Pro", system-ui, sans-serif;
   --space-1: 0.5rem;
@@ -58,7 +60,7 @@ header {
   display: inline-block;
   padding: 0.5rem 1.25rem;
   background: var(--color-ghe-do);
-  color: white;
+  color: var(--color-chu-nut);
   font-weight: 600;
   text-decoration: none;
   border-radius: 6px;
@@ -325,8 +327,21 @@ footer {
   place-items: center;
   border-radius: 50%;
   background: var(--color-tra-da);
-  color: var(--color-muc-bang);
+  color: var(--color-chu-tren-tra);
   font-family: var(--font-bang-hieu);
   font-weight: 800;
   font-size: 22px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-tuong-voi: #1B2A3A;
+    --color-muc-bang: #E8EEF2;
+    --color-ghe-xanh: #7FB2FF;
+    --color-ghe-do: #FF7A6E;
+    --color-tra-da: #F4B942;
+    --color-bui-duong: #9FB0BF;
+    --color-chu-nut: var(--color-tuong-voi);
+    --color-chu-tren-tra: var(--color-tuong-voi);
+  }
 }

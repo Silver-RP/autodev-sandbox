@@ -47,7 +47,7 @@ def test_no_loose_hex_outside_root():
     rest = [
         f"{s}{{{b}}}"
         for s, b in blocks(strip_comments(CSS))
-        if s != ":root"
+        if s != ":root" and s != "@media (prefers-color-scheme: dark)"
     ]
     assert not HEXRE.findall("\n".join(rest))
 
