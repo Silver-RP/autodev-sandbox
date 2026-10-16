@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from test_design_doc import palette
 from test_site_visual import CSS, HEXRE, HTML, blocks, strip_comments
+from test_tools import needs_chrome
 
 DARK = "@media (prefers-color-scheme: dark)"
 
@@ -60,13 +61,9 @@ def test_svg_has_no_hardcoded_hex_paint():
         assert not HEXRE.search(svg)
 
 
+@needs_chrome
 def test_dark_contrast_script_passes():
     from scripts import contrast
 
-    try:
-        rc = contrast.main(["--modes", "dark", "--widths", "1280"])
-    except RuntimeError:
-        import pytest
-
-        pytest.skip("không có Chrome")
+    rc = contrast.main(["--modes", "dark", "--widths", "1280"])
     assert rc == 0
