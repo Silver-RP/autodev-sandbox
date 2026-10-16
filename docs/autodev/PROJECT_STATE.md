@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merged PR #30)
+Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R13 (supervisor, merged PR #33)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -15,16 +15,17 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merge
 | R8 | merged | PR #26 (`8a5a9ba`); 4 task, mỗi task 1 vòng; 165 test pass; D4, D5 đạt; H-03..05 không có task, chuyển R10 |
 | R12 | merged | PR #28 (`b7e2529`); 3 task, mỗi task 1 vòng; 173 test pass; E4 đạt |
 | R9 | merged | PR #30 (`91c071a`); 4 task + (b) dev-05, dev-06; 7 vòng; 189 test pass; E1 đạt |
+| R13 | merged | PR #33 (`68112ec`); 3 task, mỗi task 1 vòng; 204 test pass; E5 đạt; ghi H-06 cho R10 |
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 13/17 ≈ **76%**.
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 14/17 ≈ **82%**.
 
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
 | L1 | `uv run pytest -q tests/test_site.py` | 0 failed, ≥ 6 | 11 passed, đạt |
 | L2 | `uv run pytest -q tests/test_site_policy.py` | 0 failed, ≥ 6 | 17 passed, đạt |
-| L3 | `uv run pytest -q` | 0 failed | 189 passed, đạt |
+| L3 | `uv run pytest -q` | 0 failed | 204 passed, đạt |
 | L4 | `uv run ruff check .` | 0 lỗi | sạch, đạt |
 | L5 | smoke HTTP (`criteria.md`) | `200` hai dòng | đạt |
 | D1 | `uv run pytest -q tests/test_tools.py` | 0 failed, ≥ 5, không skip | đạt (gồm test `contrast.py`) |
@@ -35,7 +36,8 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merge
 | D6 | `uv run pytest -q tests/test_site_motion.py` | 0 failed, ≥ 4 | 13 passed (có mạng), đạt |
 | E4 | `uv run pytest -q tests/test_site_content.py` | 0 failed, ≥ 4 | 12 passed, đạt |
 | E1 | `uv run pytest -q tests/test_site_seo.py` | 0 failed, ≥ 6 | 12 passed, đạt |
-| D7, E2, E3, E5 | xem `criteria.md` | | chưa (D7: leader duyệt bằng mắt sau R8) |
+| E5 | `uv run pytest -q tests/test_site_i18n.py` | 0 failed, ≥ 4 | 14 passed, đạt |
+| D7, E2, E3 | xem `criteria.md` | | chưa (D7: leader duyệt bằng mắt bản Việt + Anh) |
 
 ## Kiến trúc hiện nay
 - `src/todo/`: CLI todo (`add --due`, `list`, `overdue`, `done`, `due`); luật ngày duy nhất ở `store.valid_due`.
@@ -45,7 +47,8 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merge
 - `scripts/page_metrics.py`: JSON mỗi dòng một tổ hợp (`width`, `mode`, `innerWidth`, `overflow`, `svg_by_section`, `h1`, `body_font`, `colors`); `colors` gộp theo bộ (màu, nền, cỡ, đậm), nền lấy theo cây cha. `--check-overflow` exit 1 khi tràn. `h1.font_family` là chuỗi khai báo, không chứng minh font đã tải (H-04).
 - `scripts/contrast.py`: tỉ lệ WCAG 2.x trên `colors` của `page_metrics.py`; chữ lớn (≥ 24px, hoặc ≥ 18,66px đậm) 3:1, còn lại 4,5:1; mặc định 1280, cả hai chế độ (`--widths`, `--modes`, `--site`); exit 1 khi trượt. Bỏ qua alpha chữ, không đo `:hover`/`:focus`.
 - SEO (R9): `scripts/site_config.py` (`SITE_URL`, mặc định `https://example.github.io/autodev-sandbox/`); meta OG/Twitter, canonical, JSON-LD `ProfessionalService`, `robots.txt`, `sitemap.xml` ghi cứng URL (test kiểm khớp `SITE_URL`; R11 đổi URL phải sửa cả). `og.svg` → `og.png` qua `screenshot.py --page /og.svg --size 1200x630`, PNG mang chunk `tEXt` `source-sha256` (`og_png_current`). `pytest` có `pythonpath` trong `pyproject.toml`.
-- `tests/_policy.py`: miễn trừ hẹp `<link rel="canonical">`; `check(html, css)` cho L2; `_pinned(src)`: mọi `@tag` phải là X.Y.Z, không có `@` thì cần `/X.Y.Z/`.
+- Song ngữ (R13): `site/en/index.html` (`lang="en"`, cùng id section tiếng Việt không dấu) dùng chung `../style.css`, `../main.js`; `hreflang` vi/en/x-default + canonical riêng mỗi trang, URL tuyệt đối; link `.doi-ngon-ngu` ở header (không JS); `#luoi-nut` lấy nhãn từ `data-on`/`data-off`; `sitemap.xml` hai URL. `contrast.py`, `page_metrics.py` có `--pages` (mặc định mọi trang có thật), `screenshot.py --pages` (ảnh `en-<w>-<mode>.png`).
+- `tests/_policy.py`: miễn trừ `<link rel="canonical">` và `rel="alternate"` có `hreflang` (quá rộng, H-06); `check(html, css)` cho L2; `_pinned(src)`: mọi `@tag` phải là X.Y.Z, không có `@` thì cần `/X.Y.Z/`.
 
 ## Quy tắc → test bảo vệ
 | Quy tắc | Test bảo vệ |
@@ -63,6 +66,7 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merge
 | Nút `mailto:` bắt đầu bằng động từ; không `→`, không `uppercase`; FAQ ≥ 4 `<details>` có `summary`, CSS không ẩn `summary`; 3 dự án có "ví dụ" + SVG; cấm "khách hàng nói"/"đánh giá"/"testimonial" | `tests/test_site_content.py` |
 | Không JS / CDN lỗi: mọi phần hiện; CSS không ẩn ngoài `.js`; SRI khớp; 1 timeline; giảm chuyển động bỏ timeline | `tests/test_site_motion.py` |
 | Meta OG/Twitter, URL theo `SITE_URL`, `og.png` 1200×630 khớp hash `og.svg`, màu SVG thuộc token, favicon không `<text>`, JSON-LD | `tests/test_site_seo.py`, `tests/test_site_share.py` |
+| Bản Anh: cùng id, 1 `<h1>`, không chữ Việt có dấu, tài nguyên chung 200; `hreflang` hai chiều tuyệt đối; link chuyển ngôn ngữ; sitemap 2 URL | `tests/test_site_i18n.py` |
 | Đúng 1 nút `type="button"`, `hidden` khi không JS, `aria-pressed` đổi, `:focus-visible` có `outline` | `tests/test_site_button.py` |
 
 ## Lỗ hổng mở
@@ -71,6 +75,7 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merge
 | H-03 | vừa | Ở 360: dấu chấm dẫn menu bị ẩn (`.cham {display:none}`) và nút header bị ẩn, lệch wireframe 360 của doc; không test nào bắt | R10 (plan cần thêm task) |
 | H-04 | thấp | Test font `<h1>` chỉ đọc `font-family` khai báo; cần `document.fonts.check` để chứng minh Baloo 2 đã tải | R10 (plan cần thêm task) |
 | H-05 | thấp | `style.css` chưa có `@media (prefers-reduced-motion: reduce)` như quy ước plan R7 (giảm chuyển động hiện chỉ ở `main.js`) | R10 (plan cần thêm task) |
+| H-06 | thấp | `_policy.py` miễn trừ mọi `<link rel="alternate" hreflang>` kể cả `href` ngoài `SITE_URL` (`https://evil.com/x.css` lọt) | R10 (plan cần thêm task) |
 
 ## Nợ không chặn
 - Tham số `today` của `store.overdue` che `store.today()`.
@@ -83,7 +88,10 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 lần 2 (supervisor, merge
 - R12: `test_metrics_svg_h1_font_and_repeat` (Chrome) đỏ một lần khi supervisor chạy cả bộ, chạy lại xanh; regex `test_css_does_not_hide_summary` không bắt rule lồng trong `@media`; test dự án dựa vào thẻ `article`.
 - R8: kiểm `outline` lọt `outline:0px` và chưa gắn theo selector; `contrast.py` ném ValueError với màu tên (`red`), bỏ qua alpha chữ.
 
+- R13: bản Anh chưa có JSON-LD, `og:image` dùng chung `og.png` chữ Việt; test chữ Việt chỉ bắt chữ có dấu; ở 360 link "Tiếng Việt" rớt dòng dưới logo.
+
 ## Quyết định gần đây
+- 2026-10-16: merge R13 (PR #33). E5 đạt; ghi H-06 cho R10.
 - 2026-10-16: merge R9 lần 2 (PR #30) sau dev-05, dev-06. E1 đạt; ảnh chia sẻ, favicon đúng hướng.
 - 2026-10-16: không merge R9 lần 1 (PR #30). Tiêu chí 1, 2 đỏ (test `mtime`); `og.svg`/favicon lệch "Quy ước chung". (b) dev-05, dev-06; (c) bỏ tiêu chí `mtime`, thay hash nguồn trong PNG.
 - 2026-10-16: merge R12 (PR #28). E4 đạt; chấp nhận (a) nới test số section `== 4` → `>= 4`.
