@@ -139,3 +139,52 @@ def test_en_page_and_relative_assets_served(base_url):
     for path in ("/style.css", "/main.js"):
         with urllib.request.urlopen(base_url + path, timeout=5) as r:
             assert r.status == 200
+
+
+# ---- dev-02: hreflang, canonical, sitemap, meta ----
+def _head(html):
+    links, meta = [], {}
+    class H(HTMLParser):
+        def handle_starttag(self, tag, attrs):
+            a = dict(attrs)
+            if tag == "link":
+                links.append(a)
+            elif tag == "meta":
+                k = a.get("property") or a.get("name")
+                if k:
+                    meta.setdefault(k, []).append(a.get("content", ""))
+    H().feed(html)
+    return links, meta
+
+
+def _site_url():
+    from scripts.site_config import SITE_URL
+    return SITE_URL
+
+
+@pytest.mark.parametrize("html,self_url", [(VI, ""), (EN, "en/")])
+def test_hreflang_both_pages_absolute_and_correct(html, self_url):
+    base = _site_url()
+    links, _ = _head(html)
+    alt = {l["hreflang"]: l["href"] for l in links if l.get("rel") == "alternate" and "hreflang" in l}
+    assert alt == {"vi": base, "en": base + "en/", "x-default": base}
+    canon = [l["href"] for l in links if l.get("rel") == "canonical"]
+    assert canon == [base + self_url]
+
+
+def test_en_meta_locale_and_vi_alternate():
+    _, en = _head(EN)
+    _, vi = _head(VI)
+    assert en["og:locale"] == ["en_US"] and en["og:locale:alternate"] == ["vi_VN"]
+    assert en["og:url"] == [_site_url() + "en/"]
+    assert vi["og:locale"] == ["vi_VN"] and vi["og:locale:alternate"] == ["en_US"]
+    for k in ("og:title", "og:description", "twitter:title", "twitter:description"):
+        assert en[k][0].strip() and not VI_CHARS.search(BRAND.sub("", en[k][0])), k
+    assert not VI_CHARS.search(BRAND.sub("", re.search(r"<title>(.*?)</title>", EN).group(1)))
+
+
+def test_sitemap_has_both_urls_once():
+    import xml.etree.ElementTree as ET
+    root = ET.parse(SITE / "sitemap.xml").getroot()
+    locs = [e.text for e in root.iter() if e.tag.endswith("loc")]
+    assert sorted(locs) == sorted([_site_url(), _site_url() + "en/"])
