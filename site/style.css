@@ -64,6 +64,30 @@ header {
   border-radius: 6px;
 }
 
+button.nut {
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.nut[hidden] {
+  display: none;
+}
+
+.nut-vui {
+  background: var(--color-ghe-xanh);
+}
+
+.nut-vui[aria-pressed="true"] {
+  background: var(--color-muc-bang);
+}
+
+.nut:focus-visible {
+  outline: 3px solid var(--color-muc-bang);
+  outline-offset: 3px;
+}
+
 section {
   margin: var(--space-4) 0;
 }
