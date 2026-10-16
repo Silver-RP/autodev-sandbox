@@ -1,5 +1,8 @@
+import sys
 from html.parser import HTMLParser
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.site_config import SITE_URL
 
