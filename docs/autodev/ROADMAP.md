@@ -21,7 +21,7 @@ Cập nhật: 2026-10-16 (supervisor, sau khi merge R6).
 | R7 | lazy-landing | Chuyển động (GSAP qua CDN, SRI) + một tương tác; an toàn khi không JS | merged 2026-10-16, PR #24 | 3 | D6 | R6 | 2,3 | chế độ B: worker 34 phút / 1,38 USD; supervisor ~1,00 USD (tạm) |
 | R8 | lazy-landing | Chế độ tối + truy cập (tương phản AA, focus, `aria`, không tràn) | merged 2026-10-16, PR #26 | 4 | D4, D5 | R6 | 2,8 | chế độ B: worker 43 phút / 1,31 USD; supervisor ~1,09 USD (tạm) |
 | R12 | lazy-landing | Mở rộng nội dung (FAQ, 3 dự án "ví dụ") | merged 2026-10-16, PR #28 | 3 | E4 | R6 | 2,3 | chế độ B: worker 31 phút / 0,99 USD; supervisor ~1,16 USD (tạm) |
-| R9 | lazy-landing | SEO và chia sẻ (OG, `og.png`, favicon, sitemap, JSON-LD) | plan đã duyệt | 4 | E1 | R6, R12 | 1,8 | – |
+| R9 | lazy-landing | SEO và chia sẻ (OG, `og.png`, favicon, sitemap, JSON-LD) | **chưa đạt** 2026-10-16 (PR #30 mở); thêm (b) dev-05, dev-06, chạy lại | 4 (+2) | E1 | R6, R12 | 1,8 | lần 1: worker 41 phút / 1,45 USD; supervisor ~1,14 USD (tạm) |
 | R13 | lazy-landing | Song ngữ Việt/Anh (`site/en/`, `hreflang`) | plan đã duyệt | 3 | E5 | R12, R9 | 1,9 | – |
 | R10 | lazy-landing | Hiệu năng (Lighthouse mobile ≥ 90 / 95, ≤ 300 KB) | plan đã duyệt; **cần thêm task (b) cho H-03, H-04, H-05** | 3 | E2 | R7, R8, R13 | 1,5 | – |
 | R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | plan đã duyệt; **chờ leader bật Pages** | 2 | E3 | R10 | 1,3 | – |
