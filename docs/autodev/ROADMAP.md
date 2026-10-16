@@ -18,7 +18,7 @@ Cập nhật: 2026-10-16 (supervisor, sau khi merge R6).
 | R4 | lazy-landing | Công cụ nhìn (`screenshot.py` 360 thật qua iframe / 1280, sáng / tối; `page_metrics.py`) + luật tài nguyên mới | merged 2026-10-16, PR #20 | 4 | D1, L2 | R3 | 1,8 | chế độ B: worker 20 phút / 1,06 USD; supervisor ~0,77 USD (tạm) |
 | R5 | lazy-landing | Ba hướng thiết kế, dừng chờ chọn | **cắt** 2026-10-16: leader chọn trước hướng "Quán cóc đầu ngõ" | – | (D2 → R6) | – | – | – |
 | R6 | lazy-landing | Dựng trang theo spec "Quán cóc đầu ngõ" (test spec, token, font, SVG, nội dung) | merged 2026-10-16, PR #22 | 5 | D2, D3, L1 | R4 | 3,3 | chế độ B: worker 44 phút / 2,25 USD; supervisor ~0,89 USD (tạm) |
-| R7 | lazy-landing | Chuyển động (GSAP qua CDN, SRI) + một tương tác; an toàn khi không JS | plan đã duyệt | 3 | D6 | R6 | 2,3 | – |
+| R7 | lazy-landing | Chuyển động (GSAP qua CDN, SRI) + một tương tác; an toàn khi không JS | merged 2026-10-16, PR #24 | 3 | D6 | R6 | 2,3 | chế độ B: worker 34 phút / 1,38 USD; supervisor ~1,00 USD (tạm) |
 | R8 | lazy-landing | Chế độ tối + truy cập (tương phản AA, focus, `aria`, không tràn) | plan đã duyệt | 4 | D4, D5 | R6 | 2,8 | – |
 | R12 | lazy-landing | Mở rộng nội dung (FAQ, 3 dự án "ví dụ") | plan đã duyệt | 3 | E4 | R6 | 2,3 | – |
 | R9 | lazy-landing | SEO và chia sẻ (OG, `og.png`, favicon, sitemap, JSON-LD) | plan đã duyệt | 4 | E1 | R6, R12 | 1,8 | – |
@@ -27,9 +27,9 @@ Cập nhật: 2026-10-16 (supervisor, sau khi merge R6).
 | R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | plan đã duyệt; **chờ leader bật Pages** | 2 | E3 | R10 | 1,3 | – |
 
 **Tổng:**
-- Đã xong: R1–R4, R6, 18 task.
-- Còn lại: R7–R13, **22 task**, khoảng **13,9 USD** (R11 chạy riêng).
-- Mục tiêu `lazy-landing` hiện đạt 8/17 chỉ số (sau R6); `due-overdue` đạt 5/5.
+- Đã xong: R1–R4, R6, R7, 21 task.
+- Còn lại: R8–R13, **19 task**, khoảng **11,6 USD** (R11 chạy riêng).
+- Mục tiêu `lazy-landing` hiện đạt 9/17 chỉ số (sau R7); `due-overdue` đạt 5/5.
 
 ## Chạy tiếp (sau khi reset hạn mức)
 

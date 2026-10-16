@@ -163,5 +163,48 @@ L3: `uv run pytest -q` → 126 passed; L4: ruff "All checks passed!".
 - Đề xuất (c) 1 của worker (sửa doc cho khớp việc ẩn nút header): **không duyệt**; doc là nguồn, R8 khôi phục theo doc (H-03).
 - Đề xuất (c) 2 (`document.fonts.check`): duyệt hướng, ghi H-04 cho R8.
 
+## R7: Chuyển động và tương tác — merged 2026-10-16 (PR #24, `1a66df0`)
+
+Kiểm trên nhánh `milestone/R7` (`e59ee5d`), supervisor tự chạy (chế độ B, `--review-only`):
+`verify.py` → "sạch (không có lỗi mới so với baseline)", test_guard báo 2 `pytest.skip` khi không có mạng ở `tests/test_site_motion.py`, đã giải trình (dc954cb); `verify.py --smoke` → `ok A5 overdue`, "sạch". CI `test` pass 2 lần; main không có check bắt buộc.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | sạch |
+| 2 | motion + policy 0 failed; `test_site_motion.py` ≥ 4 (D6) | `uv run pytest -q -rs tests/test_site_motion.py tests/test_site_policy.py`; `grep -c "^def test_"` | 30 passed, 0 skipped (có mạng); 13 test |
+| 3 | `test_site_visual.py`, `test_site.py` xanh; overflow sáng exit 0 | `uv run pytest -q tests/test_site_visual.py tests/test_site.py tests/test_site_button.py`; `page_metrics.py --check-overflow --modes light` | 27 passed; exit 0 |
+| 4 | Ảnh trạng thái cuối timeline và ảnh tắt JS đủ nội dung | supervisor tự chụp 1280: Chrome headless qua CDP (Node, thời gian thật, chờ 3 s); bản sao tạm bỏ mọi `<script>` | timeline `progress()` = 1, `h1` và `.hero-hinh` opacity 1, transform `none`; ảnh cuối và ảnh không JS đủ 4 phần; không JS thì nút vui ẩn (không nút chết); sau khi bấm: `aria-pressed=true`, chữ "Đang lười giúp…", ghế xanh `translateX(16px)` |
+
+L3: `uv run pytest -q` → 148 passed. H-02 đóng: ca `gsap@latest/3.12.5` trong `test_site_policy.py`; supervisor gọi `_policy._pinned` trực tiếp: `@latest/3.12.5` False, `@3.12` False, `@3.12.5` True, cdnjs `/3.12.5/` True.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 3 | 3 | 0 |
+| Phút worker | ~10–20 | 34 | B3 1,69 |
+| USD (worker + supervisor) | ~2,3 | 1,38 + ~1,00 | B3 ~1,04 |
+| Số vòng review | 3–5 | 3 | trong khoảng |
+
+Phút lệch dưới 2 lần; nguyên nhân chính: Chrome headless không chạy `--blink-settings=scriptEnabled=false` và gần như không phát rAF, worker phải đổi cách test (iframe `sandbox`, đẩy đồng hồ gsap).
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. `gsap.from` làm ẩn sẵn, CDN lỗi thì trắng | `test_js_disabled_sections_visible` (iframe `sandbox` không `allow-scripts`, thay cờ blink không chạy), `test_broken_cdn_sections_visible`, `test_css_hides_nothing_outside_js_selector`; supervisor chụp ảnh không JS |
+| 2. Rắc hiệu ứng | `test_single_timeline_and_no_section_loop`, `test_only_one_timeline_still`; supervisor đọc `main.js`: 1 timeline (2 bước hero), 1 tương tác |
+| 3. Bỏ qua giảm chuyển động | `test_reduced_motion_no_timeline`, `test_click_reduced_motion_instant`; supervisor chạy `--force-prefers-reduced-motion`: `heroTimeline` = null, opacity 1. **CSS chưa có `@media (prefers-reduced-motion: reduce)`** như quy ước plan: H-05 |
+| 4. SRI sai, script bị chặn âm thầm | `test_sri_hash_matches_cdn_file`, `test_with_cdn_gsap_present_and_sections_visible` (skip khi không mạng); supervisor thấy `window.gsap` có mặt |
+
+### Kiểm biên độc lập
+- Thời gian thật (CDP, không virtual-time): timeline chạy hết, hero về trạng thái gốc. Với `--virtual-time-budget` thì hero kẹt ở opacity ~0,8 / 0 (rAF không phát): lỗi môi trường headless, không phải trang; nhưng ảnh `screenshot.py` ở R8+ sẽ chụp hero dở dang nếu không đẩy đồng hồ gsap.
+- Bấm nút 3 lần → `aria-pressed` true/false/true đúng; giảm chuyển động → ghế dịch tức thì (`gsap.set`).
+- `_pinned` từ chối gói npm có scope (`/npm/@gsap/react@2.1.0/…`: tag `gsap` không phải X.Y.Z): chặt quá, không phải lỗ hổng; ghi nợ.
+
+### Quyết định
+- Merge: 4/4 tiêu chí cấp mốc có bằng chứng tự chạy; D6 đạt; đóng H-02. `lazy-landing` 9/17 ≈ 53%.
+- H-05 (thấp, R8): thêm `@media (prefers-reduced-motion: reduce)` vào `style.css` và test. Supervisor phát hiện sau khi đã merge; không chặn vì CSS hiện không có chuyển động nào.
+- Không có đề xuất (c).
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
