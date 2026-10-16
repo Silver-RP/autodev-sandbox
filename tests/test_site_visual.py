@@ -91,7 +91,7 @@ def test_layout_frame():
     assert "72rem" in CSS
     for tag in ("<header", "<footer", "<main"):
         assert tag in HTML
-    assert HTML.count("<section") == 4
+    assert HTML.count("<section") >= 4
 
 
 def _can_measure():

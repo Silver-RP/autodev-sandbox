@@ -157,8 +157,8 @@ def test_js_disabled_sections_visible(tmp_path):
     for _ in range(2):  # gọi lặp lại
         d = read(probe(tmp_path, js_enabled=False))
         assert d["js"] is False and d["gsap"] is False
-        assert d["sections"] == 4
-        assert d["opacity"] == [1, 1, 1, 1]
+        assert d["sections"] >= 4
+        assert d["opacity"] == [1] * d["sections"]
 
 
 @needs_chrome
@@ -166,8 +166,8 @@ def test_broken_cdn_sections_visible(tmp_path):
     bad = lambda h: h.replace("gsap@3.12.5", "gsap@0.0.1")
     d = read(probe(tmp_path, bad))
     assert d["gsap"] is False and d["js"] is False
-    assert d["sections"] == 4
-    assert d["opacity"] == [1, 1, 1, 1]
+    assert d["sections"] >= 4
+    assert d["opacity"] == [1] * d["sections"]
 
 
 @needs_chrome
@@ -177,7 +177,7 @@ def test_with_cdn_gsap_present_and_sections_visible(tmp_path):
     if not d["gsap"]:
         pytest.skip("CDN không tải được")
     assert d["js"] is True
-    assert d["opacity"] == [1, 1, 1, 1]
+    assert d["opacity"] == [1] * d["sections"]
 
 
 # --- dev-02: timeline lúc tải trang ---

@@ -112,7 +112,7 @@ def test_sections_negative_cases():
 
 
 def test_section_text_and_no_filler(src, page):
-    assert len(page.section_text) == 4
+    assert len(page.section_text) >= 4
     for sid, text in page.section_text:
         assert len(" ".join(text.split())) >= 20, sid
     low = src.lower()

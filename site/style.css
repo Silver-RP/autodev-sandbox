@@ -347,3 +347,32 @@ footer {
     --color-chu-tren-tra: var(--color-tuong-voi);
   }
 }
+
+/* Hỏi nhanh, đáp gọn: details/summary */
+#hoi-dap details {
+  border: 3px solid var(--color-muc-bang);
+  border-radius: 6px;
+  padding: 0 var(--space-3);
+}
+
+#hoi-dap details + details {
+  margin-top: var(--space-1);
+}
+
+#hoi-dap summary {
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  font-family: var(--font-bang-hieu);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+#hoi-dap summary:focus-visible {
+  outline: 3px solid var(--color-ghe-xanh);
+  outline-offset: 3px;
+}
+
+#hoi-dap details p {
+  margin: 0 0 var(--space-2);
+}
