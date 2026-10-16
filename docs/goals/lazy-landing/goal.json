@@ -32,7 +32,7 @@
     {"id": "R6", "title": "Dựng trang theo spec 'Quán cóc đầu ngõ': test spec, token, font, bố cục, minh hoạ SVG, nội dung mới", "depends_on": ["R4"], "metrics": ["D2", "D3", "L1"],
      "est_usd": 3.3, "est_hours": 0.4, "status": "done", "plan_file": "plan/R6.md"},
     {"id": "R7", "title": "Chuyển động (GSAP qua CDN, SRI) + một tương tác, an toàn khi không JS", "depends_on": ["R6"], "metrics": ["D6"],
-     "est_usd": 2.3, "est_hours": 0.3, "status": "planned"},
+     "est_usd": 2.3, "est_hours": 0.3, "status": "done", "plan_file": "plan/R7.md"},
     {"id": "R8", "title": "Chế độ tối + truy cập (tương phản AA, focus, bàn phím, không tràn 360)", "depends_on": ["R6"], "metrics": ["D4", "D5"],
      "est_usd": 2.8, "est_hours": 0.3, "status": "planned"},
     {"id": "R12", "title": "Mở rộng nội dung: FAQ, 3 dự án ví dụ", "depends_on": ["R6"], "metrics": ["E4"],
