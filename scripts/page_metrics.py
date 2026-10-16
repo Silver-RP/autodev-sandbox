@@ -17,6 +17,12 @@ from scripts import screenshot as sh
 
 ROOT = sh.ROOT
 PAGE = "/index.html"
+PAGES = ["/index.html", "/en/index.html"]
+
+
+def default_pages(site) -> list[str]:
+    """Các trang mặc định có thật trong thư mục site."""
+    return [p for p in PAGES if (Path(site) / p.lstrip("/")).is_file()] or [PAGE]
 
 MEASURE_JS = r"""
 <pre id="out" style="display:none"></pre>
@@ -84,27 +90,30 @@ def inject(page_html: str) -> str:
     return page_html + MEASURE_JS
 
 
-def measure(base: str, width: int, mode: str, height: int = 800) -> dict:
-    dom = sh.dump_dom(sh.page_url(base, PAGE, width, height), width, height, mode)
+def measure(base: str, width: int, mode: str, height: int = 800, page: str = PAGE) -> dict:
+    dom = sh.dump_dom(sh.page_url(base, page, width, height), width, height, mode)
     pid = "frame-out" if width < 1000 else "out"
     m = re.search(rf'<pre id="{pid}"[^>]*>(.*?)</pre>', dom, re.DOTALL)
     if not m or not m.group(1).strip():
-        raise RuntimeError(f"không đọc được số liệu ở {width}/{mode}")
+        raise RuntimeError(f"không đọc được số liệu ở {page} {width}/{mode}")
     data = json.loads(html.unescape(m.group(1)))
-    return {"width": width, "mode": mode, **data}
+    return {"page": page, "width": width, "mode": mode, **data}
 
 
-def collect(site, widths, modes, height: int = 800) -> list[dict]:
+def collect(site, widths, modes, height: int = 800, pages=None) -> list[dict]:
+    pages = list(pages) if pages else [PAGE]
     results = []
     with tempfile.TemporaryDirectory() as tmp:
         copy = Path(tmp) / "site"
         shutil.copytree(site, copy)
-        page = copy / PAGE.lstrip("/")
-        page.write_text(inject(page.read_text(encoding="utf-8")), encoding="utf-8")
+        for pg in pages:
+            f = copy / pg.lstrip("/")
+            f.write_text(inject(f.read_text(encoding="utf-8")), encoding="utf-8")
         with sh.serve(copy) as base:
-            for w in widths:
-                for mode in modes:
-                    results.append(measure(base, w, mode, height))
+            for pg in pages:
+                for w in widths:
+                    for mode in modes:
+                        results.append(measure(base, w, mode, height, pg))
     return results
 
 
@@ -113,6 +122,7 @@ def main(argv=None) -> int:
     ap.add_argument("--site", default=str(ROOT / "site"))
     ap.add_argument("--widths", default="360,1280")
     ap.add_argument("--modes", default="light,dark")
+    ap.add_argument("--pages", help="danh sách trang, mặc định mọi trang có thật")
     ap.add_argument("--check-overflow", action="store_true")
     a = ap.parse_args(argv)
     widths = [int(w) for w in a.widths.split(",") if w]
@@ -120,13 +130,14 @@ def main(argv=None) -> int:
     for m in modes:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
-    results = collect(a.site, widths, modes)
+    pages = [p for p in a.pages.split(",") if p] if a.pages else default_pages(a.site)
+    results = collect(a.site, widths, modes, pages=pages)
     for r in results:
         print(json.dumps(r, ensure_ascii=False))
     if a.check_overflow:
         bad = [r for r in results if r["overflow"]]
         for r in bad:
-            print(f"TRÀN {r['width']}/{r['mode']}: {', '.join(r['overflow'])}", file=sys.stderr)
+            print(f"TRÀN {r['page']} {r['width']}/{r['mode']}: {', '.join(r['overflow'])}", file=sys.stderr)
         return 1 if bad else 0
     return 0
 

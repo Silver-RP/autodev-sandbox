@@ -59,6 +59,7 @@ def failures(results: list[dict]) -> list[dict]:
             got = ratio(c["color"], c["background"])
             if got < need:
                 bad.append({
+                    "page": r.get("page", pm.PAGE),
                     "width": r["width"], "mode": r["mode"],
                     "selector": c.get("selector", "?"),
                     "color": c["color"], "background": c["background"],
@@ -72,17 +73,19 @@ def main(argv=None) -> int:
     ap.add_argument("--site", default=str(pm.ROOT / "site"))
     ap.add_argument("--widths", default="1280")
     ap.add_argument("--modes", default="light,dark")
+    ap.add_argument("--pages", help="danh sách trang, mặc định mọi trang có thật")
     a = ap.parse_args(argv)
     widths = [int(w) for w in a.widths.split(",") if w]
     modes = [m for m in a.modes.split(",") if m]
     for m in modes:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
-    bad = failures(pm.collect(a.site, widths, modes))
+    pages = [p for p in a.pages.split(",") if p] if a.pages else pm.default_pages(a.site)
+    bad = failures(pm.collect(a.site, widths, modes, pages=pages))
     if bad:
-        print("mode  width  selector  color  background  ratio  need")
+        print("page  mode  width  selector  color  background  ratio  need")
         for b in bad:
-            print(f"{b['mode']}  {b['width']}  {b['selector']}  {b['color']}  "
+            print(f"{b['page']}  {b['mode']}  {b['width']}  {b['selector']}  {b['color']}  "
                   f"{b['background']}  {b['ratio']:.2f}  {b['need']}")
         return 1
     print("OK: mọi cặp màu đạt WCAG AA")

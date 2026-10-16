@@ -188,3 +188,59 @@ def test_sitemap_has_both_urls_once():
     root = ET.parse(SITE / "sitemap.xml").getroot()
     locs = [e.text for e in root.iter() if e.tag.endswith("loc")]
     assert sorted(locs) == sorted([_site_url(), _site_url() + "en/"])
+
+
+# ---- dev-03: nút chuyển ngôn ngữ ----
+class _Links(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.header = False
+        self.links = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "header":
+            self.header = True
+        if tag == "a" and self.header:
+            self.links.append(dict(attrs))
+
+    def handle_endtag(self, tag):
+        if tag == "header":
+            self.header = False
+
+
+def _header_links(src):
+    p = _Links()
+    p.feed(src)
+    return p.links
+
+
+def _switch(src):
+    found = [a for a in _header_links(src) if a.get("hreflang")]
+    assert len(found) == 1
+    return found[0]
+
+
+def test_vi_header_links_to_en():
+    a = _switch(VI)
+    assert (a["hreflang"], a["lang"], a["href"]) == ("en", "en", "en/")
+
+
+def test_en_header_links_to_vi():
+    a = _switch(EN)
+    assert (a["hreflang"], a["lang"], a["href"]) == ("vi", "vi", "../")
+
+
+def test_switch_links_resolve_to_the_other_page(base_url):
+    from urllib.parse import urljoin
+
+    for here, src, other_lang in (("/", VI, "en"), ("/en/", EN, "vi")):
+        target = urljoin(base_url + here, _switch(src)["href"])
+        with urllib.request.urlopen(target, timeout=5) as r:
+            assert r.status == 200
+            body = r.read().decode("utf-8")
+        assert f'<html lang="{other_lang}">' in body
+
+
+def test_mail_button_still_in_header():
+    for src in (VI, EN):
+        assert any(a.get("href", "").startswith("mailto:") for a in _header_links(src))

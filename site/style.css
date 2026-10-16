@@ -56,6 +56,15 @@ header {
   border-bottom: 4px solid var(--color-tra-da);
 }
 
+.doi-ngon-ngu {
+  margin-left: auto;
+  padding: 0.5rem 0.75rem;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .nut {
   display: inline-block;
   padding: 0.5rem 1.25rem;
