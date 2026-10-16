@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import functools
+import hashlib
 import http.server
 import os
 import shutil
@@ -12,6 +13,7 @@ import struct
 import subprocess
 import tempfile
 import threading
+import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -39,6 +41,53 @@ def png_size(path) -> tuple[int, int]:
     if len(head) < 24 or head[:8] != PNG_SIG or head[12:16] != b"IHDR":
         raise ValueError(f"không phải PNG: {path}")
     return struct.unpack(">II", head[16:24])
+
+
+def sha256_file(path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def png_add_text(path, key: str, value: str) -> None:
+    """Chèn chunk tEXt (key, value) ngay sau IHDR; thay chunk cùng key nếu đã có."""
+    data = Path(path).read_bytes()
+    if data[:8] != PNG_SIG:
+        raise ValueError(f"không phải PNG: {path}")
+    kb = key.encode("latin-1")
+    out, pos, inserted = [PNG_SIG], 8, False
+    while pos < len(data):
+        n = struct.unpack(">I", data[pos : pos + 4])[0]
+        kind, end = data[pos + 4 : pos + 8], pos + 12 + n
+        if kind == b"tEXt" and data[pos + 8 : end - 4].split(b"\0", 1)[0] == kb:
+            pos = end
+            continue
+        out.append(data[pos:end])
+        if kind == b"IHDR" and not inserted:
+            body = kb + b"\0" + value.encode("latin-1")
+            crc = zlib.crc32(b"tEXt" + body) & 0xFFFFFFFF
+            out.append(struct.pack(">I", len(body)) + b"tEXt" + body + struct.pack(">I", crc))
+            inserted = True
+        pos = end
+    Path(path).write_bytes(b"".join(out))
+
+
+def png_text(path) -> dict[str, str]:
+    """Đọc mọi chunk tEXt của PNG."""
+    data = Path(path).read_bytes()
+    if data[:8] != PNG_SIG:
+        raise ValueError(f"không phải PNG: {path}")
+    res, pos = {}, 8
+    while pos + 8 <= len(data):
+        n = struct.unpack(">I", data[pos : pos + 4])[0]
+        if data[pos + 4 : pos + 8] == b"tEXt":
+            k, _, v = data[pos + 8 : pos + 8 + n].partition(b"\0")
+            res[k.decode("latin-1")] = v.decode("latin-1")
+        pos += 12 + n
+    return res
+
+
+def og_png_current(png, svg) -> bool:
+    """True nếu PNG mang source-sha256 khớp sha256 hiện tại của SVG."""
+    return png_text(png).get("source-sha256") == sha256_file(svg)
 
 
 def frame_html(src: str, width: int, height: int) -> str:
@@ -180,6 +229,9 @@ def main(argv=None) -> int:
 
         def one(base: str) -> None:
             shoot(base + page, Path(a.file), w, h, "light")
+            src = Path(a.site or ROOT / "site") / page.lstrip("/")
+            if src.is_file():
+                png_add_text(a.file, "source-sha256", sha256_file(src))
             print(a.file)
 
         if a.url:

@@ -1,8 +1,5 @@
-import sys
 from html.parser import HTMLParser
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scripts.site_config import SITE_URL
 
@@ -77,13 +74,34 @@ def test_og_svg_has_viewbox_and_brand():
     assert "Lười Code Studio" in svg
 
 
-def test_og_png_size_and_fresh():
-    from scripts.screenshot import png_size
+def test_og_png_size_and_matches_source():
+    from scripts.screenshot import og_png_current, png_size
 
     png = SITE / "og.png"
     assert png_size(png) == (1200, 630)
     assert png.stat().st_size > 5 * 1024
-    assert png.stat().st_mtime >= (SITE / "og.svg").stat().st_mtime
+    assert og_png_current(png, SITE / "og.svg")
+
+
+def test_og_png_stale_when_svg_changes(tmp_path):
+    import shutil
+
+    from scripts.screenshot import og_png_current
+
+    svg = tmp_path / "og.svg"
+    shutil.copy(SITE / "og.svg", svg)
+    assert og_png_current(SITE / "og.png", svg)
+    data = svg.read_bytes()
+    svg.write_bytes(data[:-1] + (b" " if data[-1:] != b" " else b"\n"))
+    assert not og_png_current(SITE / "og.png", svg)
+
+
+def test_png_without_text_chunk_is_stale(tmp_path):
+    from scripts.screenshot import og_png_current
+
+    bare = tmp_path / "a.png"
+    bare.write_bytes(b"\x89PNG\r\n\x1a\n")
+    assert not og_png_current(bare, SITE / "og.svg")
 
 
 def test_favicon_valid_svg_and_linked():
