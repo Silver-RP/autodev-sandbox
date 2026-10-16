@@ -141,10 +141,17 @@ def stylesheet_hrefs(src):
         def __init__(self):
             super().__init__()
             self.found = []
+            self.ns = 0
+
+        def handle_endtag(self, tag):
+            if tag == "noscript":
+                self.ns -= 1
 
         def handle_starttag(self, tag, attrs):
             a = dict(attrs)
-            if tag == "link" and "stylesheet" in (a.get("rel") or "").lower().split():
+            if tag == "noscript":
+                self.ns += 1
+            if self.ns == 0 and tag == "link" and "stylesheet" in (a.get("rel") or "").lower().split():
                 self.found.append(a.get("href"))
 
     p = L()
@@ -159,6 +166,17 @@ def test_single_relative_stylesheet_exists(src):
     href = hrefs[0]
     assert href and "://" not in href and not href.startswith(("/", "//"))
     assert (SITE / href).is_file()
+
+
+@pytest.mark.parametrize("path", ["index.html", "en/index.html"])
+def test_font_noscript_fallback(path):
+    import re
+
+    s = (SITE / path).read_text(encoding="utf-8")
+    m = re.search(r'<link rel="preload" as="style" href="([^"]+)"', s)
+    assert m
+    ns = re.findall(r"<noscript>(.*?)</noscript>", s, re.S)
+    assert any('rel="stylesheet"' in n and m.group(1) in n for n in ns)
 
 
 def test_stylesheet_link_detection_negative():
