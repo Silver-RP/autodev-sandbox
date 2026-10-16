@@ -30,5 +30,6 @@
 
 ## R7
 - dev-01 DONE (1 vòng, commit 8569e6d, dc954cb): GSAP 3.12.5 qua jsdelivr (SRI sha384, `crossorigin`, `defer`), `site/main.js` thêm class `js` khi có `gsap`, `tests/test_site_motion.py`, siết `_pinned` trong `_policy` (đóng H-02). 135 test pass. verify bị test_guard chặn 1 lần vì 2 `pytest.skip` khi không có mạng; thêm `allow-test-change` ở dc954cb, reviewer xác nhận. Điều chỉnh (a): `--blink-settings=scriptEnabled=false` không chạy được ở Chrome headless này (dump-dom rỗng), test tắt JS dùng iframe `sandbox` không `allow-scripts`. Ghi chú reviewer (không chặn): test Chrome có CDN nên `assert` thay vì `skip` khi online mà `gsap` không nạp.
+- dev-02 DONE (1 vòng, commit cbc4d12): `shouldAnimate()` (đọc `prefers-reduced-motion`), một `gsap.timeline` hero (`#hero h1`, `.hero-hinh`, 0,9 giây), `window.lazySite.heroTimeline`; 5 test mới (tổng 13 trong `test_site_motion.py`). Test "sau 2 giây" đẩy đồng hồ gsap +2s vì `--virtual-time-budget` làm rAF ít khung hình. Ghi chú reviewer (không chặn): thiếu assert trạng thái đầu (opacity < 1 ngay sau khi tạo timeline); test regex trên mã nguồn gắn chặt cách viết.
 
 ## Đề xuất chờ duyệt
