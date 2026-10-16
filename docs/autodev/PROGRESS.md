@@ -375,5 +375,45 @@ Lệch > 2 lần (phút): lượt 1 ảnh chia sẻ sai hướng và test `mtime
 - **Merge PR #30** (merge commit, giữ nhánh). E1 đạt → `lazy-landing` 13/17 ≈ 76%.
 - Non-blocking (worker tự ghi, chuyển nợ): `og.svg` đứng riêng cần `@import` font; `png_add_text` không atomic; vài test còn `sys.path.insert`; chưa có test bảo vệ miễn trừ canonical.
 
+## R13: Song ngữ Việt/Anh — **đạt, merged** 2026-10-16 (PR #33, `68112ec`)
+
+Worker làm dev-01..03 (mỗi task 1 vòng, không REWORK). Supervisor kiểm trên `origin/milestone/R13` (`f405290`), chế độ B `--review-only`:
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc).
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | sạch, đạt |
+| 2 | `test_site_i18n.py` 0 failed, ≥ 4 (E5) | `uv run pytest -q tests/test_site_i18n.py` | 14 passed, đạt |
+| 3 | `contrast.py`, `page_metrics.py --check-overflow` exit 0 cho `/` và `/en/` | `scripts/contrast.py --pages <p>`, `scripts/page_metrics.py --pages <p> --check-overflow`, `p` = `/index.html`, `/en/index.html` | 4 lệnh exit 0; "mọi cặp màu đạt WCAG AA"; `overflow: []` mọi tổ hợp, đạt |
+| 4 | `test_site_seo.py`, `test_site_policy.py` xanh (policy quét `site/en/`) | `uv run pytest -q tests/test_site_seo.py tests/test_site_policy.py`; `test_site_policy.py:17` dùng `SITE.rglob("*")` | 29 passed; có quét `site/en/`, đạt |
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 3 | 3 | 0 |
+| Phút worker | ~10–20 | 36 | B3 1,81 |
+| USD (worker + supervisor) | ~1,9 | 1,40 + ~1,26 (supervisor, tạm) | B3 ~1,40 |
+| Số vòng review | 3–5 | 3 | 0 |
+
+Không lệch quá 2 lần.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Bản Anh thiếu phần / còn chữ Việt | `test_en_sections_match_vi`, `test_en_has_no_vietnamese_visible_text`, `test_en_main_js_labels_not_vietnamese` (chỉ bắt chữ có dấu; supervisor grep thêm từ Việt không dấu thường gặp: 0) |
+| 2. `hreflang` một chiều / URL tương đối | `test_hreflang_both_pages_absolute_and_correct` (hai trang, `x-default`, URL từ `SITE_URL`) |
+| 3. Tài nguyên gãy ở `/en/` | `test_en_page_and_relative_assets_served`, `test_switch_links_resolve_to_the_other_page`; supervisor `curl` mọi `src`/`href` tương đối của `/en/`: 200 |
+| 4. Dịch cẩu thả | reviewer đọc và nhận xét (báo cáo mốc); còn chờ leader duyệt D7 |
+
+### Kiểm biên độc lập
+- `python3 -m http.server -d site` + `curl`: `/en/`, `/en/index.html`, `../style.css`, `../main.js`, `../favicon.svg`, `../` đều 200.
+- `_policy.check('<link rel="alternate" hreflang="en" href="https://evil.com/x.css">', '')` → `[]` (lọt); `rel="alternate stylesheet"` vẫn bị bắt. Ghi H-06 (thấp).
+- Bản Anh không có JSON-LD (bản Việt có), `og:image` dùng chung `og.png` chữ Việt. Plan không yêu cầu; ghi nợ.
+
+### Quyết định
+- **Merge PR #33** (merge commit, giữ nhánh). E5 đạt → `lazy-landing` 14/17 ≈ 82%.
+- Thay đổi ngoài mô tả task, chấp nhận: `main.js` đọc `data-on`/`data-off`; `.doi-ngon-ngu` trong `style.css`; `screenshot.py --pages`.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
