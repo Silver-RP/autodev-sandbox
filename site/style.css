@@ -85,6 +85,8 @@ button.nut[hidden] {
   background: var(--color-muc-bang);
 }
 
+a:focus-visible,
+button:focus-visible,
 .nut:focus-visible {
   outline: 3px solid var(--color-muc-bang);
   outline-offset: 3px;
