@@ -48,8 +48,10 @@ window.addEventListener('load', function () {
     for (var n = e.firstChild; n; n = n.nextSibling)
       if (n.nodeType === 3) own += n.nodeValue;
     if (own.trim() && cs.display !== 'none') {
-      var k = cs.color + '|' + bg(e);
-      colors[k] = {color: cs.color, background: bg(e)};
+      var fs = parseFloat(cs.fontSize), fw = parseInt(cs.fontWeight, 10) || 400;
+      var k = cs.color + '|' + bg(e) + '|' + fs + '|' + fw;
+      colors[k] = {color: cs.color, background: bg(e), font_size: fs, font_weight: fw,
+                   selector: sel(e)};
     }
   }
   document.querySelectorAll('section[id]').forEach(function (s) {
