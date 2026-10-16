@@ -19,12 +19,14 @@
       {"id": "R6", "status": "merged", "pr": 22, "merge_commit": "ecd64d0"},
       {"id": "R7", "status": "merged", "pr": 24, "merge_commit": "1a66df0"},
       {"id": "R8", "status": "merged", "pr": 26, "merge_commit": "8a5a9ba"},
-      {"id": "R12", "status": "merged", "pr": 28, "merge_commit": "b7e2529"}
+      {"id": "R12", "status": "merged", "pr": 28, "merge_commit": "b7e2529"},
+      {"id": "R9", "status": "rejected", "pr": 30}
     ],
     "plugin": []
   },
   "outlook": ["R9", "R13", "R10", "R11"],
   "decisions": [
+    {"date": "2026-10-16", "text": "Không merge R9; test mtime đỏ sau checkout, og.svg/favicon lệch hướng thiết kế; (b) dev-05, dev-06; (c) bỏ tiêu chí mtime, thay hash nguồn trong PNG"},
     {"date": "2026-10-16", "text": "Merge R12; E4 đạt; chấp nhận (a) nới test số section == 4 thành >= 4; lazy-landing 12/17"},
     {"date": "2026-10-16", "text": "Merge R8; D4, D5 đạt; H-03..05 không có task trong plan R8, chuyển R10 (plan cần thêm task); lazy-landing 11/17"},
     {"date": "2026-10-16", "text": "Merge R7; D6 đạt, đóng H-02; ghi H-05 (CSS reduced-motion) cho R8; lazy-landing 9/17"},

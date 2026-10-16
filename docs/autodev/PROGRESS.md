@@ -289,5 +289,50 @@ L3: `uv run pytest -q` lần đầu 172 passed, 1 failed (`test_tools.py::test_m
 - Chấp nhận (a) dev-01 nới 3 test cũ từ `== 4` section sang `>= 4` (thêm section là đúng phạm vi; số assert giữ nguyên).
 - Không đóng H nào (R12 không nhận H). Không có đề xuất (c).
 
+## R9: SEO và chia sẻ — **chưa đạt, không merge** 2026-10-16 (PR #30 mở)
+
+Kiểm trên nhánh `milestone/R9` (`17f1ecb`), supervisor tự chạy (chế độ B, `--review-only`):
+`verify.py` → **"[test] 1 lỗi mới so với baseline: `tests/test_site_seo.py::test_og_png_size_and_fresh`"**; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (thứ tự ghi file trên runner may mắn).
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | **chưa đạt**: 1 lỗi mới (`test_og_png_size_and_fresh`) |
+| 2 | `test_site_seo.py` 0 failed, ≥ 6 test (E1) | `uv run pytest -q tests/test_site_seo.py` | **chưa đạt**: 1 failed, 9 passed |
+| 3 | `test_site_policy.py`, `test_site.py`, `test_site_a11y.py` xanh | `uv run pytest -q tests/test_site_policy.py tests/test_site.py tests/test_site_a11y.py` | 34 passed, đạt |
+
+Nguyên nhân 1–2: test so `mtime` (`og.png` ≥ `og.svg`). Sau checkout, `stat` hai file cùng giây; 3/3 lần `git clone` mới: `og.svg` mới hơn `og.png` ~0,24 ms → đỏ. Worker xanh chỉ vì ảnh vừa chụp trên máy nó.
+
+Ngoài tiêu chí số, "Quy ước chung" (ảnh chia sẻ, favicon) **chưa đạt** (supervisor nhìn `site/og.png`, đọc `og.svg`, `favicon.svg`): gradient chàm `#1e1b4b → #4338ca`, `Helvetica`, biểu tượng dấu tích, câu "Việc cần làm, gọn trong một dòng lệnh." (giới thiệu CLI todo, không phải studio); không màu token, không Baloo 2, không minh hoạ ghế/ly. Favicon là chữ "L" trên `#1f2937`, không lấy từ hero. Reviewer dev-02 "nhìn `og.png`" mà không đối chiếu hướng thiết kế.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 (+2 task (b)) | +2 |
+| Phút worker | ~10–20 | 41 | B3 2,04 |
+| USD (worker + supervisor) | ~1,8 | 1,45 + ~1,14 | B3 ~1,44 |
+| Số vòng review | 4–6 | 5 | trong khoảng |
+
+Phút lệch > 2 lần: phiên worker bị ngắt sau dev-01 và chạy tiếp (11:08 → 12:55), dev-02 chụp Chrome, dev-04 thêm vòng 2.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. `og:image` sai cỡ/trống | `png_size` = (1200, 630), 320 KB; chặn được cỡ, **không** chặn sai nội dung (xem trên) |
+| 2. JSON-LD sai cú pháp | `test_jsonld_professional_service` (`json.loads`, `@context`, `@type`, `url`, `email`), xanh |
+| 3. URL tuyệt đối lệch | `test_absolute_urls_start_with_site_url`, `test_robots_and_sitemap_use_site_url`, JSON-LD `url` = `SITE_URL`; xanh |
+| 4. `og.png` cũ so với `og.svg` | test `mtime`: **chính nó hỏng** sau checkout; thay bằng hash nguồn (dev-06) |
+
+### Kiểm biên độc lập
+- Clone mới 3 lần (`git clone --no-local -b milestone/R9`): `og.png` mtime < `og.svg` cả 3 → test đỏ.
+- Miễn trừ canonical trong `tests/_policy.py`: `check('<link rel="stylesheet canonical" href="https://evil.com/x.css">')` → bị chặn (đúng); `rel=" Canonical "` + domain lạ → miễn (chấp nhận được: canonical không tải tài nguyên).
+- `test_site_seo.py` chạy riêng: không lỗi import (vá `sys.path` của dev-04 có tác dụng).
+
+### Quyết định
+- **Không merge PR #30.** Tiêu chí cấp mốc 1, 2 chưa đạt; ảnh chia sẻ, favicon lệch "Quy ước chung".
+- (b) thêm `dev-05` (vẽ lại `og.svg`/`favicon.svg` theo token, Baloo 2, minh hoạ hero; chụp lại `og.png`) và `dev-06` (bỏ `mtime`, chunk `tEXt` `source-sha256`; `pythonpath` thay `sys.path.insert`) vào `plan/R9.md` trên nhánh `milestone/R9` (`90fd3f7`).
+- (c) tự quyết: chấp nhận đề xuất của worker, bỏ tiêu chí "`og.png` mới hơn `og.svg`" (dev-02 TC1, pre-mortem 4); thay bằng kiểm hash nguồn (dev-06).
+- Chấp nhận (a) dev-01 miễn trừ hẹp `rel="canonical"` trong `_policy.py`.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->

@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R12 (supervisor)
+Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R9 (supervisor, không merge)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -14,6 +14,7 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R12 (supervisor)
 | R7 | merged | PR #24 (`1a66df0`); 3 task, mỗi task 1 vòng; 148 test pass; D6 đạt; đóng H-02 |
 | R8 | merged | PR #26 (`8a5a9ba`); 4 task, mỗi task 1 vòng; 165 test pass; D4, D5 đạt; H-03..05 không có task, chuyển R10 |
 | R12 | merged | PR #28 (`b7e2529`); 3 task, mỗi task 1 vòng; 173 test pass; E4 đạt |
+| R9 | chưa đạt | PR #30 mở; 4 task, 5 vòng; test `mtime` đỏ sau checkout; ảnh chia sẻ/favicon lệch hướng thiết kế; thêm (b) dev-05, dev-06 |
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
@@ -79,6 +80,7 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R12 (supervisor)
 - R8: kiểm `outline` lọt `outline:0px` và chưa gắn theo selector; `contrast.py` ném ValueError với màu tên (`red`), bỏ qua alpha chữ.
 
 ## Quyết định gần đây
+- 2026-10-16: không merge R9 (PR #30). Tiêu chí 1, 2 đỏ (test `mtime`); `og.svg`/favicon lệch "Quy ước chung". (b) dev-05, dev-06; (c) bỏ tiêu chí `mtime`, thay hash nguồn trong PNG.
 - 2026-10-16: merge R12 (PR #28). E4 đạt; chấp nhận (a) nới test số section `== 4` → `>= 4`.
 - 2026-10-16: merge R8 (PR #26). D4, D5 đạt; H-03..05 không có task trong plan R8, chuyển R10 (plan R10 cần thêm task).
 - 2026-10-16: merge R7 (PR #24). D6 đạt, đóng H-02; ghi H-05 cho R8.
