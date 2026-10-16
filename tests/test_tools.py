@@ -220,3 +220,69 @@ def test_shot_prefix_and_default_pages(tmp_path):
     (tmp_path / "en").mkdir()
     (tmp_path / "en" / "index.html").write_text("x")
     assert pm2.default_pages(tmp_path) == ["/index.html", "/en/index.html"]
+
+
+# --- lh_check.py ---
+import json as _json
+
+from scripts import lh_check as lh
+
+_LH_SAMPLE = {
+    "categories": {
+        "performance": {"score": 0.93},
+        "accessibility": {"score": 0.97},
+        "best-practices": {"score": 1},
+        "seo": {"score": 0.96},
+    },
+    "audits": {"total-byte-weight": {"numericValue": 123456}},
+}
+
+
+def _lh_file(tmp_path, perf=0.93, weight=123456, name="lh.json"):
+    d = _json.loads(_json.dumps(_LH_SAMPLE))
+    d["categories"]["performance"]["score"] = perf
+    d["audits"]["total-byte-weight"]["numericValue"] = weight
+    p = tmp_path / name
+    p.write_text(_json.dumps(d))
+    return p
+
+
+def test_lh_build_command():
+    cmd = lh.build_command("http://127.0.0.1:1/", "/tmp/x.json")
+    assert "lighthouse@12" in cmd
+    assert "--form-factor=mobile" in cmd
+    assert "--output=json" in cmd
+    assert "--output-path=/tmp/x.json" in cmd
+    assert "http://127.0.0.1:1/" in cmd
+
+
+def test_lh_read_result_and_median(tmp_path):
+    r = lh.read_result(_lh_file(tmp_path))
+    assert r == {"performance": 93, "accessibility": 97, "best-practices": 100,
+                 "seo": 96, "total-byte-weight": 123456}
+    assert lh.median([3, 1, 2]) == 2
+    assert lh.median([5, 1, 100]) == 5
+    runs = [lh.read_result(_lh_file(tmp_path, p, name=f"{p}.json")) for p in (0.5, 0.95, 0.91)]
+    assert lh.aggregate(runs)["performance"] == 91
+
+
+def _runner_for(tmp_path, perf, weight=123456):
+    p = _lh_file(tmp_path, perf, weight)
+    return lambda url, npx, env: lh.read_result(p)
+
+
+def test_lh_main_exit_codes_and_repeatable(tmp_path, capsys):
+    site = tmp_path / "s"
+    site.mkdir()
+    (site / "index.html").write_text("x")
+    argv = ["--site", str(site)]
+    assert lh.main(argv, runner=_runner_for(tmp_path, 0.95)) == 0
+    assert lh.main(argv, runner=_runner_for(tmp_path, 0.80)) == 1
+    assert lh.main(argv, runner=_runner_for(tmp_path, 0.95, weight=400 * 1024)) == 1
+    assert lh.main(argv, runner=_runner_for(tmp_path, 0.95)) == 0  # không rò trạng thái
+    assert "median" in capsys.readouterr().out
+
+
+def test_lh_missing_npx_exit_2(monkeypatch, tmp_path):
+    monkeypatch.setattr(lh.shutil, "which", lambda n: None)
+    assert lh.main(["--site", str(tmp_path)]) == 2
