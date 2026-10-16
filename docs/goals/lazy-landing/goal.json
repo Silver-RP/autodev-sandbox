@@ -34,7 +34,7 @@
     {"id": "R7", "title": "Chuyển động (GSAP qua CDN, SRI) + một tương tác, an toàn khi không JS", "depends_on": ["R6"], "metrics": ["D6"],
      "est_usd": 2.3, "est_hours": 0.3, "status": "done", "plan_file": "plan/R7.md"},
     {"id": "R8", "title": "Chế độ tối + truy cập (tương phản AA, focus, bàn phím, không tràn 360)", "depends_on": ["R6"], "metrics": ["D4", "D5"],
-     "est_usd": 2.8, "est_hours": 0.3, "status": "planned"},
+     "est_usd": 2.8, "est_hours": 0.3, "status": "done", "plan_file": "plan/R8.md"},
     {"id": "R12", "title": "Mở rộng nội dung: FAQ, 3 dự án ví dụ", "depends_on": ["R6"], "metrics": ["E4"],
      "est_usd": 2.3, "est_hours": 0.2, "status": "planned"},
     {"id": "R9", "title": "SEO và chia sẻ: OG/Twitter, og.png 1200x630, favicon, robots, sitemap, JSON-LD", "depends_on": ["R6", "R12"], "metrics": ["E1"],
