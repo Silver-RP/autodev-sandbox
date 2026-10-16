@@ -2,13 +2,13 @@
   "updated": "2026-10-16",
   "goals": [
     {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 100, "metrics": ["A1", "A2", "A3", "A4", "A5"]},
-    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 82, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3", "D4", "D5", "D6", "E4", "E1", "E5"]}
+    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 88, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3", "D4", "D5", "D6", "E4", "E1", "E5", "E2"]}
   ],
   "open_gaps": [
-    {"id": "H-03", "severity": "medium", "text": "Ở 360 dấu chấm dẫn menu và nút header bị ẩn, lệch wireframe 360 của doc", "milestone": "R10"},
-    {"id": "H-04", "severity": "low", "text": "Test font h1 chỉ đọc font-family khai báo, chưa chứng minh Baloo 2 đã tải", "milestone": "R10"},
-    {"id": "H-05", "severity": "low", "text": "style.css chưa có @media (prefers-reduced-motion: reduce) như quy ước plan R7", "milestone": "R10"},
-    {"id": "H-06", "severity": "low", "text": "tests/_policy.py miễn trừ mọi link rel=alternate có hreflang, kể cả href ngoài SITE_URL (https://evil.com/x.css lọt)", "milestone": "R10"}
+    {"id": "H-03", "severity": "medium", "text": "Ở 360 dấu chấm dẫn menu và nút header bị ẩn, lệch wireframe 360 của doc", "milestone": "R14"},
+    {"id": "H-04", "severity": "low", "text": "Test font h1 chỉ đọc font-family khai báo, chưa chứng minh Baloo 2 đã tải", "milestone": "R14"},
+    {"id": "H-05", "severity": "low", "text": "style.css chưa có @media (prefers-reduced-motion: reduce) như quy ước plan R7", "milestone": "R14"},
+    {"id": "H-06", "severity": "low", "text": "tests/_policy.py miễn trừ mọi link rel=alternate có hreflang, kể cả href ngoài SITE_URL (https://evil.com/x.css lọt)", "milestone": "R14"}
   ],
   "milestones": {
     "runs": [
@@ -22,12 +22,14 @@
       {"id": "R8", "status": "merged", "pr": 26, "merge_commit": "8a5a9ba"},
       {"id": "R12", "status": "merged", "pr": 28, "merge_commit": "b7e2529"},
       {"id": "R9", "status": "merged", "pr": 30, "merge_commit": "91c071a"},
-      {"id": "R13", "status": "merged", "pr": 33, "merge_commit": "68112ec"}
+      {"id": "R13", "status": "merged", "pr": 33, "merge_commit": "68112ec"},
+      {"id": "R10", "status": "merged", "pr": 35, "merge_commit": "576fd3d"}
     ],
     "plugin": []
   },
-  "outlook": ["R10", "R11"],
+  "outlook": ["R14", "R11"],
   "decisions": [
+    {"date": "2026-10-16", "text": "Merge R10; E2 đạt (perf trung vị 100, 173 KB); (c) H-03..06 không có task trong plan R10, chuyển sang mốc mới R14 (cần plan); lazy-landing 15/17"},
     {"date": "2026-10-16", "text": "Merge R13; E5 đạt; ghi H-06 (miễn trừ alternate hreflang quá rộng) cho R10; lazy-landing 14/17"},
     {"date": "2026-10-16", "text": "Merge R9 lần 2 sau (b) dev-05, dev-06; E1 đạt; og.png khớp hash og.svg; lazy-landing 13/17"},
     {"date": "2026-10-16", "text": "Không merge R9; test mtime đỏ sau checkout, og.svg/favicon lệch hướng thiết kế; (b) dev-05, dev-06; (c) bỏ tiêu chí mtime, thay hash nguồn trong PNG"},
