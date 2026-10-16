@@ -33,4 +33,7 @@
 - dev-02 DONE (1 vòng, commit cbc4d12): `shouldAnimate()` (đọc `prefers-reduced-motion`), một `gsap.timeline` hero (`#hero h1`, `.hero-hinh`, 0,9 giây), `window.lazySite.heroTimeline`; 5 test mới (tổng 13 trong `test_site_motion.py`). Test "sau 2 giây" đẩy đồng hồ gsap +2s vì `--virtual-time-budget` làm rAF ít khung hình. Ghi chú reviewer (không chặn): thiếu assert trạng thái đầu (opacity < 1 ngay sau khi tạo timeline); test regex trên mã nguồn gắn chặt cách viết.
 - dev-03 DONE (1 vòng, commit 0f4a993): `<button type="button" id="luoi-nut" aria-pressed hidden>` trong hero, `setupToggle()` (bỏ `hidden`, đổi `aria-pressed` và chữ; ghế dịch vào, ly nhấc lên; giảm chuyển động thì `gsap.set`), style và `:focus-visible`, `tests/test_site_button.py`. 148 test pass. Ghi chú reviewer (không chặn): ghế chỉ dịch 16px, khó thấy ở ảnh tĩnh; hai nút `.nut` ở hero 1280 gần như sát nhau (nên thêm gap). `test_tools.py` chập chờn một lần khi developer chạy (timeout / `test_four_pngs_with_exact_widths`), reviewer chạy lại 4 lần không tái hiện.
 
+## R8
+- dev-01 DONE (1 vòng, commit 1495e89): `scripts/contrast.py` (WCAG 2.x, nền tổ tiên đặc, chữ lớn 3:1, sáng + tối), `page_metrics.py` thêm `font_size`/`font_weight`/`selector` vào `colors`, 5 test mới trong `test_tools.py`. 154 test pass. Ghi chú reviewer (không chặn): alpha của màu chữ bị bỏ qua; màu tên ném ValueError. Chạy mặc định chỉ width 1280.
+
 ## Đề xuất chờ duyệt
