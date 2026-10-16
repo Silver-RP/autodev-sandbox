@@ -54,6 +54,7 @@
 
 ## R13
 - dev-01 DONE (1 vòng, commit 62bbfa3): `site/en/index.html` (6 section, dùng chung `../style.css`, `../main.js`), `tests/test_site_i18n.py` (6 test); `main.js` đọc nhãn nút từ `data-on`/`data-off` (rơi về chữ Việt khi thiếu). 195 test pass. Ghi chú reviewer (không chặn): test bản Anh chỉ bắt chữ Việt có dấu; bản Anh có SVG riêng; hai test nhãn `main.js` trùng ý.
+- dev-02 DONE (1 vòng, commit 2c80e57): `hreflang` vi/en/x-default hai chiều, URL tuyệt đối; canonical riêng; `og:locale:alternate` ở bản Việt; `sitemap.xml` hai URL; 4 test mới ở `test_site_i18n.py`. `tests/_policy.py` miễn trừ thêm `link rel=alternate` có `hreflang` (reviewer chấp nhận; có thể thu hẹp chỉ cho href thuộc `SITE_URL`). 199 test pass. Hai lần chạy `verify.py` liền bị lỗi Chrome chập chờn khác nhau (`test_hero_settled_after_2s`, `test_click_toggles_aria_pressed`), chạy riêng và cả bộ đều xanh.
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
