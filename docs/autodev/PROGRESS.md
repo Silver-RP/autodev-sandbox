@@ -206,5 +206,50 @@ Phút lệch dưới 2 lần; nguyên nhân chính: Chrome headless không chạ
 - H-05 (thấp, R8): thêm `@media (prefers-reduced-motion: reduce)` vào `style.css` và test. Supervisor phát hiện sau khi đã merge; không chặn vì CSS hiện không có chuyển động nào.
 - Không có đề xuất (c).
 
+## R8: Chế độ tối và truy cập — merged 2026-10-16 (PR #26, `8a5a9ba`)
+
+Kiểm trên nhánh `milestone/R8` (`7e39a4e`), supervisor tự chạy (chế độ B, `--review-only`):
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". Main không có check bắt buộc.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | sạch |
+| 2 | `contrast.py` exit 0 (D5) | `uv run python scripts/contrast.py`; thêm `--widths 360,1280` | "OK: mọi cặp màu đạt WCAG AA", exit 0 cả hai lệnh |
+| 3 | `page_metrics.py --check-overflow` exit 0, 4 tổ hợp (D4) | `uv run python scripts/page_metrics.py --check-overflow` | exit 0; 4 dòng JSON (360/1280 × light/dark), `innerWidth` đúng, `overflow: []` cả 4 |
+| 4 | `test_site_a11y.py` + `test_tools.py` 0 failed | `uv run pytest -q tests/test_site_a11y.py tests/test_tools.py` | 22 passed |
+| 5 | D3, D6, L1, L2 xanh; nhìn 4 ảnh | `uv run pytest -q tests/test_site_visual.py tests/test_site_motion.py tests/test_site.py tests/test_site_policy.py tests/test_site_dark.py`; `scripts/screenshot.py` | 54 passed; supervisor xem 4 ảnh: tối là bảng riêng (nền xanh mực `#1B2A3A`, chữ `#E8EEF2`, nút san hô/xanh trời chữ tối), không phải "gần đen + accent axit"; tiếng Việt đúng dấu; không tràn. Ảnh 1280 có hero mờ do intro dở dưới `--virtual-time-budget` (đã biết); bản sao bỏ `<script>` chụp 1280 tối: ghế, ly, bàn rõ, đủ màu |
+
+L3: `uv run pytest -q` → 165 passed (trong `verify.py`). D4, D5 đạt.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 | 0 |
+| Phút worker | ~15–25 | 43 | B3 1,73 |
+| USD (worker + supervisor) | ~2,8 | 1,31 + ~1,09 | B3 ~0,86 |
+| Số vòng review | 4–6 | 4 | trong khoảng |
+
+Phút lệch dưới 2 lần; nguyên nhân: Chrome headless (mỗi lần đo 4 tổ hợp) và 1 lần verify bị chặn ở dev-02 (`pytest.skip` mới).
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Đo trên token chứ không trên trang thật | `contrast.py` lấy `getComputedStyle` qua `page_metrics.py` (HTTP); `test_contrast_low_contrast_page_fails`; supervisor bơm `--color-bui-duong: #3A4A5A` (tối) vào bản sao → bảng trượt `p.mo-ta`, `small` 1,60 < 4,5, exit 1 |
+| 2. Nền trong suốt coi là trắng | `test_contrast_transparent_block_uses_ancestor_bg`; supervisor bơm `.mo-ta {background: transparent; color: #DDD}` (sáng) → trượt 1,24 trên nền `rgb(242,245,240)` của cha |
+| 3. `outline: none` không thay thế | `test_khong_go_outline_neu_thieu_focus_visible`, `test_bo_kiem_outline_bat_loi`, `test_focus_visible_cho_link_va_nut`. Còn hở: regex lọt `outline:0px`, chưa gắn theo selector (reviewer ghi) |
+| 4. Tối chỉ đổi nền, SVG vẫn đen | `test_svg_has_no_hardcoded_hex_paint`, `test_dark_hex_equals_doc_dark_palette`; supervisor xem ảnh tối 360 và 1280 (không JS) |
+
+### Kiểm biên độc lập
+- Lỗi chỉ ở chế độ tối (bản sao, đổi một token tối): `contrast.py` mặc định bắt được, exit 1, ở cả 360 và 1280 với `--widths`; `--modes light` vẫn exit 0 (đúng, lỗi chỉ ở tối).
+- Chữ sáng trong khối trong suốt trên nền sáng: trượt đúng (xem pre-mortem 2).
+- `page_metrics.py` gộp khối chữ theo bộ (màu, nền, cỡ, đậm): mọi tổ hợp khác nhau đều được đo, không chỉ phần tử đầu. Không đo trạng thái `:hover`/`:focus` (nợ).
+
+### Quyết định
+- Merge: 5/5 tiêu chí cấp mốc có bằng chứng tự chạy; D4, D5 đạt. `lazy-landing` 11/17 ≈ 65%.
+- H-03, H-04, H-05 **chưa đóng**: plan R8 (duyệt ở PR #17, trước khi giao các H này cho R8) không có task cho chúng. Không chặn merge vì không thuộc tiêu chí plan. Chuyển mốc nhận sang R10 (mốc đó cũng xem lại font và CSS; R12 chạy ngay sau R8 nên không kịp thêm task). Plan R10 cần thêm task (b) cho ba H này trước khi chạy; PR hồ sơ chỉ được sửa `docs/autodev/**` nên supervisor không sửa plan ở đây (xem HANDOFF).
+- Bài học: giao H-xx cho một mốc mà plan mốc đó đã duyệt thì phải thêm task vào plan ngay lúc giao, nếu không mốc sẽ chạy hết mà không đóng H nào.
+- Không có đề xuất (c).
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->

@@ -2,12 +2,12 @@
   "updated": "2026-10-16",
   "goals": [
     {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 100, "metrics": ["A1", "A2", "A3", "A4", "A5"]},
-    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 53, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3", "D6"]}
+    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 65, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3", "D4", "D5", "D6"]}
   ],
   "open_gaps": [
-    {"id": "H-03", "severity": "medium", "text": "Ở 360 dấu chấm dẫn menu và nút header bị ẩn, lệch wireframe 360 của doc", "milestone": "R8"},
-    {"id": "H-04", "severity": "low", "text": "Test font h1 chỉ đọc font-family khai báo, chưa chứng minh Baloo 2 đã tải", "milestone": "R8"},
-    {"id": "H-05", "severity": "low", "text": "style.css chưa có @media (prefers-reduced-motion: reduce) như quy ước plan R7", "milestone": "R8"}
+    {"id": "H-03", "severity": "medium", "text": "Ở 360 dấu chấm dẫn menu và nút header bị ẩn, lệch wireframe 360 của doc", "milestone": "R10"},
+    {"id": "H-04", "severity": "low", "text": "Test font h1 chỉ đọc font-family khai báo, chưa chứng minh Baloo 2 đã tải", "milestone": "R10"},
+    {"id": "H-05", "severity": "low", "text": "style.css chưa có @media (prefers-reduced-motion: reduce) như quy ước plan R7", "milestone": "R10"}
   ],
   "milestones": {
     "runs": [
@@ -17,12 +17,14 @@
       {"id": "R4", "status": "merged", "pr": 20, "merge_commit": "34b1066"},
       {"id": "R5", "status": "cut"},
       {"id": "R6", "status": "merged", "pr": 22, "merge_commit": "ecd64d0"},
-      {"id": "R7", "status": "merged", "pr": 24, "merge_commit": "1a66df0"}
+      {"id": "R7", "status": "merged", "pr": 24, "merge_commit": "1a66df0"},
+      {"id": "R8", "status": "merged", "pr": 26, "merge_commit": "8a5a9ba"}
     ],
     "plugin": []
   },
-  "outlook": ["R8", "R12", "R9", "R13", "R10", "R11"],
+  "outlook": ["R12", "R9", "R13", "R10", "R11"],
   "decisions": [
+    {"date": "2026-10-16", "text": "Merge R8; D4, D5 đạt; H-03..05 không có task trong plan R8, chuyển R10 (plan cần thêm task); lazy-landing 11/17"},
     {"date": "2026-10-16", "text": "Merge R7; D6 đạt, đóng H-02; ghi H-05 (CSS reduced-motion) cho R8; lazy-landing 9/17"},
     {"date": "2026-10-16", "text": "Merge R6; không duyệt sửa doc để hợp thức ẩn nút header 360; ghi H-03, H-04 cho R8; lazy-landing 8/17"},
     {"date": "2026-10-16", "text": "Merge R4; chấp nhận đổi tên test_balanced_tags (dev-04); ghi H-02 cho R7; lazy-landing 6/17"},
