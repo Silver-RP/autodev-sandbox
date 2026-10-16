@@ -39,4 +39,7 @@
 - dev-03 DONE (1 vòng, commit de5c430, 3495b6b): `a:focus-visible, button:focus-visible` trong `style.css`; `tests/test_site_a11y.py` (6 test, có ca âm cho outline, svg, heading, tên link/nút). HTML đã đạt sẵn nên không sửa. 165 test pass. Ghi chú reviewer (không chặn): regex outline lọt `outline:0px`; kiểm `:focus-visible` chưa gắn từng selector.
 - dev-04 DONE (1 vòng, không có commit mã): rà/đo, `page_metrics --check-overflow` và `contrast.py` (360, 1280) đều exit 0 sau dev-02/03; chụp 4 ảnh, reviewer nhận xét hướng đúng, tối có thiết kế riêng, dấu tiếng Việt đúng. 165 test pass. Điều chỉnh (a): diff rỗng không coi là vòng FAIL vì task chỉ đo/rà, mọi tiêu chí là số đo trên HEAD. Ghi chú reviewer (không chặn): ảnh chỉ 800px đầu; ghế 360 sáng nhạt hơn 1280.
 
+## R12
+- dev-01 DONE (1 vòng, commit 79f01b5): `#hoi-dap` 4 `<details>` (giá, thời gian, sửa đổi, tên miền), style summary có `:focus-visible`, `tests/test_site_content.py` (4 test, có ca âm). Điều chỉnh (a): ba test cũ (`test_site.py`, `test_site_motion.py`, `test_site_visual.py`) đổi số section cứng `== 4` thành `>= 4` / `[1] * số section` vì R12 thêm section (cờ `allow-test-change`). 169 test pass. Ghi chú reviewer (không chặn): regex "không ẩn summary" không bắt rule lồng trong `@media`; câu trả lời giá nhắc "Gói Cà Phê/Trà Sữa", dev-03 đối chiếu với trang. `test_dark_mode_applied_only_in_dark[1280]` đỏ một lần rồi xanh khi chạy lại (nợ đã biết).
+
 ## Đề xuất chờ duyệt
