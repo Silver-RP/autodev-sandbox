@@ -334,5 +334,46 @@ Phút lệch > 2 lần: phiên worker bị ngắt sau dev-01 và chạy tiếp (
 - (c) tự quyết: chấp nhận đề xuất của worker, bỏ tiêu chí "`og.png` mới hơn `og.svg`" (dev-02 TC1, pre-mortem 4); thay bằng kiểm hash nguồn (dev-06).
 - Chấp nhận (a) dev-01 miễn trừ hẹp `rel="canonical"` trong `_policy.py`.
 
+## R9 lần 2 — **đạt, merged** 2026-10-16 (PR #30, `91c071a`)
+
+Worker làm (b) dev-05, dev-06 (mỗi task 1 vòng). Supervisor kiểm trên `milestone/R9` (`7a28b7e`), chế độ B `--review-only`:
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch"; `uv run pytest -q` → 189 passed; ruff sạch. CI PR: 2 job `test` pass (main không có check bắt buộc).
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` (worktree supervisor; clone mới + `touch site/og.svg`: test SEO vẫn xanh) | sạch, đạt |
+| 2 | `test_site_seo.py` 0 failed, ≥ 6 (E1) | `uv run pytest -q tests/test_site_seo.py` | 12 passed, đạt |
+| 3 | `test_site_policy.py`, `test_site.py`, `test_site_a11y.py` xanh | `uv run pytest -q tests/test_site_policy.py tests/test_site.py tests/test_site_a11y.py` | 34 passed, đạt |
+
+"Quy ước chung" (ảnh, favicon): supervisor nhìn `site/og.png`: nền `#F2F5F0`, tên "Lười Code Studio" font Baloo 2, câu chào = `<h1>` hero, hai ghế xanh/đỏ + ly trà đá; hex trong `og.svg`, `favicon.svg` đều thuộc 6 token sáng của `style.css`; không còn Helvetica, "dòng lệnh", `#4338ca`. Favicon là ly trà đá (không `<text>`). Đạt.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 6 (4 + 2 task (b)) | +2 |
+| Phút worker | ~10–20 | 64 (2 lượt) | B3 3,19 |
+| USD (worker + supervisor) | ~1,8 | 3,44 + ~1 (phiên này, tạm) | B3 ~1,91+ |
+| Số vòng review | 4–6 | 7 | +1 |
+
+Lệch > 2 lần (phút): lượt 1 ảnh chia sẻ sai hướng và test `mtime` hỏng → phải chạy lượt 2 cho dev-05, dev-06; dev-02/05 chụp Chrome.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. `og:image` sai cỡ/trống | `png_size` (1200, 630), > 5 KB; nội dung: test màu token, Baloo 2, câu chào từ hero (`test_site_share.py`) + supervisor nhìn ảnh |
+| 2. JSON-LD sai cú pháp | `test_jsonld_professional_service`, xanh |
+| 3. URL tuyệt đối lệch | `test_absolute_urls_start_with_site_url`, `test_robots_and_sitemap_use_site_url`, xanh |
+| 4. `og.png` cũ so với `og.svg` | chunk `source-sha256` (`test_og_png_size_and_matches_source`, `test_og_png_stale_when_svg_changes`, `test_png_without_text_chunk_is_stale`) |
+
+### Kiểm biên độc lập
+- `git clone --no-local -b milestone/R9` mới: `test_site_seo.py` + `test_site_share.py` 16 passed (lượt 1 đỏ 3/3 clone).
+- `touch site/og.svg` trong clone: 12 passed (không còn phụ thuộc `mtime`).
+- Thêm 1 byte vào `og.svg`: `test_og_png_size_and_matches_source` đỏ (đúng lúc); khôi phục thì xanh.
+
+### Quyết định
+- **Merge PR #30** (merge commit, giữ nhánh). E1 đạt → `lazy-landing` 13/17 ≈ 76%.
+- Non-blocking (worker tự ghi, chuyển nợ): `og.svg` đứng riêng cần `@import` font; `png_add_text` không atomic; vài test còn `sys.path.insert`; chưa có test bảo vệ miễn trừ canonical.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
