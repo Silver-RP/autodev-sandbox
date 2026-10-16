@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R10 (supervisor, merged PR #35)
+Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -20,7 +20,7 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R10 (supervisor, merged PR #3
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 15/17 ≈ **88%**.
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 15/17 ≈ **88%** theo lệnh đo; audit 2026-10-16 ước thực tế ≈ 80% (H-07..H-12, H-14).
 
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
@@ -79,6 +79,20 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R10 (supervisor, merged PR #3
 | H-04 | thấp | Test font `<h1>` chỉ đọc `font-family` khai báo; cần `document.fonts.check` để chứng minh Baloo 2 đã tải | R14 (cần plan) |
 | H-05 | thấp | `style.css` chưa có `@media (prefers-reduced-motion: reduce)` như quy ước plan R7 (giảm chuyển động hiện chỉ ở `main.js`) | R14 (cần plan) |
 | H-06 | thấp | `_policy.py` miễn trừ mọi `<link rel="alternate" hreflang>` kể cả `href` ngoài `SITE_URL` (`https://evil.com/x.css` lọt) | R14 (cần plan) |
+| H-07 | cao | `screenshot.shoot()` bỏ qua lỗi Chrome khi PNG cũ còn: `og.png` cũ được đóng hash mới, ảnh `.autodev/shots/` cũ lọt | R14 |
+| H-08 | cao | Hero thiếu laptop + người ngủ gật; chuyển động, tương tác khác spec; D7 chưa duyệt | D7 (người) → R14 |
+| H-09 | vừa | Lỗ L2: `<base>`, `/\`, `on*` (R10 thêm `onload` inline), `javascript:`, `object`/`svg image`, SRI rỗng; không quét `.svg` | R14 |
+| H-10 | vừa | `lh_check.py`: không timeout; plan rỗng báo OK; `score: null` crash exit 1; NaN lọt | R14 |
+| H-11 | vừa | Test a11y, nội dung, hero, nút, SVG hex, SRI, og:image chỉ đọc bản Việt | R14 |
+| H-12 | vừa | D4, D5, E2, L5 không trong verify/smoke/CI; `contrast.py` mặc định 1280, bỏ `::before` | người (config) + R14 |
+| H-13 | vừa | `todo done <id không có>` vẫn ghi file, không báo lỗi | mốc todo |
+| H-14 | vừa | URL `example.github.io` và email `hello@example.com` giữ chỗ bị test khoá; email không hiện thành chữ; `robots.txt` dưới đường con vô hiệu | R11 |
+| H-15 | thấp | `page_metrics`/`contrast` lỗi với `--pages /en/`; lỗi công cụ trùng exit 1 | R14 |
+| H-16 | thấp | `screenshot.py --url` < 1000 cần `__frame__` nội bộ, sai dưới đường con | R11 |
+| H-17 | thấp | `test_hero_settled_after_2s` chập chờn khi chạy cả bộ (`KeyError: 'should'`) | R14 |
+| H-18 | thấp | `todo` store: ghi song song mất cập nhật; JSON hỏng traceback; symlink bị thay | mốc todo |
+| H-19 | thấp | `due-overdue/goal.json` còn `planned`; R14 chưa có trong `goal.json`; `criteria.md` nền cũ | người |
+| H-20 | thấp | Nút hero dịch ly nhưng đá, ống hút đứng yên | R14 |
 
 ## Nợ không chặn
 - Tham số `today` của `store.overdue` che `store.today()`.
@@ -93,6 +107,7 @@ Cập nhật: 2026-10-16 · Nguồn: duyệt mốc R10 (supervisor, merged PR #3
 - R13: bản Anh chưa có JSON-LD, `og:image` dùng chung `og.png` chữ Việt; test chữ Việt chỉ bắt chữ có dấu; ở 360 link "Tiếng Việt" rớt dòng dưới logo.
 
 ## Quyết định gần đây
+- 2026-10-16: audit R4–R10 (`docs/audits/2026-10-16.md`): 14 lỗ mới H-07..H-20 (2 cao), 0 đóng; độ khớp thực tế ≈ 80% (đẹp đúng hướng ~65%, kỹ thuật ~85%, phát hành ~60%); đề xuất leader duyệt D7 trước R14/R11.
 - 2026-10-16: merge R10 (PR #35). E2 đạt; (c) H-03..06 chuyển sang mốc mới R14 (cần `/autodev:plan-next R14`).
 - 2026-10-16: merge R13 (PR #33). E5 đạt; ghi H-06 cho R10.
 - 2026-10-16: merge R9 lần 2 (PR #30) sau dev-05, dev-06. E1 đạt; ảnh chia sẻ, favicon đúng hướng.
