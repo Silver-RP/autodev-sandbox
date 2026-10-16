@@ -53,4 +53,4 @@
 - dev-06 DONE (1 vòng, commit 5bdd979): `screenshot.py` ghi chunk tEXt `source-sha256` vào `og.png` (`og_png_current`); test so hash thay `mtime`, thêm test bắt `og.svg` bị sửa và PNG thiếu chunk; `pythonpath = ["."]` trong `pyproject.toml` thay `sys.path.insert` ở `test_site_seo.py` (chạy riêng 12 passed). `touch site/og.svg` rồi verify vẫn sạch. Đã đóng (c) dev-02 về mtime. Ghi chú reviewer (không chặn): các test khác còn `sys.path.insert`; `png_add_text` không atomic.
 
 ## Đề xuất chờ duyệt
-- (c) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime, dễ lệch sau git checkout/CI. Đề xuất đổi sang kiểm nội dung (vd. ảnh không trống hoặc hash nguồn nhúng trong PNG).
+- (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
