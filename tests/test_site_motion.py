@@ -178,3 +178,89 @@ def test_with_cdn_gsap_present_and_sections_visible(tmp_path):
         pytest.skip("CDN không tải được")
     assert d["js"] is True
     assert d["opacity"] == [1, 1, 1, 1]
+
+
+# --- dev-02: timeline lúc tải trang ---
+
+JS = (SITE / "main.js").read_text(encoding="utf-8")
+
+# Chrome --virtual-time-budget gần như không phát khung hình rAF nên ticker của gsap
+# gần như đứng yên (đã đo: sau 2900ms tiến độ mới ~0,36). Probe vì vậy đẩy đồng hồ
+# gsap thêm 2 giây (globalTimeline.time) rồi mới đo style thật mà gsap đã ghi.
+HERO_PROBE = """<pre id="out"></pre><script>
+setTimeout(function () {
+  var r = {gsap: !!window.gsap, tl: null, items: {}};
+  if (window.gsap) gsap.globalTimeline.time(gsap.globalTimeline.time() + 2);
+  if (window.lazySite) {
+    r.should = window.lazySite.shouldAnimate();
+    r.tl = !!window.lazySite.heroTimeline;
+    if (window.lazySite.heroTimeline) { r.dur = window.lazySite.heroTimeline.duration(); r.prog = window.lazySite.heroTimeline.progress(); r.t = performance.now(); }
+  }
+  ['#hero h1', '#hero .hero-hinh'].forEach(function (q) {
+    var cs = getComputedStyle(document.querySelector(q));
+    r.items[q] = {opacity: +cs.opacity, transform: cs.transform};
+  });
+  document.getElementById('out').textContent = JSON.stringify(r);
+}, 2000);
+</script>
+"""
+
+REDUCE = "<script>window.matchMedia = function (q) { return {matches: true, media: q}; };</script>"
+
+
+def _code(js):
+    return re.sub(r"//[^\n]*|/\*.*?\*/", "", js, flags=re.DOTALL)
+
+
+def test_single_timeline_and_no_section_loop():
+    code = _code(JS)
+    assert len(re.findall(r"gsap\.timeline\(", code)) == 1
+    assert not re.search(r"querySelectorAll\(\s*[\"']section", code)
+    assert not re.search(r"gsap\.(from|to|set|fromTo)\(\s*[\"'][^\"']*section", code)
+    assert not re.search(r"(forEach|for\s*\().*section", code)
+
+
+def test_should_animate_defined_and_gated():
+    code = _code(JS)
+    assert "function shouldAnimate" in code
+    assert "prefers-reduced-motion" in code
+    assert re.search(r"shouldAnimate\(\)\s*\?\s*heroIntro\(\)\s*:\s*null", code)
+
+
+def _identity(t):
+    if t == "none":
+        return True
+    nums = [float(x) for x in re.findall(r"-?\d+\.?\d*(?:e-?\d+)?", t)]
+    return t.startswith("matrix(") and nums[:4] == [1, 0, 0, 1] and nums[4:] == [0, 0]
+
+
+def test_identity_helper():
+    assert _identity("none") and _identity("matrix(1, 0, 0, 1, 0, 0)")
+    assert not _identity("matrix(1, 0, 0, 1, 0, 24)")
+
+
+@needs_chrome
+@needs_net
+def test_hero_settled_after_2s(tmp_path):
+    for _ in range(2):
+        d = read(probe(tmp_path, lambda h: h.replace("</body>", HERO_PROBE + "</body>")))
+        assert d["gsap"] is True, "online mà gsap không nạp"
+        assert d["should"] is True and d["tl"] is True
+        assert d["dur"] <= 1.5
+        for q, v in d["items"].items():
+            assert v["opacity"] == 1, q
+            assert _identity(v["transform"]), q
+
+
+@needs_chrome
+@needs_net
+def test_reduced_motion_no_timeline(tmp_path):
+    def edit(h):
+        h = h.replace("<script src=\"https://cdn", REDUCE + "<script src=\"https://cdn", 1)
+        return h.replace("</body>", HERO_PROBE + "</body>")
+
+    d = read(probe(tmp_path, edit))
+    assert d["gsap"] is True, "online mà gsap không nạp"
+    assert d["should"] is False and d["tl"] is False
+    for v in d["items"].values():
+        assert v["opacity"] == 1 and _identity(v["transform"])
