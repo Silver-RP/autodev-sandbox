@@ -415,5 +415,45 @@ Không lệch quá 2 lần.
 - **Merge PR #33** (merge commit, giữ nhánh). E5 đạt → `lazy-landing` 14/17 ≈ 82%.
 - Thay đổi ngoài mô tả task, chấp nhận: `main.js` đọc `data-on`/`data-off`; `.doi-ngon-ngu` trong `style.css`; `screenshot.py --pages`.
 
+## R10: Hiệu năng — **đạt, merged** 2026-10-16 (PR #35, `576fd3d`)
+
+Worker làm dev-01..03 (dev-02 REWORK 1 lần: thiếu `<noscript>` font khi tắt JS; tổng 4 vòng review). Supervisor kiểm trên `origin/milestone/R10` (`68b509b`), chế độ B `--review-only`:
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc).
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | sạch, đạt |
+| 2 | `lh_check.py` exit 0 (E2) | `uv run python scripts/lh_check.py` (57 giây) | `/` perf 99/100/100, trung vị 100/100/100/100, 172928 B; `/en/` 100/100/100/100, 165107 B; "OK: đạt ngưỡng E2", exit 0, đạt |
+| 3 | `test_site_visual/motion/seo/i18n` xanh | `uv run pytest -q tests/test_site_visual.py tests/test_site_motion.py tests/test_site_seo.py tests/test_site_i18n.py` | 47 passed, đạt |
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 3 | 3 | 0 |
+| Phút worker | ~15–25 | 42 | B3 1,67 |
+| USD (worker + supervisor) | ~1,5 | 1,24 + ~1,26 (supervisor, tạm) | B3 ~1,67 |
+| Số vòng review | 3–5 | 4 | 0 |
+
+Không lệch quá 2 lần.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Đo trang rút gọn / desktop | `test_lh_build_command` (`--form-factor=mobile`, URL); `main` phục vụ `site/` thật qua `http.server`; supervisor tự chạy, byte 172928 khớp trang thật |
+| 2. Bỏ font / chuyển động | `test_site_visual.py`, `test_site_motion.py` xanh; diff `site/` chỉ chuyển `@import` font sang `<link rel=preload>` + `<noscript>`, không xoá font, `main.js`, section; `test_font_noscript_fallback` |
+| 3. Điểm dao động | trung vị 3 lần; báo cáo và supervisor ghi đủ 3 giá trị (99–100) |
+| 4. `/en/` tụt | `lh_check.py` đo `/en/` mặc định; 100/100/100/100 |
+
+### Kiểm biên độc lập
+- Không có `npx` (`PATH=/usr/bin:/bin`): "Lỗi: không có npx (cài Node.js)", exit 2. Đúng quy ước.
+- `lh_check.py --runs 0`: traceback `StatisticsError` thay vì lỗi gọn. Nợ thấp, không chặn.
+- Điểm phụ thuộc mạng ngoài (Google Fonts, jsDelivr); đo ở mạng chậm có thể khác.
+
+### Quyết định
+- **Merge PR #35** (merge commit, giữ nhánh). E2 đạt → `lazy-landing` 15/17 ≈ 88%.
+- Chấp nhận (a): `stylesheet_hrefs` bỏ qua `<link>` trong `<noscript>`; fixture Lighthouse dựng inline trong `tests/test_tools.py`.
+- (c) tự quyết: plan R10 không có task cho H-03..H-06 (việc "thêm task (b) trước R10" chưa làm). Không chặn R10 vì tiêu chí R10 đủ; H-03..H-06 chuyển sang **R14 (mới): dọn lỗ hổng site**, phụ thuộc R10, không cần Pages nên chạy được trước R11. Cần `/autodev:plan-next R14`.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
