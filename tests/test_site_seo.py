@@ -114,3 +114,21 @@ def test_parse_size():
     for bad in ("", "abc", "0x5", "10", "-1x5"):
         with pytest.raises(ValueError):
             parse_size(bad)
+
+
+def test_jsonld_professional_service():
+    import json
+    import re
+
+    blocks = re.findall(
+        r'<script type="application/ld\+json">(.*?)</script>', HTML, re.DOTALL
+    )
+    assert len(blocks) == 1
+    assert HTML.lower().count("application/ld+json") == 1
+    d = json.loads(blocks[0])
+    assert d["@context"] == "https://schema.org"
+    assert d["@type"] == "ProfessionalService"
+    assert d["url"] == SITE_URL
+    assert d["email"] == "hello@example.com"
+    for k in ("name", "description", "areaServed"):
+        assert d[k]
