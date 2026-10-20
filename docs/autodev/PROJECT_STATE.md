@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`)
+Cập nhật: 2026-10-20 · Nguồn: duyệt R11 (supervisor) + audit R4–R10 (`docs/audits/2026-10-16.md`)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -17,16 +17,17 @@ Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`
 | R9 | merged | PR #30 (`91c071a`); 4 task + (b) dev-05, dev-06; 7 vòng; 189 test pass; E1 đạt |
 | R13 | merged | PR #33 (`68112ec`); 3 task, mỗi task 1 vòng; 204 test pass; E5 đạt; ghi H-06 cho R10 |
 | R10 | merged | PR #35 (`576fd3d`); 3 task, 4 vòng; 210 test pass; E2 đạt; H-03..06 không có task, chuyển R14 |
+| R11 | merged | PR #40 (`099dfd9`); 3 task, mỗi task 1 vòng; 229 test pass; E3 đạt trên URL thật; đóng H-16 |
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 15/17 ≈ **88%** theo lệnh đo; audit 2026-10-16 ước thực tế ≈ 80% (H-07..H-12, H-14).
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit 2026-10-16 ước thực tế ≈ 80% (H-07..H-12, H-14 còn mở, R14).
 
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
 | L1 | `uv run pytest -q tests/test_site.py` | 0 failed, ≥ 6 | 11 passed, đạt |
 | L2 | `uv run pytest -q tests/test_site_policy.py` | 0 failed, ≥ 6 | 17 passed, đạt |
-| L3 | `uv run pytest -q` | 0 failed | 210 passed, đạt |
+| L3 | `uv run pytest -q` | 0 failed | 229 passed, đạt |
 | L4 | `uv run ruff check .` | 0 lỗi | sạch, đạt |
 | L5 | smoke HTTP (`criteria.md`) | `200` hai dòng | đạt |
 | D1 | `uv run pytest -q tests/test_tools.py` | 0 failed, ≥ 5, không skip | đạt (gồm test `contrast.py`) |
@@ -39,7 +40,8 @@ Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`
 | E1 | `uv run pytest -q tests/test_site_seo.py` | 0 failed, ≥ 6 | 12 passed, đạt |
 | E5 | `uv run pytest -q tests/test_site_i18n.py` | 0 failed, ≥ 4 | 14 passed, đạt |
 | E2 | `uv run python scripts/lh_check.py` | perf ≥ 90, a11y/bp/seo ≥ 95, ≤ 300 KB | `/` trung vị 100×4, 173 KB; `/en/` 100×4, 165 KB; đạt |
-| D7, E3 | xem `criteria.md` | | chưa (D7: leader duyệt bằng mắt bản Việt + Anh) |
+| D7 | `grep -q '^Leader duyệt: đạt' docs/design/lazy-landing.md` | exit 0 | đạt (leader, PR #38, 2026-10-20) |
+| E3 | `uv run python scripts/smoke_pages.py` | 200, SHA khớp `main` | exit 0 @ `099dfd9`, đạt |
 
 ## Kiến trúc hiện nay
 - `src/todo/`: CLI todo (`add --due`, `list`, `overdue`, `done`, `due`); luật ngày duy nhất ở `store.valid_due`.
@@ -48,7 +50,8 @@ Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`
 - `scripts/screenshot.py`: Chrome headless; 1280 trực tiếp, < 1000 qua iframe; tối bằng `--blink-settings`; ảnh ở `.autodev/shots/` (gitignore). Dưới `--virtual-time-budget` rAF gần như không phát: hero chụp ra còn dở intro (đẩy `gsap.globalTimeline.time` như test, CDP thời gian thật, hoặc bản sao bỏ `<script>`).
 - `scripts/page_metrics.py`: JSON mỗi dòng một tổ hợp (`width`, `mode`, `innerWidth`, `overflow`, `svg_by_section`, `h1`, `body_font`, `colors`); `colors` gộp theo bộ (màu, nền, cỡ, đậm), nền lấy theo cây cha. `--check-overflow` exit 1 khi tràn. `h1.font_family` là chuỗi khai báo, không chứng minh font đã tải (H-04).
 - `scripts/contrast.py`: tỉ lệ WCAG 2.x trên `colors` của `page_metrics.py`; chữ lớn (≥ 24px, hoặc ≥ 18,66px đậm) 3:1, còn lại 4,5:1; mặc định 1280, cả hai chế độ (`--widths`, `--modes`, `--site`); exit 1 khi trượt. Bỏ qua alpha chữ, không đo `:hover`/`:focus`.
-- SEO (R9): `scripts/site_config.py` (`SITE_URL`, mặc định `https://example.github.io/autodev-sandbox/`); meta OG/Twitter, canonical, JSON-LD `ProfessionalService`, `robots.txt`, `sitemap.xml` ghi cứng URL (test kiểm khớp `SITE_URL`; R11 đổi URL phải sửa cả). `og.svg` → `og.png` qua `screenshot.py --page /og.svg --size 1200x630`, PNG mang chunk `tEXt` `source-sha256` (`og_png_current`). `pytest` có `pythonpath` trong `pyproject.toml`.
+- SEO (R9): `scripts/site_config.py` (`SITE_URL` = `https://silver-rp.github.io/autodev-sandbox/` từ R11); meta OG/Twitter, canonical, JSON-LD `ProfessionalService`, `robots.txt`, `sitemap.xml` ghi cứng URL (test kiểm khớp `SITE_URL`, không còn `example.github.io`).
+- Triển khai (R11): `.github/workflows/pages.yml` (push `main` + `workflow_dispatch`; checkout@v4, configure-pages@v5, upload-pages-artifact@v3 `path: site`, deploy-pages@v4; `concurrency: pages`) thay `<meta name="version" content="dev">` ở hai trang bằng `github.sha` trước khi upload. `scripts/smoke_pages.py [--url] [--sha] [--retries 10] [--interval 30]`: `/` 200 + "Lười Code Studio" + version = `origin/main`, `/en/`, `/style.css`, `/og.png` 200. `screenshot.py --url` giữ đường con, không dùng `__frame__`, lỗi HTTP → exit khác 0. Mỗi merge vào `main` (kể cả PR hồ sơ) deploy lại. `og.svg` → `og.png` qua `screenshot.py --page /og.svg --size 1200x630`, PNG mang chunk `tEXt` `source-sha256` (`og_png_current`). `pytest` có `pythonpath` trong `pyproject.toml`.
 - Song ngữ (R13): `site/en/index.html` (`lang="en"`, cùng id section tiếng Việt không dấu) dùng chung `../style.css`, `../main.js`; `hreflang` vi/en/x-default + canonical riêng mỗi trang, URL tuyệt đối; link `.doi-ngon-ngu` ở header (không JS); `#luoi-nut` lấy nhãn từ `data-on`/`data-off`; `sitemap.xml` hai URL. `contrast.py`, `page_metrics.py` có `--pages` (mặc định mọi trang có thật), `screenshot.py --pages` (ảnh `en-<w>-<mode>.png`).
 - `scripts/lh_check.py` (R10): phục vụ `site/` cổng 0; `npx -y lighthouse@12` mobile, 3 lần `/` + 1 lần `/en/`, trung vị; exit 1 dưới ngưỡng E2, 2 khi thiếu `npx`/Chrome.
 - `tests/_policy.py`: miễn trừ `<link rel="canonical">` và `rel="alternate"` có `hreflang` (quá rộng, H-06); `check(html, css)` cho L2; `_pinned(src)`: mọi `@tag` phải là X.Y.Z, không có `@` thì cần `/X.Y.Z/`.
@@ -69,6 +72,7 @@ Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`
 | Nút `mailto:` bắt đầu bằng động từ; không `→`, không `uppercase`; FAQ ≥ 4 `<details>` có `summary`, CSS không ẩn `summary`; 3 dự án có "ví dụ" + SVG; cấm "khách hàng nói"/"đánh giá"/"testimonial" | `tests/test_site_content.py` |
 | Không JS / CDN lỗi: mọi phần hiện; CSS không ẩn ngoài `.js`; SRI khớp; 1 timeline; giảm chuyển động bỏ timeline | `tests/test_site_motion.py` |
 | Meta OG/Twitter, URL theo `SITE_URL`, `og.png` 1200×630 khớp hash `og.svg`, màu SVG thuộc token, favicon không `<text>`, JSON-LD | `tests/test_site_seo.py`, `tests/test_site_share.py` |
+| Workflow Pages ghim 4 action, quyền đúng, `path: site`; hai trang có `meta version` giữ chỗ; smoke so SHA, thiếu `og.png` → exit 1; `screenshot.py --url` giữ đường con | `tests/test_pages_workflow.py`, `tests/test_smoke_pages.py`, `tests/test_screenshot_url.py` |
 | Bản Anh: cùng id, 1 `<h1>`, không chữ Việt có dấu, tài nguyên chung 200; `hreflang` hai chiều tuyệt đối; link chuyển ngôn ngữ; sitemap 2 URL | `tests/test_site_i18n.py` |
 | Đúng 1 nút `type="button"`, `hidden` khi không JS, `aria-pressed` đổi, `:focus-visible` có `outline` | `tests/test_site_button.py` |
 
@@ -86,9 +90,8 @@ Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`
 | H-11 | vừa | Test a11y, nội dung, hero, nút, SVG hex, SRI, og:image chỉ đọc bản Việt | R14 |
 | H-12 | vừa | D4, D5, E2, L5 không trong verify/smoke/CI; `contrast.py` mặc định 1280, bỏ `::before` | người (config) + R14 |
 | H-13 | vừa | `todo done <id không có>` vẫn ghi file, không báo lỗi | mốc todo |
-| H-14 | vừa | URL `example.github.io` và email `hello@example.com` giữ chỗ bị test khoá; email không hiện thành chữ; `robots.txt` dưới đường con vô hiệu | R11 |
+| H-14 | vừa | Email `hello@example.com` giữ chỗ bị test khoá, không hiện thành chữ; `robots.txt` dưới `/autodev-sandbox/` crawler không đọc (URL `example.github.io` đã sửa ở R11) | R14 / leader |
 | H-15 | thấp | `page_metrics`/`contrast` lỗi với `--pages /en/`; lỗi công cụ trùng exit 1 | R14 |
-| H-16 | thấp | `screenshot.py --url` < 1000 cần `__frame__` nội bộ, sai dưới đường con | R11 |
 | H-17 | thấp | `test_hero_settled_after_2s` chập chờn khi chạy cả bộ (`KeyError: 'should'`) | R14 |
 | H-18 | thấp | `todo` store: ghi song song mất cập nhật; JSON hỏng traceback; symlink bị thay | mốc todo |
 | H-19 | thấp | `due-overdue/goal.json` còn `planned`; R14 chưa có trong `goal.json`; `criteria.md` nền cũ | người |
@@ -107,6 +110,7 @@ Cập nhật: 2026-10-16 · Nguồn: audit R4–R10 (`docs/audits/2026-10-16.md`
 - R13: bản Anh chưa có JSON-LD, `og:image` dùng chung `og.png` chữ Việt; test chữ Việt chỉ bắt chữ có dấu; ở 360 link "Tiếng Việt" rớt dòng dưới logo.
 
 ## Quyết định gần đây
+- 2026-10-20: merge R11 (PR #40). Workflow `pages` xanh; `smoke_pages.py` trên URL thật exit 0 (E3); đóng H-16; H-14 còn email + `robots.txt`. D7 leader duyệt (PR #38) → `lazy-landing` 17/17.
 - 2026-10-16: audit R4–R10 (`docs/audits/2026-10-16.md`): 14 lỗ mới H-07..H-20 (2 cao), 0 đóng; độ khớp thực tế ≈ 80% (đẹp đúng hướng ~65%, kỹ thuật ~85%, phát hành ~60%); đề xuất leader duyệt D7 trước R14/R11.
 - 2026-10-16: merge R10 (PR #35). E2 đạt; (c) H-03..06 chuyển sang mốc mới R14 (cần `/autodev:plan-next R14`).
 - 2026-10-16: merge R13 (PR #33). E5 đạt; ghi H-06 cho R10.

@@ -1,8 +1,8 @@
 {
-  "updated": "2026-10-16",
+  "updated": "2026-10-20",
   "goals": [
     {"id": "due-overdue", "text": "Hạn chót và lọc việc quá hạn", "percent": 100, "metrics": ["A1", "A2", "A3", "A4", "A5"]},
-    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 88, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3", "D4", "D5", "D6", "E4", "E1", "E5", "E2"]}
+    {"id": "lazy-landing", "text": "Landing page đẹp, có cá tính (bản 2)", "percent": 100, "metrics": ["L1", "L2", "L3", "L4", "L5", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "E4", "E1", "E5", "E2", "E3"]}
   ],
   "open_gaps": [
     {"id": "H-03", "severity": "medium", "text": "Ở 360 dấu chấm dẫn menu và nút header bị ẩn, lệch wireframe 360 của doc", "milestone": "R14"},
@@ -10,15 +10,14 @@
     {"id": "H-05", "severity": "low", "text": "style.css chưa có @media (prefers-reduced-motion: reduce) như quy ước plan R7", "milestone": "R14"},
     {"id": "H-06", "severity": "low", "text": "tests/_policy.py miễn trừ mọi link rel=alternate có hreflang, kể cả href ngoài SITE_URL (https://evil.com/x.css lọt)", "milestone": "R14"},
     {"id": "H-07", "severity": "high", "text": "screenshot.shoot() bỏ qua lỗi Chrome khi PNG cũ còn; og.png cũ được đóng hash mới", "milestone": "R14"},
-    {"id": "H-08", "severity": "high", "text": "Hero thiếu laptop + người ngủ gật; chuyển động, tương tác khác spec; D7 chưa duyệt", "milestone": "R14"},
+    {"id": "H-08", "severity": "high", "text": "Hero thiếu laptop + người ngủ gật; chuyển động, tương tác khác spec (D7 leader đã duyệt đạt 2026-10-20)", "milestone": "R14"},
     {"id": "H-09", "severity": "medium", "text": "Lỗ L2: base, /\\, on* (onload inline từ R10), javascript:, object/svg image, SRI rỗng; không quét .svg", "milestone": "R14"},
     {"id": "H-10", "severity": "medium", "text": "lh_check.py không timeout; plan rỗng báo OK; score null crash exit 1; NaN lọt", "milestone": "R14"},
     {"id": "H-11", "severity": "medium", "text": "Test a11y, nội dung, hero, nút, SVG hex, SRI, og:image chỉ đọc bản Việt", "milestone": "R14"},
     {"id": "H-12", "severity": "medium", "text": "D4, D5, E2, L5 không trong verify/smoke/CI; contrast.py mặc định 1280, bỏ ::before", "milestone": "R14"},
     {"id": "H-13", "severity": "medium", "text": "todo done <id không có> vẫn ghi file, không báo lỗi", "milestone": null},
-    {"id": "H-14", "severity": "medium", "text": "URL example.github.io và email hello@example.com giữ chỗ bị test khoá; email không hiện thành chữ; robots.txt dưới đường con vô hiệu", "milestone": "R11"},
+    {"id": "H-14", "severity": "medium", "text": "Email hello@example.com giữ chỗ bị test khoá, không hiện thành chữ; robots.txt dưới đường con /autodev-sandbox/ crawler không đọc (URL example.github.io đã sửa ở R11)", "milestone": "R14"},
     {"id": "H-15", "severity": "low", "text": "page_metrics/contrast lỗi với --pages /en/; lỗi công cụ trùng exit 1", "milestone": "R14"},
-    {"id": "H-16", "severity": "low", "text": "screenshot.py --url dưới 1000 cần __frame__ nội bộ, sai dưới đường con", "milestone": "R11"},
     {"id": "H-17", "severity": "low", "text": "test_hero_settled_after_2s chập chờn khi chạy cả bộ (KeyError should)", "milestone": "R14"},
     {"id": "H-18", "severity": "low", "text": "todo store: ghi song song mất cập nhật; JSON hỏng traceback; symlink bị thay", "milestone": null},
     {"id": "H-19", "severity": "low", "text": "due-overdue/goal.json còn planned; R14 chưa có trong goal.json; criteria.md nền cũ", "milestone": null},
@@ -37,12 +36,14 @@
       {"id": "R12", "status": "merged", "pr": 28, "merge_commit": "b7e2529"},
       {"id": "R9", "status": "merged", "pr": 30, "merge_commit": "91c071a"},
       {"id": "R13", "status": "merged", "pr": 33, "merge_commit": "68112ec"},
-      {"id": "R10", "status": "merged", "pr": 35, "merge_commit": "576fd3d"}
+      {"id": "R10", "status": "merged", "pr": 35, "merge_commit": "576fd3d"},
+      {"id": "R11", "status": "merged", "pr": 40, "merge_commit": "099dfd9"}
     ],
     "plugin": []
   },
-  "outlook": ["R14", "R11"],
+  "outlook": ["R14"],
   "decisions": [
+    {"date": "2026-10-20", "text": "Merge R11 (PR #40); workflow pages xanh, smoke_pages.py trên URL thật exit 0 (E3); đóng H-16, H-14 còn email + robots.txt; D7 leader duyệt (PR #38); lazy-landing 17/17"},
     {"date": "2026-10-16", "text": "Audit R4-R10 (docs/audits/2026-10-16.md): 14 lỗ mới H-07..H-20 (2 cao), 0 đóng; lazy-landing thực tế ~80%; đề xuất leader duyệt D7 trước R14/R11"},
     {"date": "2026-10-16", "text": "Merge R10; E2 đạt (perf trung vị 100, 173 KB); (c) H-03..06 không có task trong plan R10, chuyển sang mốc mới R14 (cần plan); lazy-landing 15/17"},
     {"date": "2026-10-16", "text": "Merge R13; E5 đạt; ghi H-06 (miễn trừ alternate hreflang quá rộng) cho R10; lazy-landing 14/17"},
