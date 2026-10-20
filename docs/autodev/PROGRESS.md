@@ -598,5 +598,58 @@ Không lệch quá 2 lần. Phút cao hơn R14 vì mọi task có test Chrome m�
 - Điều chỉnh: H-21, H-23, H-24, H-25, H-29, H-32, H-33 ghi "R15" nhưng plan R15 để ngoài phạm vi → chuyển "mốc công cụ" (leader lập); H-22 → leader.
 - Ghi chú reviewer (không chặn): `scrollWidth` chỉ đo sáng (supervisor đo tối: đạt); chờ 800 ms cố định; `test_cup_reduced_motion_block_instant` có assert `json.dumps(d)` vô nghĩa.
 
+## R17: Cứng hoá todo CLI — **đạt, merged** 2026-10-21 (PR #52, `3a18132`)
+
+Worker làm dev-01..03, mỗi task 1 vòng (3 vòng, không FAIL). Supervisor kiểm trên `origin/milestone/R17` (`0adb956`), chế độ B `--review-only`: `verify.py` → "sạch (không có lỗi mới so với baseline)" (2 phút 49); `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc).
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | verify + smoke sạch | `verify.py`, `verify.py --smoke` | sạch cả hai, đạt |
+| 2 | (A1) `test_due.py` ≥ 7 | `uv run pytest -q tests/test_due.py` | 24 passed, đạt |
+| 3 | (A2) `test_overdue.py` ≥ 6 | `uv run pytest -q tests/test_overdue.py` | 7 passed, đạt |
+| 4 | (A3) cả bộ | `uv run pytest -q` | 412 passed, 0 failed, đạt |
+| 5 | (A4) ruff | `uv run ruff check .` | "All checks passed!", đạt |
+| 6 | test mới + 5 lần song song | `uv run pytest -q tests/test_cli_errors.py tests/test_store_safety.py`; vòng 5 lần `test_store_safety.py` | 38 passed; 6/6/6/6/6 passed, exit 0; đạt |
+| 7 | CLI thật, mã 2, 2, 1, 2 | `TODO_FILE=$(mktemp -d)/t.json`: `todo done ²`, `todo add ""`, `todo done 9`, `todo list` trên `{hỏng` | exit 2 (usage), 2 (`tiêu đề không được rỗng`), 1 (`không có việc id 9`), 2 (`<path>: JSON hỏng (…, dòng 1 cột 2)`); 0 dòng `Traceback`; đạt |
+
+H-xx tái hiện: `git archive origin/main` (trước merge) sang `/tmp/r17old.oZgK`, chép `tests/test_cli_errors.py`, `tests/test_store_safety.py` vào, chạy → **34 failed** / 4 passed. Trong đó `test_add_through_symlink_keeps_link` (`assert link.is_symlink()` False), test hai tiến trình `assert 20 == 40` (mất việc thật, không chỉ `AttributeError`). Đóng H-13, H-18, H-26.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 3 | 3 | 0 |
+| Phút worker | ~10–20 | 60 | B3 3,02 |
+| USD (worker + supervisor) | ~2,1 | 1,20 + ~1,33 (supervisor, tạm) | B3 ~1,20 |
+| Số vòng review | 3–5 | 3 | 0 |
+
+Phút lệch quá 2 lần: ước tính lấy R1/R2 (4 phút, 30–52 test) nhưng nay `pytest -q` cả bộ 412 test (có Chrome của site) mất ~165–210 giây, chạy ở mỗi verify/hook/reviewer. Mốc todo sau nên ước theo thời gian cả bộ test, không theo R1/R2.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Test song song tình cờ xanh | `Barrier` + 2×20 `add`; đỏ trên code cũ (`20 == 40`); test khoá tất định `LOCK_NB` gặp `BlockingIOError`; supervisor thêm 3 tiến trình CLI thật × 10 `add` qua symlink → 30 việc, id `1..30` |
+| 2. `os.replace` phá symlink | `test_add_through_symlink_keeps_link`, `test_cli_done_and_due_through_symlink` (đỏ trên cũ) |
+| 3. Khoá trên inode bị thay | `lock_path` = thư mục chứa đích (`realpath`); TC 3–4 |
+| 4. File `.lock` để lại rác | `test_atomic_save.py` không đổi, xanh; thư mục đích sau CLI chỉ có `t.json` |
+| 5. `isdigit()` nhận `²`, `١` | `re.fullmatch(r"[0-9]+")`; test `done`/`due` với `²`, `١`, `１` |
+| 6. Tiêu đề chỉ khoảng trắng | test `""`, `"   "`, `"\t\n"`, `"" --due`; supervisor `add --due 2026-10-20 "   "` → exit 2 |
+| 7. Thiếu ký tự xuống dòng | `_BREAKS` có `\x1c-\x1e`, `\x85`, U+2028, U+2029 (supervisor xem byte); test `splitlines()` + 4 cột |
+| 8. `done` id không có vẫn ghi | `complete` chỉ `save` khi `found`; test byte + `st_mtime_ns` |
+| 9. JSON hỏng chỉ bắt ở `list` | `cli.main` bắt `StoreError` cho mọi lệnh; test tham số 5 lệnh; `add` không ghi đè file hỏng |
+| 10. Kiểm cấu trúc lỏng | `{}`, `[1]`, thiếu `id`, `id` chuỗi/`bool`, `\xff\xfe` → exit 2. Còn hở: `title`/`done` (H-34) |
+| 11. Hỏng file cũ không `due` | A1 `test_set_due_on_legacy_file`, `test_list_legacy_file_without_due` xanh |
+
+### Kiểm biên độc lập
+- `done 01` → exit 0 (id 1, chấp nhận: chữ số ASCII); `done 1` lặp lại → exit 0 lần 2 (không đổi hành vi cũ); `due 99999999999999999999 2026-10-20` → exit 1 `không có việc id …`, không traceback.
+- `[{"id":1,"title":"a"}]` (thiếu `done`) → `todo list` **Traceback** `KeyError` exit 1; `add x` trên file đó vẫn ghi. Ngoài phạm vi roadmap R17 ("JSON hỏng hoặc phần tử thiếu `id`"), reviewer dev-02 đã nêu → ghi H-34.
+- `TODO_FILE` trong thư mục không có: `add x` Traceback (`FileNotFoundError` từ `lock`) — plan để ngoài phạm vi → H-34.
+- 3 tiến trình CLI thật song song × 10 `add` qua symlink: 30 việc, id đúng `1..30`, link còn, thư mục đích chỉ `t.json`.
+
+### Quyết định
+- **Merge PR #52** (merge commit, giữ nhánh). 7/7 tiêu chí có bằng chứng tự chạy. Đóng H-13, H-18, H-26; `due-overdue` R17 `done`.
+- (c) tự quyết: ghi H-34 (thấp) thay vì chặn merge: `load` chưa kiểm `title`/`done`; lỗi OS traceback. Lý do: roadmap R17 và tiêu chí mốc chỉ đòi `id`; mục tiêu "không bao giờ traceback" của roadmap còn hở hai ý này, cần leader đưa vào mốc todo sau.
+- Giả định plan đã chấp nhận: `flock` trên thư mục; không gộp/cắt khoảng trắng.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
