@@ -46,7 +46,7 @@
     {"id": "R11", "title": "Triển khai GitHub Pages + smoke URL thật", "depends_on": ["R10"], "metrics": ["E3"],
      "est_usd": 1.3, "est_hours": 0.2, "status": "done", "plan_file": "plan/R11.md"},
     {"id": "R14", "title": "Cứng hoá công cụ đo và luật tài nguyên: báo lỗi đúng, có timeout, vá lỗ L2, hết test chập chờn (audit H-07, H-09, H-06, H-10, H-15, H-17)", "depends_on": ["R11"], "metrics": ["D1", "L2", "E2", "L3"],
-     "est_usd": 2.0, "est_hours": 0.4, "status": "planned"},
+     "est_usd": 2.0, "est_hours": 0.4, "status": "done", "plan_file": "plan/R14.md"},
     {"id": "R15", "title": "Hoàn thiện site: bản 360 giữ chấm dẫn và nút header, font tải thật, reduced-motion trong CSS, test bảo vệ cả bản Anh, ly hero dịch nguyên khối (audit H-03, H-04, H-05, H-11, H-20)", "depends_on": ["R14"], "metrics": ["D3", "D4", "D6", "E5", "L3"],
      "est_usd": 2.0, "est_hours": 0.4, "status": "planned"}
   ],
