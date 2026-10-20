@@ -49,11 +49,27 @@ Hướng đã chọn: hai mốc theo lát dọc. R1 xong là đặt được h�
   3. *Phụ thuộc đồng hồ máy:* test dùng `date.today()`. Chặn bằng `TODO_TODAY` cố định trong mọi test; reviewer chạy lại với ngày giả khác.
   4. *Sắp xếp đúng do may:* dữ liệu tạo sẵn theo thứ tự hạn tăng dần. Chặn bằng test tạo theo thứ tự hạn ngược.
 
+## R17: Cứng hoá todo CLI
+Thêm 2026-10-21 (leader uỷ quyền; theo audit 2026-10-16 H-13, H-18 và 2026-10-21 H-26). Leader đã quyết **làm** ghi nguyên tử cho `store.save`.
+- **Mục tiêu:** CLI không bao giờ ném traceback hay ghi file khi lỗi; hai tiến trình ghi cùng lúc không mất việc.
+- **Phạm vi:**
+  1. H-26: id không phải số ASCII (`²`, `١`) → usage exit 2; `todo add ""` (tiêu đề rỗng hoặc chỉ khoảng trắng) → exit 2, không ghi; tab/xuống dòng trong tiêu đề bị thay bằng khoảng trắng.
+  2. H-13: `todo done <id không có>` không ghi file, in "không có việc id N" ra stderr, exit 1 (giống `due`).
+  3. H-18: `store.save` ghi file tạm cùng thư mục rồi `os.replace` (giữ đích của symlink); khoá file (`fcntl.flock`) quanh đọc-sửa-ghi; JSON hỏng hoặc phần tử thiếu `id` → thông báo rõ, exit 2, không traceback.
+- **Chỉ số giữ:** A1, A2, A3, A4.
+- **Ước tính:** ~3 task, **1,5 USD**, **0,3 giờ**.
+- **Xong khi:** test mới cho từng ý đỏ trước khi sửa; `uv run pytest -q` và `uv run ruff check .` sạch; test hai tiến trình `add` song song 20 lần không mất việc, không trùng id.
+- **Phụ thuộc:** R2.
+- **Pre-mortem:**
+  1. *Test song song chập chờn*: dùng `multiprocessing` với số lần cố định, kiểm số việc và id duy nhất; không dựa thời gian.
+  2. *`os.replace` phá symlink*: test ghi qua symlink, đích được cập nhật, link còn nguyên.
+
 ## Tổng
 | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|
 | R1 | – | A1 (A3, A4) | 4 | 0,5 |
 | R2 | R1 | A2, A5 (A3, A4) | 4 | 0,4 |
+| R17 | R2 | A1, A2, A3, A4 | 1,5 | 0,3 |
 | **Tổng** | | | **8** | **0,9** |
 
 ## Thứ tự cắt

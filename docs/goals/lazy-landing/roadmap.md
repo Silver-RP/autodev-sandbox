@@ -225,6 +225,25 @@ Thêm 2026-10-20 (leader uỷ quyền, theo đề xuất audit 2026-10-16). H-08
   1. *Hiện lại chấm dẫn ở 360 gây tràn*: D4 trong tiêu chí từng task.
   2. *Tham số hoá làm test yếu đi*: giữ nguyên ca âm cũ, thêm ca âm cho `/en/`.
 
+## R16: Công cụ đo và deploy chặt
+Thêm 2026-10-21 (leader uỷ quyền; theo audit 2026-10-21).
+- **Mục tiêu:** không chỉ số nào xanh khi công cụ đo hỏng; deploy chỉ khi test xanh; spec khớp trang đã duyệt.
+- **Phạm vi:**
+  1. H-23: `screenshot.py --page/--pages` kiểm HTTP 200 trước khi chụp, lỗi → exit 2; `--page … --url` không đóng hash `og.svg` cục bộ lên ảnh URL ngoài.
+  2. H-24: `page_metrics.py --check-overflow` dùng cả `scrollWidth > clientWidth` của trang và phần tử.
+  3. H-25: `lh_check.py --site` thiếu `index.html` → exit 2.
+  4. H-27: `smoke_pages.py` `git fetch` trước `rev-parse origin/main`; lỗi git → exit 2, không traceback.
+  5. H-28: `pages.yml` chạy ruff + pytest (hoặc `needs` job test) trước deploy; test workflow đọc YAML có cấu trúc thay regex.
+  6. H-29: mọi lỗi tham số/công cụ (`--widths abc`, …) → exit 2 ở `page_metrics.py`, `contrast.py`, `screenshot.py`.
+  7. H-22: sửa `docs/design/lazy-landing.md` mục hero/chuyển động/tương tác cho khớp trang leader đã duyệt D7 (ghi rõ phần spec cũ bị bỏ), giữ D2 xanh.
+- **Chỉ số giữ:** D1, D2, D4, E2, E3, L3.
+- **Ước tính:** ~4 task, **2,5 USD**, **0,5 giờ**.
+- **Xong khi:** mỗi ý có test ca âm đỏ trước khi sửa; `uv run pytest -q` sạch; sau merge Pages deploy và `smoke_pages.py` exit 0.
+- **Phụ thuộc:** R15.
+- **Pre-mortem:**
+  1. *Siết `scrollWidth` làm D4 đỏ thật*: sửa trang cho hết tràn, không nới đo.
+  2. *Pages chờ test làm deploy chậm/hỏng*: workflow vẫn `workflow_dispatch`; smoke sau merge xác nhận.
+
 ## Tổng
 | Thứ tự chạy | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|---|
@@ -239,6 +258,7 @@ Thêm 2026-10-20 (leader uỷ quyền, theo đề xuất audit 2026-10-16). H-08
 | 8 | R13 | R12, R9 | E5 (+ D7 lần 2) | 1,9 | 0,3 |
 | 9 | R10 | R7, R8, R13 | E2 | 1,5 | 0,3 |
 | 10 | R11 | R10 + leader bật Pages | E3 | 1,3 | 0,2 |
+| 13 | R16 | R15 | D1, D2, D4, E2, E3, L3 | 2,5 | 0,5 |
 | 11 | R14 | R11 | D1, L2, E2, L3 | 2,0 | 0,4 |
 | 12 | R15 | R14 | D3, D4, D6, E5, L3 | 2,0 | 0,4 |
 | | **Tổng (R4–R13, trừ R5 đã cắt)** | | | **19,0** | **2,4** |
