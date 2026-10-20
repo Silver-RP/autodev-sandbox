@@ -65,6 +65,7 @@
 ## R11
 - dev-01 DONE (1 vòng, commit 75bc891): `.github/workflows/pages.yml` (4 action ghim, `concurrency: pages`, bước `sed` ghi SHA vào `content="dev"` với guard đếm đúng 1 chỗ), `SITE_URL` = `https://silver-rp.github.io/autodev-sandbox/`, cập nhật `robots.txt`, `sitemap.xml`, hai trang HTML; `tests/test_pages_workflow.py`. 215 test pass. Sửa `test_site_seo.py::test_site_url_default` cho khớp URL mới (cờ allow-test-change). Ghi chú reviewer (không chặn): workflow chưa chạy thật (chỉ test tĩnh), chạy thật sau merge.
 - dev-02 DONE (1 vòng, commit a8bfc9f): `scripts/smoke_pages.py` (`check_content(url, sha)`, cờ `--url`, `--sha`, `--retries`, `--interval`), `tests/test_smoke_pages.py` (server cục bộ thật). 222 test pass. Chạy thật trên URL Pages: sau merge (trước merge trả 404 như dự kiến). Ghi chú reviewer (không chặn): mặc định `git_sha()` (origin/main) chưa có test; `except OSError` hơi rộng.
+- dev-03 DONE (1 vòng, commit b78a503): `screenshot.py --url` nhận URL ngoài/đường con: `page_url` ghép tương đối, cỡ < 1000 dùng khung `data:` thay `__frame__.html`, `frame_html` escape tham số, `check_reachable` → 404/không nối được thì exit 1; `tests/test_screenshot_url.py` (7 test). 229 test pass. Đóng H-16. Ghi chú: ảnh 360 mới chỉ kiểm chiều rộng, chưa ai xem nội dung.
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
