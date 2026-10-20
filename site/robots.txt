@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://example.github.io/autodev-sandbox/sitemap.xml
+Sitemap: https://silver-rp.github.io/autodev-sandbox/sitemap.xml

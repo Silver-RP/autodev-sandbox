@@ -1,0 +1,36 @@
+name: pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  pages: write
+  id-token: write
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Ghi phiên bản (SHA) vào site/ của bản checkout tạm
+        run: |
+          for f in site/index.html site/en/index.html; do
+            test "$(grep -c '<meta name="version" content="dev">' "$f")" = 1
+            sed -i 's|<meta name="version" content="dev">|<meta name="version" content="${{ github.sha }}">|' "$f"
+          done
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
