@@ -10,6 +10,7 @@ File: $TODO_FILE hoặc ./todo.json. $TODO_TODAY=YYYY-MM-DD đặt ngày hôm na
 """
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -42,13 +43,29 @@ def _add(path: Path, args: list[str]) -> int:
             return _bad_date(due)
     if not args:
         return _usage()
-    print(store.add(path, " ".join(args), due=due)["id"])
+    title = store.clean_title(" ".join(args))
+    if not title.strip():
+        print("tiêu đề không được rỗng", file=sys.stderr)
+        return 2
+    print(store.add(path, title, due=due)["id"])
     return 0
+
+
+def _is_id(text: str) -> bool:
+    return re.fullmatch(r"[0-9]+", text) is not None
 
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     path = Path(os.environ.get("TODO_FILE", "todo.json"))
+    try:
+        return _run(argv, path)
+    except store.StoreError as e:
+        print(e, file=sys.stderr)
+        return 2
+
+
+def _run(argv: list[str], path: Path) -> int:
     if argv[:1] == ["add"] and len(argv) > 1:
         return _add(path, argv[1:])
     if argv == ["list"]:
@@ -64,9 +81,12 @@ def main(argv: list[str] | None = None) -> int:
         for i in store.overdue(store.load(path), today):
             print(_line(i))
         return 0
-    if argv[:1] == ["done"] and len(argv) == 2 and argv[1].isdigit():
-        return 0 if store.complete(path, int(argv[1])) else 1
-    if argv[:1] == ["due"] and len(argv) == 3 and argv[1].isdigit():
+    if argv[:1] == ["done"] and len(argv) == 2 and _is_id(argv[1]):
+        if store.complete(path, int(argv[1])):
+            return 0
+        print(f"không có việc id {argv[1]}", file=sys.stderr)
+        return 1
+    if argv[:1] == ["due"] and len(argv) == 3 and _is_id(argv[1]):
         if not store.valid_due(argv[2]):
             return _bad_date(argv[2])
         if store.set_due(path, int(argv[1]), argv[2]):
