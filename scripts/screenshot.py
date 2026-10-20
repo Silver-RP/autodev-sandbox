@@ -196,8 +196,18 @@ def chrome_args(width: int, height: int, mode: str) -> list[str]:
     return args
 
 
+def _run_chrome(cmd: list[str]) -> subprocess.CompletedProcess:
+    try:
+        return subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=60)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("Chrome quá thời gian (60 giây)") from None
+
+
 def shoot(url: str, out: Path, width: int, height: int, mode: str) -> None:
+    """Chụp url ra out. Xoá out cũ trước; lỗi Chrome thì RuntimeError và out không còn."""
+    out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
+    out.unlink(missing_ok=True)
     with tempfile.TemporaryDirectory() as profile:
         cmd = chrome_args(width, height, mode) + [
             f"--user-data-dir={profile}",
@@ -205,9 +215,10 @@ def shoot(url: str, out: Path, width: int, height: int, mode: str) -> None:
             f"--screenshot={out}",
             url,
         ]
-        r = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=60)
-    if not out.exists():
-        raise RuntimeError(f"Chrome không tạo được ảnh: {r.stderr[-300:]}")
+        r = _run_chrome(cmd)
+    if r.returncode != 0 or not out.exists():
+        out.unlink(missing_ok=True)
+        raise RuntimeError(f"Chrome không tạo được ảnh (mã {r.returncode}): {r.stderr[-300:]}")
 
 
 def dump_dom(url: str, width: int, height: int, mode: str) -> str:
@@ -218,7 +229,9 @@ def dump_dom(url: str, width: int, height: int, mode: str) -> str:
             "--dump-dom",
             url,
         ]
-        r = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=60)
+        r = _run_chrome(cmd)
+    if r.returncode != 0 or not r.stdout.strip():
+        raise RuntimeError(f"Chrome không dump được DOM (mã {r.returncode}): {r.stderr[-300:]}")
     return r.stdout
 
 
@@ -261,6 +274,14 @@ def main(argv=None) -> int:
     out = Path(a.out)
     pages = [p if p.startswith("/") else "/" + p for p in a.pages.split(",") if p]
 
+    try:
+        return _main(a, ap, widths, modes, out, pages)
+    except RuntimeError as e:
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
+
+
+def _main(a, ap, widths, modes, out, pages) -> int:
     if a.page:
         if not a.file:
             ap.error("--page cần --file")
@@ -296,11 +317,7 @@ def main(argv=None) -> int:
                     print(path)
 
     if a.url:
-        try:
-            run(a.url.rstrip("/"), external=True)
-        except RuntimeError as e:
-            print(f"lỗi: {e}", file=sys.stderr)
-            return 1
+        run(a.url.rstrip("/"), external=True)
     else:
         with serve(a.site or ROOT / "site") as base:
             run(base)
