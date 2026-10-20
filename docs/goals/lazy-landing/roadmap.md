@@ -193,6 +193,38 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
   2. *Repo private chưa bật Pages*: mốc BLOCKED, không giả đạt.
   3. *Kill giữa deploy*: Pages deploy nguyên khối theo artifact; chạy lại workflow là đủ, smoke xác nhận.
 
+## R14: Cứng hoá công cụ đo và luật tài nguyên
+Thêm 2026-10-20 (leader uỷ quyền, theo đề xuất audit 2026-10-16). H-08 (hero đủ spec) **không làm**: leader đã duyệt D7 "đạt" với trang hiện tại.
+- **Mục tiêu:** chỉ số "xanh" phải là xanh thật: công cụ báo lỗi khi chính nó hỏng, luật L2 không lọt.
+- **Phạm vi:**
+  1. H-07: `screenshot.shoot()` kiểm exit code Chrome, xoá file cũ trước khi chụp; `--page` không đóng hash mới lên PNG cũ.
+  2. H-10, H-15: `lh_check.py`, `page_metrics.py`, `contrast.py` có timeout; lỗi công cụ (thiếu trang, `score: null`, plan rỗng, NaN) trả **exit 2**, khác exit 1 "trượt ngưỡng"; nhận `--pages /en/`.
+  3. H-09, H-06: `tests/_policy.py` bắt `<base href>`, `src="/\…"`, thuộc tính `on*`, `javascript:`, `<object data>`, `<svg><image href>`, `integrity` rỗng; miễn trừ `rel=alternate hreflang` chỉ khi `href` thuộc `SITE_URL`.
+  4. H-17: test chuyển động chờ `window.lazySite` có mặt; cả bộ chạy 3 lần liền xanh.
+- **Chỉ số giữ/đẩy:** D1, L2 (thêm ca âm), E2, L3.
+- **Ước tính:** ~4 task, **2,0 USD**, **0,4 giờ**.
+- **Xong khi:** `uv run pytest -q` 0 failed 3 lần liền; mỗi lỗ trên có ít nhất một test ca âm đỏ trước khi sửa.
+- **Phụ thuộc:** R11.
+- **Pre-mortem:**
+  1. *Siết luật làm đỏ trang thật*: chạy L2 trên `site/` sau mỗi task; nếu trang vi phạm thì sửa trang, không nới luật.
+  2. *Timeout quá ngắn làm E2 đỏ giả*: timeout rộng (≥ 120 giây/lần Lighthouse), có test riêng cho đường timeout.
+
+## R15: Hoàn thiện site
+- **Mục tiêu:** sửa những chỗ lệch spec nhỏ, và bảo vệ bản Anh ngang bản Việt.
+- **Phạm vi:**
+  1. H-03: ở 360 giữ chấm dẫn menu và nút "Gửi thư" ở header (test Chrome đo thấy, không chỉ đọc HTML); không tràn (D4).
+  2. H-04: test font dùng `document.fonts.check` (Baloo 2, Be Vietnam Pro đã tải).
+  3. H-05: `@media (prefers-reduced-motion: reduce)` trong `style.css`.
+  4. H-11: tham số hoá các test a11y, nội dung, hero, nút, tối, motion theo hai trang `/` và `/en/`.
+  5. H-20: bấm nút thì cả ly (đá, vạch trà, ống hút) dịch cùng nhau.
+- **Chỉ số giữ/đẩy:** D3, D4, D6, E5, L3; E2 không tụt.
+- **Ước tính:** ~4 task, **2,0 USD**, **0,4 giờ**.
+- **Xong khi:** các test mới xanh trên cả hai trang; `page_metrics.py --check-overflow` và `contrast.py` exit 0; Pages tự deploy, `smoke_pages.py` exit 0.
+- **Phụ thuộc:** R14.
+- **Pre-mortem:**
+  1. *Hiện lại chấm dẫn ở 360 gây tràn*: D4 trong tiêu chí từng task.
+  2. *Tham số hoá làm test yếu đi*: giữ nguyên ca âm cũ, thêm ca âm cho `/en/`.
+
 ## Tổng
 | Thứ tự chạy | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|---|
@@ -207,6 +239,8 @@ Công thức: **USD = số task × 0,25 × hệ số + 0,75 supervisor**.
 | 8 | R13 | R12, R9 | E5 (+ D7 lần 2) | 1,9 | 0,3 |
 | 9 | R10 | R7, R8, R13 | E2 | 1,5 | 0,3 |
 | 10 | R11 | R10 + leader bật Pages | E3 | 1,3 | 0,2 |
+| 11 | R14 | R11 | D1, L2, E2, L3 | 2,0 | 0,4 |
+| 12 | R15 | R14 | D3, D4, D6, E5, L3 | 2,0 | 0,4 |
 | | **Tổng (R4–R13, trừ R5 đã cắt)** | | | **19,0** | **2,4** |
 
 ## Thứ tự cắt
