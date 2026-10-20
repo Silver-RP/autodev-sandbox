@@ -1,4 +1,8 @@
-"""Kiểm tương phản WCAG AA cho từng khối chữ trên trang thật (qua page_metrics)."""
+"""Kiểm tương phản WCAG AA cho từng khối chữ trên trang thật (qua page_metrics).
+
+Mã thoát: 0 = mọi cặp màu đạt; 1 = có cặp tương phản thấp; 2 = lỗi công cụ
+(trang không có trong site, danh sách trang/tổ hợp rỗng, Chrome lỗi/timeout, DOM rỗng).
+"""
 
 from __future__ import annotations
 
@@ -80,8 +84,15 @@ def main(argv=None) -> int:
     for m in modes:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
-    pages = [p for p in a.pages.split(",") if p] if a.pages else pm.default_pages(a.site)
-    bad = failures(pm.collect(a.site, widths, modes, pages=pages))
+    pages = ([p for p in a.pages.split(",") if p.strip()] if a.pages is not None
+             else pm.default_pages(a.site))
+    try:
+        if not (pages and widths and modes):
+            raise RuntimeError("không có trang/độ rộng/chế độ nào để đo")
+        bad = failures(pm.collect(a.site, widths, modes, pages=pages))
+    except RuntimeError as e:
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
     if bad:
         print("page  mode  width  selector  color  background  ratio  need")
         for b in bad:

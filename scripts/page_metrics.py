@@ -1,4 +1,9 @@
-"""Đo số liệu trang qua Chrome headless: tràn ngang, SVG theo section, font, màu."""
+"""Đo số liệu trang qua Chrome headless: tràn ngang, SVG theo section, font, màu.
+
+Mã thoát: 0 = xong (và không tràn khi có --check-overflow); 1 = có tràn ngang
+(--check-overflow); 2 = lỗi công cụ (trang không có trong site, danh sách trang
+hoặc tổ hợp đo rỗng, Chrome lỗi/timeout, DOM rỗng).
+"""
 
 from __future__ import annotations
 
@@ -23,6 +28,21 @@ PAGES = ["/index.html", "/en/index.html"]
 def default_pages(site) -> list[str]:
     """Các trang mặc định có thật trong thư mục site."""
     return [p for p in PAGES if (Path(site) / p.lstrip("/")).is_file()] or [PAGE]
+
+def normalize_pages(site, pages) -> list[str]:
+    """Chuẩn hoá `/en/` -> `/en/index.html`; trang không có tệp thì RuntimeError."""
+    out = []
+    for p in pages:
+        p = p.strip()
+        if not p.startswith("/"):
+            p = "/" + p
+        if p.endswith("/"):
+            p += "index.html"
+        if not (Path(site) / p.lstrip("/")).is_file():
+            raise RuntimeError(f"trang không có trong {site}: {p}")
+        out.append(p)
+    return out
+
 
 MEASURE_JS = r"""
 <pre id="out" style="display:none"></pre>
@@ -101,7 +121,7 @@ def measure(base: str, width: int, mode: str, height: int = 800, page: str = PAG
 
 
 def collect(site, widths, modes, height: int = 800, pages=None) -> list[dict]:
-    pages = list(pages) if pages else [PAGE]
+    pages = normalize_pages(site, pages if pages else [PAGE])
     results = []
     with tempfile.TemporaryDirectory() as tmp:
         copy = Path(tmp) / "site"
@@ -130,8 +150,15 @@ def main(argv=None) -> int:
     for m in modes:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
-    pages = [p for p in a.pages.split(",") if p] if a.pages else default_pages(a.site)
-    results = collect(a.site, widths, modes, pages=pages)
+    pages = ([p for p in a.pages.split(",") if p.strip()] if a.pages is not None
+             else default_pages(a.site))
+    try:
+        if not (pages and widths and modes):
+            raise RuntimeError("không có trang/độ rộng/chế độ nào để đo")
+        results = collect(a.site, widths, modes, pages=pages)
+    except RuntimeError as e:
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
     for r in results:
         print(json.dumps(r, ensure_ascii=False))
     if a.check_overflow:
