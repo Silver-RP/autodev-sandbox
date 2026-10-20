@@ -91,3 +91,70 @@ def test_store_complete_missing_returns_false_no_write(tmp_path):
     before = _snap(p)
     assert store.complete(p, 9) is False
     assert _snap(p) == before
+
+
+_CMDS = [
+    ["add", "x"],
+    ["list"],
+    ["overdue"],
+    ["done", "1"],
+    ["due", "1", "2026-10-20"],
+]
+
+
+@pytest.mark.parametrize("argv", _CMDS)
+def test_corrupt_json_all_commands(tf, capsys, argv):
+    tf.write_bytes("{hỏng".encode())
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert str(tf) in cap.err and "Traceback" not in cap.err
+    assert cap.out == ""
+
+
+def test_add_on_corrupt_file_keeps_bytes(tf, capsys):
+    tf.write_bytes(b"{hong")
+    before = _snap(tf)
+    assert cli.main(["add", "x"]) == 2
+    assert _snap(tf) == before
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"{}",
+        b"[1]",
+        b'[{"title": "x", "done": false}]',
+        b'[{"id": "1", "title": "x", "done": false}]',
+        b'[{"id": true, "title": "x", "done": false}]',
+        b"\xff\xfe",
+    ],
+)
+def test_list_bad_structure(tf, capsys, content):
+    tf.write_bytes(content)
+    assert cli.main(["list"]) == 2
+    cap = capsys.readouterr()
+    assert cap.err.strip() and "Traceback" not in cap.err and cap.out == ""
+    assert str(tf) in cap.err
+
+
+def test_bad_element_reason_mentions_id(tf, capsys):
+    tf.write_bytes(b'[{"title": "x"}]')
+    cli.main(["list"])
+    assert "id" in capsys.readouterr().err
+
+
+def test_legacy_file_still_lists(tf, capsys):
+    tf.write_text('[{"id": 1, "title": "việc cũ", "done": true}]', encoding="utf-8")
+    assert cli.main(["list"]) == 0
+    assert "việc cũ" in capsys.readouterr().out
+
+
+def test_empty_file_is_error(tf, capsys):
+    tf.write_bytes(b"")
+    assert cli.main(["list"]) == 2
+    cap = capsys.readouterr()
+    assert cap.err.strip() and "Traceback" not in cap.err
+
+
+def test_missing_file_is_empty_list(tf):
+    assert store.load(tf) == []

@@ -8,8 +8,29 @@ from datetime import date
 from pathlib import Path
 
 
+class StoreError(ValueError):
+    """File dữ liệu hỏng hoặc sai cấu trúc."""
+
+
 def load(path: Path) -> list[dict]:
-    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except UnicodeDecodeError as e:
+        raise StoreError(f"{path}: không phải UTF-8 ({e.reason})") from e
+    except json.JSONDecodeError as e:
+        raise StoreError(f"{path}: JSON hỏng ({e.msg}, dòng {e.lineno} cột {e.colno})") from e
+    if not isinstance(data, list):
+        raise StoreError(f"{path}: gốc phải là danh sách")
+    for n, item in enumerate(data, 1):
+        if not isinstance(item, dict):
+            raise StoreError(f"{path}: phần tử {n} không phải đối tượng")
+        if "id" not in item:
+            raise StoreError(f'{path}: phần tử {n} thiếu "id"')
+        if not isinstance(item["id"], int) or isinstance(item["id"], bool):
+            raise StoreError(f'{path}: phần tử {n} có "id" không phải số nguyên')
+    return data
 
 
 def _umask() -> int:

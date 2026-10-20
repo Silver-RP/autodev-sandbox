@@ -58,6 +58,14 @@ def _is_id(text: str) -> bool:
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     path = Path(os.environ.get("TODO_FILE", "todo.json"))
+    try:
+        return _run(argv, path)
+    except store.StoreError as e:
+        print(e, file=sys.stderr)
+        return 2
+
+
+def _run(argv: list[str], path: Path) -> int:
     if argv[:1] == ["add"] and len(argv) > 1:
         return _add(path, argv[1:])
     if argv == ["list"]:
