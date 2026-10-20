@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`) + duyệt R15 (supervisor)
+Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`) + duyệt R15, R17 (supervisor)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -20,10 +20,11 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | R11 | merged | PR #40 (`099dfd9`); 3 task, mỗi task 1 vòng; 229 test pass; E3 đạt trên URL thật; đóng H-16 |
 | R14 | merged | PR #44 (`66bcab8`); 4 task, mỗi task 1 vòng; 295 test pass; đóng H-06, H-07, H-09, H-10, H-15, H-17; ghi H-21 |
 | R15 | merged | PR #48 (`63cd730`); 4 task, mỗi task 1 vòng; 374 test pass; D3, D4, D6, E5 giữ; đóng H-03, H-04, H-05, H-11, H-20 |
+| R17 | merged | PR #52 (`3a18132`); 3 task, mỗi task 1 vòng; 412 test pass; A1–A4 giữ; đóng H-13, H-18, H-26; ghi H-34 |
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit 2026-10-21 ước thực tế ≈ 75–80% (đẹp ~68%, kỹ thuật ~85%, phát hành ~65%); hero lệch spec (H-22). `due-overdue` thực tế ≈ 92% (H-13, H-26).
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit 2026-10-21 ước thực tế ≈ 75–80% (đẹp ~68%, kỹ thuật ~85%, phát hành ~65%); hero lệch spec (H-22). `due-overdue` sau R17 (đóng H-13, H-18, H-26) còn hở H-34.
 
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
@@ -46,7 +47,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | E3 | `uv run python scripts/smoke_pages.py` | 200, SHA khớp `main` | exit 0 @ `63cd730`, đạt |
 
 ## Kiến trúc hiện nay
-- `src/todo/`: CLI todo (`add --due`, `list`, `overdue`, `done`, `due`); luật ngày duy nhất ở `store.valid_due`.
+- `src/todo/`: CLI todo (`add --due`, `list`, `overdue`, `done`, `due`); luật ngày duy nhất ở `store.valid_due`. R17: `store.load` ném `StoreError` (JSON, cấu trúc, `id`), `cli.main` bắt → exit 2; `store.clean_title`; `store.lock(path)` = `flock` trên thư mục chứa đích thật; `save` ghi vào `realpath`.
 - `site/`: landing "Quán cóc đầu ngõ" 6 phần (`hero`, `dich-vu`, `cach-lam`, `du-an` (3 dự án hư cấu, mỗi `article` có "(ví dụ)" + SVG), `hoi-dap` (4 `<details>`), `lien-he`). `style.css`: token 6 màu sáng ở `:root` (`--color-*`), Google Fonts (Baloo 2, Be Vietnam Pro) nạp trong HTML bằng `<link rel=preload as=style>` (không `onload`; `main.js` đổi `rel` sang `stylesheet`, R14) + `<noscript>` (R10, bỏ `@import`), menu bảng liền có chấm dẫn. Tối: `@media (prefers-color-scheme: dark)` chỉ gán lại token `:root` theo bảng "Tối" của doc, thêm `--color-chu-nut`, `--color-chu-tren-tra`. `:focus-visible` có `outline` cho link và nút. 8 SVG inline (`currentColor` / `var()`, nét 2,5): hero (ghế + ly), 3 biểu tượng gói, ghế trống ở liên hệ, 3 minh hoạ `#du-an` (`aria-hidden`).
 - Chuyển động: GSAP 3.12.5 qua jsDelivr (SRI, `defer`) + `site/main.js`. Không có `gsap` thì không làm gì (không class `js`). Một timeline hero (`h1`, `.hero-hinh`, `gsap.from` + `clearProps`); nút `#luoi-nut` (`hidden` khi không JS, `aria-pressed`) dịch hai ghế và ly. `window.lazySite.shouldAnimate()` đọc `prefers-reduced-motion`; `false` thì không timeline, nút dùng `gsap.set`.
 - `scripts/screenshot.py`: Chrome headless; 1280 trực tiếp, < 1000 qua iframe; tối bằng `--blink-settings`; ảnh ở `.autodev/shots/` (gitignore). R14: `shoot()` xoá ảnh cũ trước khi chụp; Chrome `returncode != 0`, không có tệp, timeout 60 giây (hằng số), DOM rỗng → `RuntimeError`; `main` in `Lỗi: ...`, exit 2 (cả `--url` không tới được); `--page` chỉ ghi chunk hash khi chụp xong. Dưới `--virtual-time-budget` rAF gần như không phát: hero chụp ra còn dở intro (đẩy `gsap.globalTimeline.time` như test, CDP thời gian thật, hoặc bản sao bỏ `<script>`).
@@ -62,6 +63,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | Quy tắc | Test bảo vệ |
 |---|---|
 | Lỗi không ghi file; ngày sai thoát 2 | `tests/test_due.py`, `tests/test_valid_due_strict.py`, `tests/test_cli_overdue.py` |
+| `todo`: id chỉ chữ số ASCII; tiêu đề rỗng exit 2, tab/xuống dòng thành khoảng trắng; `done` id không có exit 1 không ghi; JSON hỏng/sai `id` exit 2; ghi qua symlink; khoá `flock` | `tests/test_cli_errors.py`, `tests/test_store_safety.py` |
 | Quá hạn: biên, sắp, không phụ thuộc đồng hồ | `tests/test_overdue.py` |
 | Ảnh 360 thật (PNG + `innerWidth`), tối thật | `tests/test_tools.py` |
 | Tương phản AA trên trang thật, nền trong suốt theo cha, chữ lớn 3:1 | `tests/test_tools.py` (`test_contrast_*`), `tests/test_site_dark.py` |
@@ -83,16 +85,13 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | Mã | Mức | Mô tả | Mốc nhận |
 |---|---|---|---|
 | H-12 | vừa | D4, D5, E2, L5 không trong verify/smoke/CI; `contrast.py` mặc định 1280, bỏ `::before` | người (config) |
-| H-13 | vừa | `todo done <id không có>` vẫn ghi file, không báo lỗi | mốc todo |
 | H-14 | vừa | Email `hello@example.com` giữ chỗ bị test khoá, không hiện thành chữ; `robots.txt` dưới `/autodev-sandbox/` crawler không đọc (URL `example.github.io` đã sửa ở R11) | leader |
-| H-18 | thấp | `todo` store: ghi song song mất cập nhật; JSON hỏng traceback; symlink bị thay | mốc todo |
 | H-19 | thấp | `due-overdue/goal.json` còn `planned`; `criteria.md` nền cũ | người |
 | H-21 | thấp | `test_tools.py` (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) → exit 2; supervisor thấy 2/7 lần ở load ~14,5 | mốc công cụ |
 | H-22 | vừa | Hero thiếu laptop, người ngủ gật, hơi nước, tương tác ngáp như `docs/design/lazy-landing.md`; chưa ghi "lệch đã chấp nhận"; D7 duyệt trước khi H-07 sửa | leader |
 | H-23 | vừa | `screenshot.py --page/--pages` không kiểm HTTP: trang 404 vẫn exit 0, đóng hash `og.svg` lên ảnh sai | mốc công cụ |
 | H-24 | vừa | `page_metrics --check-overflow` chỉ đo `getBoundingClientRect().right`, bỏ `scrollWidth`: chữ `nowrap` tràn vẫn exit 0 (R15 tự đo `scrollWidth` ở 360 trong `test_site_mobile.py`) | mốc công cụ |
 | H-25 | vừa | `lh_check.py --site <thư mục không có index.html>` vẫn chạy Lighthouse, có thể in OK | mốc công cụ |
-| H-26 | vừa | `todo done ²` → `ValueError` traceback; `todo add ""` ghi việc rỗng; tiêu đề có tab/xuống dòng hỏng `list` | mốc todo |
 | H-27 | vừa | `smoke_pages.py` (E3): `origin/main` không fetch, lỗi git traceback, không kiểm `main.js`/`robots.txt`/`sitemap.xml`, `/en/` không kiểm version | mốc công cụ |
 | H-28 | vừa | `pages.yml` deploy mỗi push `main` không chờ ruff/pytest; test workflow chỉ regex, không chạy `sed` | mốc công cụ |
 | H-29 | thấp | Lỗi công cụ còn exit 1: `--widths abc`, màu `color(srgb …)`, `--pages ../x`; `--pages /en` bị từ chối | mốc công cụ |
@@ -100,6 +99,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | H-31 | thấp | Đạt trên giấy: probe hero tự đẩy timeline, chờ `lazySite` 10×50 ms ảo, D6/D3 xanh bằng skip khi offline | mốc công cụ |
 | H-32 | thấp | `contrast.py`: `font-size:0`, nền gradient, `colors` rỗng đạt im lặng; `lh_check` `round()` banker trượt oan biên 95 | mốc công cụ |
 | H-33 | thấp | Hết giờ chỉ giết tiến trình trực tiếp (`npx→node→Chrome` mồ côi); `OSError` khi dọn hồ sơ; chưa xác nhận, có thể góp H-21 | mốc công cụ |
+| H-34 | thấp | `todo`: `load` chưa kiểm `title` (str), `done` (bool): `[{"id":1,"title":"a"}]` → `list` traceback `KeyError`; lỗi OS (thư mục của `TODO_FILE` không có, không quyền, đĩa đầy) traceback | mốc todo (leader duyệt) |
 
 ## Nợ không chặn
 - Tham số `today` của `store.overdue` che `store.today()`.
@@ -117,6 +117,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 - R15: chờ font cố định 800 ms trong `MEASURE_JS` (có thể chập chờn khi mạng chậm); `test_cup_reduced_motion_block_instant` có assert `json.dumps(d)` vô nghĩa; test `scrollWidth` 360 chỉ chạy sáng.
 
 ## Quyết định gần đây
+- 2026-10-21: merge R17 (PR #52). 7/7 tiêu chí tự chạy đạt (412 passed; song song 5 lần xanh; CLI thật exit 2/2/1/2, không traceback); test mới đỏ 34 ca trên code cũ. Đóng H-13, H-18, H-26. (c) ghi H-34 (`title`/`done`, lỗi OS) thay vì chặn: ngoài phạm vi roadmap R17.
 - 2026-10-21: merge R15 (PR #48). 8/8 tiêu chí tự chạy đạt (374 passed × 3); test mới đỏ 13 ca trên `site/` cũ. Đóng H-03, H-04, H-05, H-11, H-20. (a) chấp nhận sửa `screenshot.frame_html` (polling `#out`). H-21, H-23..25, H-29, H-32, H-33 chuyển "mốc công cụ" (plan R15 để ngoài phạm vi); H-22 → leader.
 - 2026-10-21: audit R1–R14 (`docs/audits/2026-10-21.md`): 12 lỗ mới H-22..H-33 (7 vừa, 5 thấp), 0 đóng; 6 lỗ R14 đóng nhưng còn phần hở (H-23, H-25, H-29, H-30, H-31). Đề xuất: R15 thêm dev công cụ (H-23..25, 29, 32, 33); mốc todo nhỏ (H-13, H-18, H-26); leader quyết H-22, H-14; người đưa D4/D5/L5 vào `smoke` (H-12).
 - 2026-10-21: merge R14 (PR #44). 7 tiêu chí tự chạy đạt; `test_tools.py` chập chờn khi tải nặng → H-21 (R15), không chặn vì không hồi quy. Đóng H-06, H-07, H-09, H-10, H-15, H-17; bỏ H-08 khỏi bảng (D7 đạt). (c) chấp nhận `--pages` thay `--only`, `onload` font chuyển sang `main.js`.

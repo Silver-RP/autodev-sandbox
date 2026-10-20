@@ -6,23 +6,21 @@
   ],
   "open_gaps": [
     {"id": "H-12", "severity": "medium", "text": "D4, D5, E2, L5 không trong verify/smoke/CI; contrast.py mặc định 1280, bỏ ::before", "milestone": null},
-    {"id": "H-13", "severity": "medium", "text": "todo done <id không có> vẫn ghi file, không báo lỗi", "milestone": null},
     {"id": "H-14", "severity": "medium", "text": "Email hello@example.com giữ chỗ bị test khoá, không hiện thành chữ; robots.txt dưới đường con /autodev-sandbox/ crawler không đọc (URL example.github.io đã sửa ở R11)", "milestone": null},
-    {"id": "H-18", "severity": "low", "text": "todo store: ghi song song mất cập nhật; JSON hỏng traceback; symlink bị thay", "milestone": null},
     {"id": "H-19", "severity": "low", "text": "due-overdue/goal.json còn planned; criteria.md nền cũ", "milestone": null},
     {"id": "H-21", "severity": "low", "text": "test_tools.py (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) -> exit 2; 2/7 lần ở load ~14,5", "milestone": null},
     {"id": "H-22", "severity": "medium", "text": "Hero thiếu laptop, người ngủ gật, hơi nước, tương tác ngáp như doc; chưa ghi lệch đã chấp nhận; D7 duyệt trước khi H-07 sửa", "milestone": null},
     {"id": "H-23", "severity": "medium", "text": "screenshot.py --page/--pages không kiểm HTTP: 404 vẫn exit 0, đóng hash og.svg lên ảnh sai", "milestone": null},
     {"id": "H-24", "severity": "medium", "text": "page_metrics --check-overflow bỏ scrollWidth: chữ nowrap tràn vẫn exit 0", "milestone": null},
     {"id": "H-25", "severity": "medium", "text": "lh_check.py --site thư mục không có index.html vẫn chạy Lighthouse", "milestone": null},
-    {"id": "H-26", "severity": "medium", "text": "todo done ² ValueError traceback; todo add rỗng ghi việc; tiêu đề có tab/xuống dòng hỏng list", "milestone": null},
     {"id": "H-27", "severity": "medium", "text": "smoke_pages.py (E3): không fetch origin/main, lỗi git traceback, thiếu kiểm main.js/robots/sitemap, /en/ không kiểm version", "milestone": null},
     {"id": "H-28", "severity": "medium", "text": "pages.yml deploy không chờ ruff/pytest; test workflow chỉ regex, không chạy sed", "milestone": null},
     {"id": "H-29", "severity": "low", "text": "Lỗi công cụ còn exit 1: --widths abc, color(srgb), --pages ../x; --pages /en bị từ chối", "milestone": null},
     {"id": "H-30", "severity": "low", "text": "L2 còn lọt input type=image, video poster, srcset, meta refresh, iframe srcdoc, integrity rỗng, image-set()", "milestone": null},
     {"id": "H-31", "severity": "low", "text": "Đạt trên giấy: probe hero tự đẩy timeline, chờ lazySite 10x50 ms ảo, D6/D3 xanh bằng skip khi offline", "milestone": null},
     {"id": "H-32", "severity": "low", "text": "contrast.py: font-size:0, nền gradient, colors rỗng đạt im lặng; lh_check round() banker trượt oan biên 95", "milestone": null},
-    {"id": "H-33", "severity": "low", "text": "Hết giờ chỉ giết tiến trình trực tiếp (npx-node-Chrome mồ côi); OSError khi dọn hồ sơ; chưa xác nhận, có thể góp H-21", "milestone": null}
+    {"id": "H-33", "severity": "low", "text": "Hết giờ chỉ giết tiến trình trực tiếp (npx-node-Chrome mồ côi); OSError khi dọn hồ sơ; chưa xác nhận, có thể góp H-21", "milestone": null},
+    {"id": "H-34", "severity": "low", "text": "todo: load chưa kiểm title (str), done (bool) -> list traceback KeyError; lỗi OS (thư mục TODO_FILE không có, không quyền, đĩa đầy) traceback", "milestone": null}
   ],
   "milestones": {
     "runs": [
@@ -40,12 +38,14 @@
       {"id": "R10", "status": "merged", "pr": 35, "merge_commit": "576fd3d"},
       {"id": "R11", "status": "merged", "pr": 40, "merge_commit": "099dfd9"},
       {"id": "R14", "status": "merged", "pr": 44, "merge_commit": "66bcab8"},
-      {"id": "R15", "status": "merged", "pr": 48, "merge_commit": "63cd730"}
+      {"id": "R15", "status": "merged", "pr": 48, "merge_commit": "63cd730"},
+      {"id": "R17", "status": "merged", "pr": 52, "merge_commit": "3a18132"}
     ],
     "plugin": []
   },
   "outlook": [],
   "decisions": [
+    {"date": "2026-10-21", "text": "Merge R17 (PR #52); 7/7 tiêu chí tự chạy đạt (412 passed, song song 5 lần xanh, CLI thật exit 2/2/1/2 không traceback); test mới đỏ 34 ca trên code cũ; đóng H-13, H-18, H-26; (c) ghi H-34 (title/done, lỗi OS) thay vì chặn"},
     {"date": "2026-10-21", "text": "Merge R15 (PR #48); 8/8 tiêu chí tự chạy đạt (374 passed x3), test mới đỏ 13 ca trên site cũ; đóng H-03, H-04, H-05, H-11, H-20; (a) chấp nhận sửa screenshot.frame_html; H-21, H-23..25, H-29, H-32, H-33 chuyển mốc công cụ, H-22 sang leader"},
     {"date": "2026-10-21", "text": "Audit R1-R14 (docs/audits/2026-10-21.md): 12 lỗ mới H-22..H-33 (7 vừa, 5 thấp), 0 đóng; lazy-landing thực tế ~75-80%, due-overdue ~92%; đề xuất R15 thêm dev công cụ, mốc todo nhỏ, leader quyết H-22/H-14"},
     {"date": "2026-10-21", "text": "Merge R14 (PR #44); 7 tiêu chí tự chạy đạt, test_tools.py chập chờn khi tải nặng ghi H-21 (R15); đóng H-06, H-07, H-09, H-10, H-15, H-17, bỏ H-08 (D7 đạt); (c) --pages thay --only, onload font sang main.js"},
