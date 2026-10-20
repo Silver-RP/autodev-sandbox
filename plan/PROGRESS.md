@@ -80,6 +80,7 @@
 ## R17
 - dev-01 DONE (1 vòng, commit 73b1228): `cli._is_id` (`[0-9]+` ASCII) cho `done`/`due`; `store.clean_title` (xuống dòng + tab → khoảng trắng), `add` rỗng → stderr exit 2; `store.complete` chỉ `save` khi thấy id, `done` id không có → exit 1. `tests/test_cli_errors.py` (đỏ trước khi sửa). 390 test pass. Ghi chú reviewer (không chặn): pytest ~210 giây.
 - dev-02 DONE (1 vòng, commit 8aa9317): `store.StoreError`, `load` kiểm UTF-8/JSON/gốc list/phần tử dict có `id` int; `cli.main` bắt → stderr một dòng, exit 2, không ghi file. 14 test đỏ trước khi sửa; 406 test pass. Ghi chú reviewer (c): chưa kiểm `title`/`done` (xem "Đề xuất chờ duyệt" trong plan).
+- dev-03 DONE (1 vòng, commit e1cdea0): `save` ghi vào `realpath` (symlink giữ nguyên); `store.lock(path)`/`lock_path` là `flock` trên thư mục chứa đích, `add`/`set_due`/`complete` giữ khoá quanh load-sửa-ghi. `tests/test_store_safety.py` (6 test, đỏ trước khi sửa; 5 lần liền xanh). 412 test pass. CLI thật: `done ²` 2, `add ""` 2, `done 9` 1, `list` JSON hỏng 2, không Traceback. Ghi chú reviewer (không chặn): thư mục `TODO_FILE` không có vẫn traceback (ngoài phạm vi, đã ở đề xuất).
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
