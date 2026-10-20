@@ -36,7 +36,7 @@ REQUIRED = [
 
 
 def test_site_url_default():
-    assert SITE_URL == "https://example.github.io/autodev-sandbox/"
+    assert SITE_URL == "https://silver-rp.github.io/autodev-sandbox/"
     assert SITE_URL.endswith("/")
 
 
