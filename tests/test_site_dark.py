@@ -2,6 +2,8 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -51,14 +53,50 @@ def test_dark_block_has_only_root():
     assert [s for s, _ in blocks(media)] == [":root"]
 
 
-def test_svg_has_no_hardcoded_hex_paint():
-    svgs = re.findall(r"<svg.*?</svg>", HTML, flags=re.DOTALL)
+EN_HTML = (Path(__file__).resolve().parent.parent / "site" / "en" / "index.html").read_text(
+    encoding="utf-8"
+)
+PAGES = {"vi": HTML, "en": EN_HTML}
+
+
+def _hex_paint_violations(html):
+    out = []
+    for svg in re.findall(r"<svg.*?</svg>", html, flags=re.DOTALL):
+        for attr in re.findall(r'\b(?:fill|stroke)="([^"]*)"', svg):
+            if HEXRE.search(attr) or not (
+                attr == "none" or attr == "currentColor" or attr.startswith("var(")
+            ):
+                out.append(attr)
+        if HEXRE.search(svg):
+            out.append("hex")
+    return out
+
+
+@pytest.mark.parametrize("lang", list(PAGES))
+def test_svg_has_no_hardcoded_hex_paint(lang):
+    svgs = re.findall(r"<svg.*?</svg>", PAGES[lang], flags=re.DOTALL)
     assert svgs
     for svg in svgs:
         for attr in re.findall(r'\b(?:fill|stroke)="([^"]*)"', svg):
             assert not HEXRE.search(attr), attr
             assert attr == "none" or attr == "currentColor" or attr.startswith("var("), attr
         assert not HEXRE.search(svg)
+
+
+def test_en_svg_hex_fill_is_caught():
+    assert _hex_paint_violations(EN_HTML) == []
+    bad = EN_HTML.replace('<path d="M20 262H380"/>', '<path d="M20 262H380" stroke="#ff0000"/>', 1)
+    assert _hex_paint_violations(bad)
+
+
+def test_en_svg_named_color_is_caught():
+    bad = EN_HTML.replace('stroke="currentColor"', 'stroke="red"', 1)
+    assert _hex_paint_violations(bad)
+
+
+def test_en_svg_gradient_hex_in_style_is_caught():
+    bad = EN_HTML.replace("<svg ", '<svg data-x="#abc123" ', 1)
+    assert _hex_paint_violations(bad)
 
 
 @needs_chrome

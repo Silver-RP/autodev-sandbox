@@ -2,10 +2,29 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
+import pytest
+
 SITE = Path(__file__).parent.parent / "site"
 HTML = (SITE / "index.html").read_text(encoding="utf-8")
 CSS = (SITE / "style.css").read_text(encoding="utf-8")
 VERBS = ("Gửi", "Nhắn", "Viết")
+
+# Giá trị phụ thuộc ngôn ngữ: theo trang, không nới điều kiện.
+LANG = {
+    "vi": {
+        "html": HTML,
+        "verbs": VERBS,
+        "example": "ví dụ",
+        "banned": ("khách hàng nói", "đánh giá", "testimonial"),
+    },
+    "en": {
+        "html": (SITE / "en" / "index.html").read_text(encoding="utf-8"),
+        "verbs": ("Email", "Write", "Message", "Send"),
+        "example": "example",
+        "banned": ("customers say", "what clients say", "reviews", "testimonial"),
+    },
+}
+LANGS = list(LANG)
 
 
 class Links(HTMLParser):
@@ -50,13 +69,14 @@ def parse(src):
     return p
 
 
-def test_mailto_buttons_hero_and_contact_start_with_verb():
-    links = parse(HTML).mailto
+@pytest.mark.parametrize("lang", LANGS)
+def test_mailto_buttons_hero_and_contact_start_with_verb(lang):
+    links = parse(LANG[lang]["html"]).mailto
     assert len(links) >= 2
     sections = {s for s, _ in links}
     assert {"hero", "lien-he"} <= sections
     for _, text in links:
-        assert text.startswith(VERBS), text
+        assert text.startswith(LANG[lang]["verbs"]), text
 
 
 def test_mailto_detection_negative():
@@ -64,8 +84,9 @@ def test_mailto_detection_negative():
     assert parse('<a href="https://x.vn">Gửi</a>').mailto == []
 
 
-def test_no_arrow_in_visible_text():
-    assert "→" not in "".join(parse(HTML).text)
+@pytest.mark.parametrize("lang", LANGS)
+def test_no_arrow_in_visible_text(lang):
+    assert "→" not in "".join(parse(LANG[lang]["html"]).text)
 
 
 def test_no_uppercase_transform_in_css():
@@ -111,8 +132,9 @@ def faq(src):
     return [(" ".join(s.split()), " ".join(b.split())) for s, b in p.items]
 
 
-def test_faq_has_at_least_four_details_with_summary_and_body():
-    items = faq(HTML)
+@pytest.mark.parametrize("lang", LANGS)
+def test_faq_has_at_least_four_details_with_summary_and_body(lang):
+    items = faq(LANG[lang]["html"])
     assert len(items) >= 4
     for q, a in items:
         assert q, "summary rỗng"
@@ -126,13 +148,13 @@ def test_faq_parser_negative():
     assert faq("<section id='hoi-dap'><details><summary></summary>bb</details></section>")[0][0] == ""
 
 
-def test_faq_is_between_cach_lam_and_lien_he():
-    ids = re.findall(r'<section id="([^"]+)"', HTML)
+@pytest.mark.parametrize("lang", LANGS)
+def test_faq_is_between_cach_lam_and_lien_he(lang):
+    ids = re.findall(r'<section id="([^"]+)"', LANG[lang]["html"])
     assert ids.index("cach-lam") < ids.index("hoi-dap") < ids.index("lien-he")
 
 
 DRAW = {"path", "circle", "rect", "line", "polyline", "polygon", "ellipse"}
-BANNED = ("khách hàng nói", "đánh giá", "testimonial")
 
 
 class Projects(HTMLParser):
@@ -178,17 +200,19 @@ def projects(src):
     return p.items
 
 
-def test_du_an_has_exactly_three_items_with_vi_du_and_svg():
-    items = projects(HTML)
+@pytest.mark.parametrize("lang", LANGS)
+def test_du_an_has_exactly_three_items_with_vi_du_and_svg(lang):
+    items = projects(LANG[lang]["html"])
     assert len(items) == 3
     for it in items:
-        assert "ví dụ" in it["text"].lower()
+        assert LANG[lang]["example"] in it["text"].lower()
         good = [s for s in it["svgs"] if s["draw"] >= 3 and (s["hidden"] or s["title"])]
         assert good, it["text"]
 
 
-def test_du_an_is_between_cach_lam_and_lien_he():
-    ids = re.findall(r'<section id="([^"]+)"', HTML)
+@pytest.mark.parametrize("lang", LANGS)
+def test_du_an_is_between_cach_lam_and_lien_he(lang):
+    ids = re.findall(r'<section id="([^"]+)"', LANG[lang]["html"])
     assert ids.index("cach-lam") < ids.index("du-an") < ids.index("lien-he")
 
 
@@ -198,9 +222,10 @@ def test_projects_parser_negative():
     assert len(got) == 1 and "ví dụ" not in got[0]["text"] and got[0]["svgs"][0]["draw"] == 1
 
 
-def test_no_fake_praise_words_anywhere():
-    low = HTML.lower()
-    for w in BANNED:
+@pytest.mark.parametrize("lang", LANGS)
+def test_no_fake_praise_words_anywhere(lang):
+    low = LANG[lang]["html"].lower()
+    for w in LANG[lang]["banned"]:
         assert w not in low, w
 
 
@@ -208,3 +233,33 @@ def test_css_does_not_hide_summary():
     for m in re.finditer(r"([^{}]*summary[^{}]*)\{([^}]*)\}", CSS):
         body = m.group(2)
         assert not re.search(r"display\s*:\s*none|visibility\s*:\s*hidden", body), m.group(0)
+
+
+# --- ca âm trên HTML bản Anh có lỗi (R15 dev-04) ---
+
+
+def test_en_mailto_not_starting_with_verb_is_caught():
+    bad = LANG["en"]["html"].replace(">Email me</a>", ">Contact</a>")
+    texts = [t for _, t in parse(bad).mailto]
+    assert texts and not all(t.startswith(LANG["en"]["verbs"]) for t in texts)
+
+
+def test_en_faq_details_without_summary_is_caught():
+    bad = re.sub(r"<summary>.*?</summary>", "<summary></summary>", LANG["en"]["html"])
+    assert any(not q for q, _ in faq(bad))
+
+
+def test_en_project_without_example_marker_is_caught():
+    bad = LANG["en"]["html"].replace("(example)", "")
+    items = projects(bad)
+    assert any(LANG["en"]["example"] not in it["text"].lower() for it in items)
+
+
+def test_en_fake_praise_is_caught():
+    bad = LANG["en"]["html"].replace("<h2>Drop by</h2>", "<h2>What customers say</h2>")
+    assert any(w in bad.lower() for w in LANG["en"]["banned"])
+
+
+def test_en_arrow_in_text_is_caught():
+    bad = LANG["en"]["html"].replace(">Email me</a>", ">Email me →</a>", 1)
+    assert "→" in "".join(parse(bad).text)

@@ -2,8 +2,12 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
+import pytest
+
 SITE = Path(__file__).resolve().parent.parent / "site"
 HTML = (SITE / "index.html").read_text(encoding="utf-8")
+PAGES = {"vi": HTML, "en": (SITE / "en" / "index.html").read_text(encoding="utf-8")}
+LANGS = list(PAGES)
 CSS = (SITE / "style.css").read_text(encoding="utf-8")
 
 
@@ -113,16 +117,18 @@ def test_bo_kiem_outline_bat_loi():
     assert check_outline("a:focus-visible{outline:3px solid red}") == ([], True)
 
 
-def test_moi_svg_co_aria_hidden_hoac_role_img_title():
-    svgs = parse().svgs
+@pytest.mark.parametrize("lang", LANGS)
+def test_moi_svg_co_aria_hidden_hoac_role_img_title(lang):
+    svgs = parse(PAGES[lang]).svgs
     assert len(svgs) >= 5
     assert all(svg_ok(s) for s in svgs)
     assert not svg_ok({"attrs": {"role": "img"}, "title": False})
     assert not svg_ok({"attrs": {}, "title": True})
 
 
-def test_heading_khong_nhay_cap():
-    levels = parse().headings
+@pytest.mark.parametrize("lang", LANGS)
+def test_heading_khong_nhay_cap(lang):
+    levels = parse(PAGES[lang]).headings
     assert levels and levels[0] == 1
     assert check_headings(levels)
     assert not check_headings([1, 3])
@@ -130,10 +136,36 @@ def test_heading_khong_nhay_cap():
     assert check_headings([1, 2, 3, 2, 3])
 
 
-def test_link_va_nut_co_ten_doc_duoc():
-    names = parse().names
+@pytest.mark.parametrize("lang", LANGS)
+def test_link_va_nut_co_ten_doc_duoc(lang):
+    names = parse(PAGES[lang]).names
     assert any(n["tag"] == "a" for n in names)
     assert any(n["tag"] == "button" for n in names)
     assert all(name_ok(n) for n in names)
     assert not name_ok({"tag": "a", "attrs": {}, "text": " "})
     assert name_ok({"tag": "a", "attrs": {"aria-label": "x"}, "text": ""})
+
+
+# --- ca âm trên HTML bản Anh có lỗi (R15 dev-04) ---
+
+
+def test_en_svg_thieu_aria_hidden_bi_bat():
+    bad = PAGES["en"].replace(' aria-hidden="true"', "")
+    svgs = parse(bad).svgs
+    assert svgs and not all(svg_ok(s) for s in svgs)
+
+
+def test_en_svg_hero_thieu_title_bi_bat():
+    bad = re.sub(r"<title[^>]*>.*?</title>", "", PAGES["en"], flags=re.DOTALL)
+    svgs = parse(bad).svgs
+    assert not all(svg_ok(s) for s in svgs)
+
+
+def test_en_heading_nhay_cap_bi_bat():
+    bad = PAGES["en"].replace("<h2>", "<h4>").replace("</h2>", "</h4>")
+    assert not check_headings(parse(bad).headings)
+
+
+def test_en_link_khong_ten_bi_bat():
+    bad = PAGES["en"].replace("Email me</a>", "</a>")
+    assert not all(name_ok(n) for n in parse(bad).names)
