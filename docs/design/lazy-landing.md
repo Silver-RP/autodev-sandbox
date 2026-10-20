@@ -4,7 +4,7 @@ Chốt ngày 2026-10-16. Phiên leader đề xuất 3 hướng theo quy trình s
 
 Hướng đã chọn: 2 — Quán cóc đầu ngõ
 
-Leader duyệt:
+Leader duyệt: đạt (2026-10-20, bản Việt + Anh)
 
 ## Ngữ cảnh
 - **Chủ đề:** dịch vụ làm website của một vibe coder lười, giọng tự giễu; tiếng Việt (bản Anh ở R13).
