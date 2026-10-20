@@ -2,6 +2,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
+from test_site_motion import needs_chrome
 
 SITE = Path(__file__).parent.parent / "site"
 IDS = ["hero", "dich-vu", "cach-lam", "lien-he"]
@@ -188,3 +189,56 @@ def test_css_content():
     css = (SITE / "style.css").read_text(encoding="utf-8")
     assert "max-width" in css
     assert ":root" in css
+
+
+@pytest.mark.parametrize("path", ["index.html", "en/index.html"])
+def test_font_preload_has_no_onload(path):
+    s = (SITE / path).read_text(encoding="utf-8")
+    assert "onload=" not in s.lower()
+    assert 'rel="preload" as="style"' in s  # vẫn còn preload
+
+
+def test_main_js_switches_preload_to_stylesheet():
+    js = (SITE / "main.js").read_text(encoding="utf-8")
+    assert 'link[rel="preload"][as="style"]' in js
+    assert '"stylesheet"' in js
+    # chạy trước nhánh thoát khi không có gsap (CDN hỏng vẫn có font)
+    assert js.index("preload") < js.index("window.gsap")
+
+
+_FONT_PROBE = """<pre id="fontout"></pre><script>
+window.addEventListener('load', function () { setTimeout(function () {
+  var l = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+  document.getElementById('fontout').textContent = JSON.stringify(
+    Array.prototype.map.call(l, function (e) { return e.rel; }));
+}, 300); });
+</script>
+"""
+
+
+@needs_chrome
+@pytest.mark.parametrize("path", ["index.html", "en/index.html"])
+def test_font_preload_becomes_stylesheet_with_js(path, tmp_path):
+    import html as htmllib
+    import json
+    import re
+    import shutil
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from scripts import screenshot as sh
+
+    site = tmp_path / "site"
+    shutil.copytree(SITE, site)
+    page = site / path
+    page.write_text(
+        page.read_text(encoding="utf-8").replace("</body>", _FONT_PROBE + "</body>"),
+        encoding="utf-8",
+    )
+    for _ in range(2):  # gọi lặp lại
+        with sh.serve(site) as base:
+            dom = sh.dump_dom(base + "/" + path, 1280, 800, "light")
+        m = re.search(r'<pre id="fontout"[^>]*>(.*?)</pre>', dom, re.DOTALL)
+        assert m and m.group(1).strip(), "probe không chạy"
+        rels = json.loads(htmllib.unescape(m.group(1)))
+        assert "stylesheet" in rels and "preload" not in rels, rels

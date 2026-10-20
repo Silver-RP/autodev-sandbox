@@ -188,20 +188,32 @@ JS = (SITE / "main.js").read_text(encoding="utf-8")
 # gần như đứng yên (đã đo: sau 2900ms tiến độ mới ~0,36). Probe vì vậy đẩy đồng hồ
 # gsap thêm 2 giây (globalTimeline.time) rồi mới đo style thật mà gsap đã ghi.
 HERO_PROBE = """<pre id="out"></pre><script>
-setTimeout(function () {
-  var r = {gsap: !!window.gsap, tl: null, items: {}};
-  if (window.gsap) gsap.globalTimeline.time(gsap.globalTimeline.time() + 2);
-  if (window.lazySite) {
-    r.should = window.lazySite.shouldAnimate();
-    r.tl = !!window.lazySite.heroTimeline;
-    if (window.lazySite.heroTimeline) { r.dur = window.lazySite.heroTimeline.duration(); r.prog = window.lazySite.heroTimeline.progress(); r.t = performance.now(); }
+function heroProbe() {
+  var r = {gsap: !!window.gsap, tl: null, items: {}}, tries = 0;
+  function finish() {
+    if (window.gsap) gsap.globalTimeline.time(gsap.globalTimeline.time() + 2);
+    if (window.lazySite) {
+      r.should = window.lazySite.shouldAnimate();
+      r.tl = !!window.lazySite.heroTimeline;
+      if (window.lazySite.heroTimeline) { r.dur = window.lazySite.heroTimeline.duration(); r.prog = window.lazySite.heroTimeline.progress(); r.t = performance.now(); }
+    } else if (window.gsap) {
+      r.error = 'window.lazySite không có mặt sau khi chờ (main.js chưa chạy hoặc lỗi)';
+    }
+    ['#hero h1', '#hero .hero-hinh'].forEach(function (q) {
+      var el = document.querySelector(q);
+      if (!el) { r.error = r.error || 'thiếu phần tử ' + q; return; }
+      var cs = getComputedStyle(el);
+      r.items[q] = {opacity: +cs.opacity, transform: cs.transform};
+    });
+    document.getElementById('out').textContent = JSON.stringify(r);
   }
-  ['#hero h1', '#hero .hero-hinh'].forEach(function (q) {
-    var cs = getComputedStyle(document.querySelector(q));
-    r.items[q] = {opacity: +cs.opacity, transform: cs.transform};
-  });
-  document.getElementById('out').textContent = JSON.stringify(r);
-}, 2000);
+  // chờ có giới hạn (10 x 50ms, trong virtual-time-budget 3000) cho window.lazySite; gsap vắng thì không chờ
+  (function wait() {
+    if (window.lazySite || !window.gsap || ++tries > 10) return finish();
+    setTimeout(wait, 50);
+  })();
+}
+setTimeout(heroProbe, 2000);
 </script>
 """
 
@@ -234,6 +246,12 @@ def _identity(t):
     return t.startswith("matrix(") and nums[:4] == [1, 0, 0, 1] and nums[4:] == [0, 0]
 
 
+def read_hero(dom):
+    d = read(dom)
+    assert "error" not in d, d["error"]
+    return d
+
+
 def test_identity_helper():
     assert _identity("none") and _identity("matrix(1, 0, 0, 1, 0, 0)")
     assert not _identity("matrix(1, 0, 0, 1, 0, 24)")
@@ -243,7 +261,7 @@ def test_identity_helper():
 @needs_net
 def test_hero_settled_after_2s(tmp_path):
     for _ in range(2):
-        d = read(probe(tmp_path, lambda h: h.replace("</body>", HERO_PROBE + "</body>")))
+        d = read_hero(probe(tmp_path, lambda h: h.replace("</body>", HERO_PROBE + "</body>")))
         assert d["gsap"] is True, "online mà gsap không nạp"
         assert d["should"] is True and d["tl"] is True
         assert d["dur"] <= 1.5
@@ -259,8 +277,21 @@ def test_reduced_motion_no_timeline(tmp_path):
         h = h.replace("<script src=\"https://cdn", REDUCE + "<script src=\"https://cdn", 1)
         return h.replace("</body>", HERO_PROBE + "</body>")
 
-    d = read(probe(tmp_path, edit))
+    d = read_hero(probe(tmp_path, edit))
     assert d["gsap"] is True, "online mà gsap không nạp"
     assert d["should"] is False and d["tl"] is False
     for v in d["items"].values():
         assert v["opacity"] == 1 and _identity(v["transform"])
+
+
+@needs_chrome
+@needs_net
+def test_probe_reports_missing_lazysite(tmp_path):
+    def edit(h):
+        h = re.sub(r'<script[^>]*src="main\.js"[^>]*></script>', "", h)
+        return h.replace("</body>", HERO_PROBE + "</body>")
+
+    dom = probe(tmp_path, edit)
+    assert read(dom)["gsap"] is True, "online mà gsap không nạp"
+    with pytest.raises(AssertionError, match="lazySite"):
+        read_hero(dom)

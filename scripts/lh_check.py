@@ -1,4 +1,9 @@
-"""Đo Lighthouse (mobile) trên site/ thật qua HTTP; exit 1 nếu dưới ngưỡng E2, 2 nếu thiếu npx/Chrome."""
+"""Đo Lighthouse (mobile) trên site/ thật qua HTTP.
+
+Mã thoát: 0 = đạt ngưỡng E2; 1 = dưới ngưỡng E2; 2 = lỗi công cụ (thiếu npx/Chrome,
+Lighthouse lỗi hoặc quá --timeout, kết quả thiếu khoá/null/NaN/inf, trang không có
+trong site, không có trang nào để đo).
+"""
 
 from __future__ import annotations
 
@@ -6,6 +11,7 @@ import argparse
 import functools
 import http.server
 import json
+import math
 import os
 import shutil
 import statistics
@@ -23,6 +29,7 @@ THRESHOLDS = {"performance": 90, "accessibility": 95, "best-practices": 95, "seo
 MAX_BYTES = 300 * 1024
 RUNS_ROOT = 3
 RUNS_EN = 1
+DEFAULT_TIMEOUT = 180
 
 
 def build_command(url: str, out_path: str, npx: str = "npx") -> list[str]:
@@ -35,11 +42,23 @@ def build_command(url: str, out_path: str, npx: str = "npx") -> list[str]:
 
 
 def read_result(path) -> dict:
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
-    cats = data["categories"]
-    res = {c: round(cats[c]["score"] * 100) for c in CATEGORIES}
-    res["total-byte-weight"] = data["audits"]["total-byte-weight"]["numericValue"]
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+        res = {}
+        for c in CATEGORIES:
+            res[c] = _finite(data["categories"][c]["score"], c) * 100
+            res[c] = round(res[c])
+        res["total-byte-weight"] = _finite(
+            data["audits"]["total-byte-weight"]["numericValue"], "total-byte-weight")
+    except (KeyError, TypeError, ValueError) as e:
+        raise RuntimeError(f"kết quả Lighthouse không hợp lệ: {e!r}") from e
     return res
+
+
+def _finite(v, name):
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+        raise ValueError(f"{name} = {v!r}")
+    return v
 
 
 def median(values):
@@ -65,11 +84,14 @@ class MissingTool(RuntimeError):
     pass
 
 
-def run_lighthouse(url: str, npx: str, env: dict) -> dict:
+def run_lighthouse(url: str, npx: str, env: dict, timeout: float = DEFAULT_TIMEOUT) -> dict:
     with tempfile.TemporaryDirectory() as td:
         out = os.path.join(td, "lh.json")
-        proc = subprocess.run(build_command(url, out, npx), env=env, check=False,
-                              capture_output=True, text=True)
+        try:
+            proc = subprocess.run(build_command(url, out, npx), env=env, check=False,
+                                  capture_output=True, text=True, timeout=timeout)
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(f"lighthouse quá {timeout}s: {url}") from e
         if proc.returncode != 0 or not os.path.exists(out):
             raise RuntimeError(f"lighthouse lỗi ({proc.returncode}): {proc.stderr[-500:]}")
         return read_result(out)
@@ -97,12 +119,29 @@ def _table(rows: dict[str, list[dict]]) -> None:
               f"{a['best-practices']}  {a['seo']}  {a['total-byte-weight']:.0f}")
 
 
+def _pages(site: Path, spec: str | None) -> list[str]:
+    if spec is None:
+        return ["/"] + (["/en/"] if (site / "en" / "index.html").is_file() else [])
+    out = []
+    for p in (x.strip() for x in spec.split(",")):
+        if not p:
+            continue
+        p = p if p.startswith("/") else "/" + p
+        f = site / (p.lstrip("/") + ("index.html" if p.endswith("/") else ""))
+        if not f.is_file():
+            raise RuntimeError(f"trang không có trong {site}: {p}")
+        out.append(p)
+    return out
+
+
 def main(argv=None, runner=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--site", default=str(ROOT / "site"))
     ap.add_argument("--runs", type=int, default=RUNS_ROOT)
     ap.add_argument("--en-runs", type=int, default=RUNS_EN)
-    ap.add_argument("--only", choices=["root", "en"], help="chỉ đo một trang")
+    ap.add_argument("--pages", help="danh sách trang, vd /,/en/ (mặc định: / và /en/ nếu có)")
+    ap.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT,
+                    help="giây cho mỗi lần chạy Lighthouse")
     a = ap.parse_args(argv)
     runner = runner or run_lighthouse
 
@@ -122,16 +161,26 @@ def main(argv=None, runner=None) -> int:
     site = Path(a.site)
     srv = _serve(site)
     base = f"http://127.0.0.1:{srv.server_address[1]}"
-    plan = []
-    if a.only != "en":
-        plan.append(("/", a.runs))
-    if a.only != "root" and (site / "en" / "index.html").exists():
-        plan.append(("/en/", a.en_runs))
+    try:
+        pages = _pages(site, a.pages)
+    except RuntimeError as e:
+        srv.shutdown()
+        srv.server_close()
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
+    plan = [(p, a.runs if p == "/" else a.en_runs) for p in pages]
+    plan = [(p, n) for p, n in plan if n > 0]
     rows: dict[str, list[dict]] = {}
     try:
+        if not plan:
+            raise RuntimeError("không có trang nào để đo (kiểm --pages, --runs)")
         for path, n in plan:
-            rows[path] = [runner(base + path, npx or "npx", env) for _ in range(n)]
-    except RuntimeError as e:
+            if runner is run_lighthouse:
+                rows[path] = [runner(base + path, npx or "npx", env, timeout=a.timeout)
+                              for _ in range(n)]
+            else:
+                rows[path] = [runner(base + path, npx or "npx", env) for _ in range(n)]
+    except (RuntimeError, subprocess.TimeoutExpired) as e:
         print(f"Lỗi: {e}", file=sys.stderr)
         return 2
     finally:

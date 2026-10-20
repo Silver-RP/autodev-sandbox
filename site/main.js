@@ -1,5 +1,10 @@
 // Làm nền tăng dần: không có gsap thì trang giữ nguyên, không có class "js".
 (function () {
+  // Font: preload không có onload (luật L2 cấm on*); JS đổi sang stylesheet.
+  // Chạy trước nhánh thoát khi thiếu gsap để CDN hỏng vẫn có font.
+  var fontLinks = document.querySelectorAll('link[rel="preload"][as="style"]');
+  for (var i = 0; i < fontLinks.length; i++) fontLinks[i].rel = "stylesheet";
+
   if (!window.gsap) return;
   document.documentElement.classList.add("js");
 
