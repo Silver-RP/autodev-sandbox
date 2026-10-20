@@ -44,7 +44,11 @@
     {"id": "R10", "title": "Hiệu năng: Lighthouse mobile >= 90/95, tổng tải <= 300 KB", "depends_on": ["R7", "R8", "R13"], "metrics": ["E2"],
      "est_usd": 1.5, "est_hours": 0.3, "status": "done", "plan_file": "plan/R10.md"},
     {"id": "R11", "title": "Triển khai GitHub Pages + smoke URL thật", "depends_on": ["R10"], "metrics": ["E3"],
-     "est_usd": 1.3, "est_hours": 0.2, "status": "done", "plan_file": "plan/R11.md"}
+     "est_usd": 1.3, "est_hours": 0.2, "status": "done", "plan_file": "plan/R11.md"},
+    {"id": "R14", "title": "Cứng hoá công cụ đo và luật tài nguyên: báo lỗi đúng, có timeout, vá lỗ L2, hết test chập chờn (audit H-07, H-09, H-06, H-10, H-15, H-17)", "depends_on": ["R11"], "metrics": ["D1", "L2", "E2", "L3"],
+     "est_usd": 2.0, "est_hours": 0.4, "status": "planned"},
+    {"id": "R15", "title": "Hoàn thiện site: bản 360 giữ chấm dẫn và nút header, font tải thật, reduced-motion trong CSS, test bảo vệ cả bản Anh, ly hero dịch nguyên khối (audit H-03, H-04, H-05, H-11, H-20)", "depends_on": ["R14"], "metrics": ["D3", "D4", "D6", "E5", "L3"],
+     "est_usd": 2.0, "est_hours": 0.4, "status": "planned"}
   ],
   "cut_order": ["R11", "R13", "R10", "R9", "R12", "R7"],
   "human_only": [
