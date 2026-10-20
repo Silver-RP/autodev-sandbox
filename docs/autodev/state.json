@@ -20,7 +20,15 @@
     {"id": "H-31", "severity": "low", "text": "Đạt trên giấy: probe hero tự đẩy timeline, chờ lazySite 10x50 ms ảo, D6/D3 xanh bằng skip khi offline", "milestone": null},
     {"id": "H-32", "severity": "low", "text": "contrast.py: font-size:0, nền gradient, colors rỗng đạt im lặng; lh_check round() banker trượt oan biên 95", "milestone": null},
     {"id": "H-33", "severity": "low", "text": "Hết giờ chỉ giết tiến trình trực tiếp (npx-node-Chrome mồ côi); OSError khi dọn hồ sơ; chưa xác nhận, có thể góp H-21", "milestone": null},
-    {"id": "H-34", "severity": "low", "text": "todo: load chưa kiểm title (str), done (bool) -> list traceback KeyError; lỗi OS (thư mục TODO_FILE không có, không quyền, đĩa đầy) traceback", "milestone": null}
+    {"id": "H-34", "severity": "low", "text": "todo: load chưa kiểm title (str), done (bool) -> list traceback KeyError; lỗi OS (thư mục TODO_FILE không có/là thư mục, không quyền, đĩa đầy, symlink treo) traceback", "milestone": null},
+    {"id": "H-35", "severity": "medium", "text": "todo: id >4300 chữ số, JSON lồng sâu (RecursionError), argv không UTF-8 -> traceback exit 1", "milestone": null},
+    {"id": "H-36", "severity": "medium", "text": "todo: flock thư mục không timeout, treo im lặng khi tiến trình khác giữ khoá", "milestone": null},
+    {"id": "H-37", "severity": "medium", "text": "todo: load không từ chối id âm/trùng; add sinh id âm không done được; done đánh dấu cả hai id trùng", "milestone": null},
+    {"id": "H-38", "severity": "medium", "text": "todo save tmp+replace: ghi đè file 0444, đứt hard link, symlink vòng, thư mục chỉ đọc, tên dài -> traceback", "milestone": null},
+    {"id": "H-39", "severity": "medium", "text": "Đóng H-04/05/11/20 yếu: 23 skip offline, H-11 mới 6/8 tệp, probe 360 đo trước font, ca âm rỗng, test tautology", "milestone": null},
+    {"id": "H-40", "severity": "low", "text": "smoke_pages --url sai/--interval âm, screenshot --widths abc/--out là file -> traceback exit 1", "milestone": null},
+    {"id": "H-41", "severity": "low", "text": "todo list: cột due rỗng vỡ shell read; title/due từ file không làm sạch; README thiếu hợp đồng CLI", "milestone": null},
+    {"id": "H-42", "severity": "low", "text": "#luoi-nut: ghế đỏ không test; nhãn vi cứng trong main.js", "milestone": null}
   ],
   "milestones": {
     "runs": [
@@ -45,6 +53,7 @@
   },
   "outlook": [],
   "decisions": [
+    {"date": "2026-10-21", "text": "Audit R15, R17 (docs/audits/2026-10-21-2.md): 8 lỗ mới H-35..H-42 (5 vừa, 3 thấp), 0 đóng; xác nhận H-13, H-18, H-26, H-03 đóng thật; H-04, H-05, H-11, H-20 đóng một phần (H-39); due-overdue thực tế ~95%, lazy-landing ~76-80%; đề xuất R16 công cụ, R18 todo, R19 kiểm chứng"},
     {"date": "2026-10-21", "text": "Merge R17 (PR #52); 7/7 tiêu chí tự chạy đạt (412 passed, song song 5 lần xanh, CLI thật exit 2/2/1/2 không traceback); test mới đỏ 34 ca trên code cũ; đóng H-13, H-18, H-26; (c) ghi H-34 (title/done, lỗi OS) thay vì chặn"},
     {"date": "2026-10-21", "text": "Merge R15 (PR #48); 8/8 tiêu chí tự chạy đạt (374 passed x3), test mới đỏ 13 ca trên site cũ; đóng H-03, H-04, H-05, H-11, H-20; (a) chấp nhận sửa screenshot.frame_html; H-21, H-23..25, H-29, H-32, H-33 chuyển mốc công cụ, H-22 sang leader"},
     {"date": "2026-10-21", "text": "Audit R1-R14 (docs/audits/2026-10-21.md): 12 lỗ mới H-22..H-33 (7 vừa, 5 thấp), 0 đóng; lazy-landing thực tế ~75-80%, due-overdue ~92%; đề xuất R15 thêm dev công cụ, mốc todo nhỏ, leader quyết H-22/H-14"},
