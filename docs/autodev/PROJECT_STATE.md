@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`) + duyệt R14 (supervisor)
+Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`) + duyệt R15 (supervisor)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -19,6 +19,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | R10 | merged | PR #35 (`576fd3d`); 3 task, 4 vòng; 210 test pass; E2 đạt; H-03..06 không có task, chuyển R14 |
 | R11 | merged | PR #40 (`099dfd9`); 3 task, mỗi task 1 vòng; 229 test pass; E3 đạt trên URL thật; đóng H-16 |
 | R14 | merged | PR #44 (`66bcab8`); 4 task, mỗi task 1 vòng; 295 test pass; đóng H-06, H-07, H-09, H-10, H-15, H-17; ghi H-21 |
+| R15 | merged | PR #48 (`63cd730`); 4 task, mỗi task 1 vòng; 374 test pass; D3, D4, D6, E5 giữ; đóng H-03, H-04, H-05, H-11, H-20 |
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
@@ -28,28 +29,28 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 |---|---|---|---|
 | L1 | `uv run pytest -q tests/test_site.py` | 0 failed, ≥ 6 | 11 passed, đạt |
 | L2 | `uv run pytest -q tests/test_site_policy.py` | 0 failed, ≥ 6 | 52 passed, đạt |
-| L3 | `uv run pytest -q` | 0 failed | 295 passed × 3 lần liền, đạt |
+| L3 | `uv run pytest -q` | 0 failed | 374 passed × 3 lần liền, đạt (R15) |
 | L4 | `uv run ruff check .` | 0 lỗi | sạch, đạt |
 | L5 | smoke HTTP (`criteria.md`) | `200` hai dòng | đạt |
 | D1 | `uv run pytest -q tests/test_tools.py` | 0 failed, ≥ 5, không skip | 21 passed; chập chờn 2/7 lần khi máy tải nặng (H-21) |
 | D2 | `uv run pytest -q tests/test_design_doc.py` | 0 failed | 7 passed, đạt |
-| D3 | `uv run pytest -q tests/test_site_visual.py` | 0 failed, ≥ 5 | đạt |
-| D4 | `uv run python scripts/page_metrics.py --check-overflow` | exit 0 | exit 0, 4/4 tổ hợp không tràn, đạt |
+| D3 | `uv run pytest -q tests/test_site_visual.py` | 0 failed, ≥ 5 | 8 passed; font tải thật qua `document.fonts` `/` + `/en/` (`test_site_fonts.py`, R15), đạt |
+| D4 | `uv run python scripts/page_metrics.py --check-overflow` | exit 0 | exit 0; 360 hiện chấm dẫn + nút header, `scrollWidth <= 360` hai trang (R15), đạt |
 | D5 | `uv run python scripts/contrast.py` | 0 cặp trượt, exit 0 | exit 0 (sáng + tối), đạt |
-| D6 | `uv run pytest -q tests/test_site_motion.py` | 0 failed, ≥ 4 | 13 passed (có mạng), đạt |
+| D6 | `uv run pytest -q tests/test_site_motion.py` | 0 failed, ≥ 4 | 24 passed (có mạng); CSS có khối reduced-motion (R15), đạt |
 | E4 | `uv run pytest -q tests/test_site_content.py` | 0 failed, ≥ 4 | 12 passed, đạt |
 | E1 | `uv run pytest -q tests/test_site_seo.py` | 0 failed, ≥ 6 | 12 passed, đạt |
 | E5 | `uv run pytest -q tests/test_site_i18n.py` | 0 failed, ≥ 4 | 14 passed, đạt |
-| E2 | `uv run python scripts/lh_check.py` | perf ≥ 90, a11y/bp/seo ≥ 95, ≤ 300 KB | `/` trung vị 100×4, 173 KB; `/en/` 99/100/100/100, 166 KB; đạt (R14, sau bỏ `onload`) |
+| E2 | `uv run python scripts/lh_check.py` | perf ≥ 90, a11y/bp/seo ≥ 95, ≤ 300 KB | `/` trung vị 100×4, 174 KB; `/en/` 100×4, 166 KB; đạt (R15) |
 | D7 | `grep -q '^Leader duyệt: đạt' docs/design/lazy-landing.md` | exit 0 | đạt (leader, PR #38, 2026-10-20) |
-| E3 | `uv run python scripts/smoke_pages.py` | 200, SHA khớp `main` | exit 0 @ `66bcab8`, đạt |
+| E3 | `uv run python scripts/smoke_pages.py` | 200, SHA khớp `main` | exit 0 @ `63cd730`, đạt |
 
 ## Kiến trúc hiện nay
 - `src/todo/`: CLI todo (`add --due`, `list`, `overdue`, `done`, `due`); luật ngày duy nhất ở `store.valid_due`.
 - `site/`: landing "Quán cóc đầu ngõ" 6 phần (`hero`, `dich-vu`, `cach-lam`, `du-an` (3 dự án hư cấu, mỗi `article` có "(ví dụ)" + SVG), `hoi-dap` (4 `<details>`), `lien-he`). `style.css`: token 6 màu sáng ở `:root` (`--color-*`), Google Fonts (Baloo 2, Be Vietnam Pro) nạp trong HTML bằng `<link rel=preload as=style>` (không `onload`; `main.js` đổi `rel` sang `stylesheet`, R14) + `<noscript>` (R10, bỏ `@import`), menu bảng liền có chấm dẫn. Tối: `@media (prefers-color-scheme: dark)` chỉ gán lại token `:root` theo bảng "Tối" của doc, thêm `--color-chu-nut`, `--color-chu-tren-tra`. `:focus-visible` có `outline` cho link và nút. 8 SVG inline (`currentColor` / `var()`, nét 2,5): hero (ghế + ly), 3 biểu tượng gói, ghế trống ở liên hệ, 3 minh hoạ `#du-an` (`aria-hidden`).
 - Chuyển động: GSAP 3.12.5 qua jsDelivr (SRI, `defer`) + `site/main.js`. Không có `gsap` thì không làm gì (không class `js`). Một timeline hero (`h1`, `.hero-hinh`, `gsap.from` + `clearProps`); nút `#luoi-nut` (`hidden` khi không JS, `aria-pressed`) dịch hai ghế và ly. `window.lazySite.shouldAnimate()` đọc `prefers-reduced-motion`; `false` thì không timeline, nút dùng `gsap.set`.
 - `scripts/screenshot.py`: Chrome headless; 1280 trực tiếp, < 1000 qua iframe; tối bằng `--blink-settings`; ảnh ở `.autodev/shots/` (gitignore). R14: `shoot()` xoá ảnh cũ trước khi chụp; Chrome `returncode != 0`, không có tệp, timeout 60 giây (hằng số), DOM rỗng → `RuntimeError`; `main` in `Lỗi: ...`, exit 2 (cả `--url` không tới được); `--page` chỉ ghi chunk hash khi chụp xong. Dưới `--virtual-time-budget` rAF gần như không phát: hero chụp ra còn dở intro (đẩy `gsap.globalTimeline.time` như test, CDP thời gian thật, hoặc bản sao bỏ `<script>`).
-- `scripts/page_metrics.py`: JSON mỗi dòng một tổ hợp (`width`, `mode`, `innerWidth`, `overflow`, `svg_by_section`, `h1`, `body_font`, `colors`); `colors` gộp theo bộ (màu, nền, cỡ, đậm), nền lấy theo cây cha. `--check-overflow` exit 1 khi tràn; exit 2 lỗi công cụ (Chrome, trang không có, danh sách rỗng); `--pages` nhận `/en/`, `/en`, `/en/index.html` (R14). `h1.font_family` là chuỗi khai báo, không chứng minh font đã tải (H-04).
+- `scripts/page_metrics.py`: JSON mỗi dòng một tổ hợp (`width`, `mode`, `innerWidth`, `overflow`, `svg_by_section`, `h1`, `body_font`, `colors`); `colors` gộp theo bộ (màu, nền, cỡ, đậm), nền lấy theo cây cha. `--check-overflow` exit 1 khi tràn; exit 2 lỗi công cụ (Chrome, trang không có, danh sách rỗng); `--pages` nhận `/en/`, `/en`, `/en/index.html` (R14). R15: `MEASURE_JS` ghi `#out` sau `document.fonts.ready` + 800 ms; `screenshot.frame_html` chép `#out` bằng polling 100 ms.
 - `scripts/contrast.py`: tỉ lệ WCAG 2.x trên `colors` của `page_metrics.py`; chữ lớn (≥ 24px, hoặc ≥ 18,66px đậm) 3:1, còn lại 4,5:1; mặc định 1280, cả hai chế độ (`--widths`, `--modes`, `--site`); exit 1 khi trượt, 2 khi lỗi công cụ (R14). Bỏ qua alpha chữ, không đo `:hover`/`:focus`.
 - SEO (R9): `scripts/site_config.py` (`SITE_URL` = `https://silver-rp.github.io/autodev-sandbox/` từ R11); meta OG/Twitter, canonical, JSON-LD `ProfessionalService`, `robots.txt`, `sitemap.xml` ghi cứng URL (test kiểm khớp `SITE_URL`, không còn `example.github.io`).
 - Triển khai (R11): `.github/workflows/pages.yml` (push `main` + `workflow_dispatch`; checkout@v4, configure-pages@v5, upload-pages-artifact@v3 `path: site`, deploy-pages@v4; `concurrency: pages`) thay `<meta name="version" content="dev">` ở hai trang bằng `github.sha` trước khi upload. `scripts/smoke_pages.py [--url] [--sha] [--retries 10] [--interval 30]`: `/` 200 + "Lười Code Studio" + version = `origin/main`, `/en/`, `/style.css`, `/og.png` 200. `screenshot.py --url` giữ đường con, không dùng `__frame__`, lỗi HTTP → exit khác 0. Mỗi merge vào `main` (kể cả PR hồ sơ) deploy lại. `og.svg` → `og.png` qua `screenshot.py --page /og.svg --size 1200x630`, PNG mang chunk `tEXt` `source-sha256` (`og_png_current`). `pytest` có `pythonpath` trong `pyproject.toml`.
@@ -81,29 +82,24 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 ## Lỗ hổng mở
 | Mã | Mức | Mô tả | Mốc nhận |
 |---|---|---|---|
-| H-03 | vừa | Ở 360: dấu chấm dẫn menu bị ẩn (`.cham {display:none}`) và nút header bị ẩn, lệch wireframe 360 của doc; không test nào bắt | R15 |
-| H-04 | thấp | Test font `<h1>` chỉ đọc `font-family` khai báo; cần `document.fonts.check` để chứng minh Baloo 2 đã tải | R15 |
-| H-05 | thấp | `style.css` chưa có `@media (prefers-reduced-motion: reduce)` như quy ước plan R7 (giảm chuyển động hiện chỉ ở `main.js`) | R15 |
-| H-11 | vừa | Test a11y, nội dung, hero, nút, SVG hex, SRI, og:image chỉ đọc bản Việt | R15 |
 | H-12 | vừa | D4, D5, E2, L5 không trong verify/smoke/CI; `contrast.py` mặc định 1280, bỏ `::before` | người (config) |
 | H-13 | vừa | `todo done <id không có>` vẫn ghi file, không báo lỗi | mốc todo |
 | H-14 | vừa | Email `hello@example.com` giữ chỗ bị test khoá, không hiện thành chữ; `robots.txt` dưới `/autodev-sandbox/` crawler không đọc (URL `example.github.io` đã sửa ở R11) | leader |
 | H-18 | thấp | `todo` store: ghi song song mất cập nhật; JSON hỏng traceback; symlink bị thay | mốc todo |
 | H-19 | thấp | `due-overdue/goal.json` còn `planned`; `criteria.md` nền cũ | người |
-| H-20 | thấp | Nút hero dịch ly nhưng đá, ống hút đứng yên | R15 |
-| H-21 | thấp | `test_tools.py` (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) → exit 2; supervisor thấy 2/7 lần ở load ~14,5 | R15 |
-| H-22 | vừa | Hero thiếu laptop, người ngủ gật, hơi nước, tương tác ngáp như `docs/design/lazy-landing.md`; chưa ghi "lệch đã chấp nhận"; D7 duyệt trước khi H-07 sửa | R15 / leader |
-| H-23 | vừa | `screenshot.py --page/--pages` không kiểm HTTP: trang 404 vẫn exit 0, đóng hash `og.svg` lên ảnh sai | R15 |
-| H-24 | vừa | `page_metrics --check-overflow` chỉ đo `getBoundingClientRect().right`, bỏ `scrollWidth`: chữ `nowrap` tràn vẫn exit 0 | R15 |
-| H-25 | vừa | `lh_check.py --site <thư mục không có index.html>` vẫn chạy Lighthouse, có thể in OK | R15 |
+| H-21 | thấp | `test_tools.py` (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) → exit 2; supervisor thấy 2/7 lần ở load ~14,5 | mốc công cụ |
+| H-22 | vừa | Hero thiếu laptop, người ngủ gật, hơi nước, tương tác ngáp như `docs/design/lazy-landing.md`; chưa ghi "lệch đã chấp nhận"; D7 duyệt trước khi H-07 sửa | leader |
+| H-23 | vừa | `screenshot.py --page/--pages` không kiểm HTTP: trang 404 vẫn exit 0, đóng hash `og.svg` lên ảnh sai | mốc công cụ |
+| H-24 | vừa | `page_metrics --check-overflow` chỉ đo `getBoundingClientRect().right`, bỏ `scrollWidth`: chữ `nowrap` tràn vẫn exit 0 (R15 tự đo `scrollWidth` ở 360 trong `test_site_mobile.py`) | mốc công cụ |
+| H-25 | vừa | `lh_check.py --site <thư mục không có index.html>` vẫn chạy Lighthouse, có thể in OK | mốc công cụ |
 | H-26 | vừa | `todo done ²` → `ValueError` traceback; `todo add ""` ghi việc rỗng; tiêu đề có tab/xuống dòng hỏng `list` | mốc todo |
 | H-27 | vừa | `smoke_pages.py` (E3): `origin/main` không fetch, lỗi git traceback, không kiểm `main.js`/`robots.txt`/`sitemap.xml`, `/en/` không kiểm version | mốc công cụ |
 | H-28 | vừa | `pages.yml` deploy mỗi push `main` không chờ ruff/pytest; test workflow chỉ regex, không chạy `sed` | mốc công cụ |
-| H-29 | thấp | Lỗi công cụ còn exit 1: `--widths abc`, màu `color(srgb …)`, `--pages ../x`; `--pages /en` bị từ chối | R15 |
+| H-29 | thấp | Lỗi công cụ còn exit 1: `--widths abc`, màu `color(srgb …)`, `--pages ../x`; `--pages /en` bị từ chối | mốc công cụ |
 | H-30 | thấp | L2 còn lọt `input type=image`, `video poster`, `srcset`, `meta refresh`, `iframe srcdoc`, `integrity=""`, `image-set()` | mốc công cụ |
 | H-31 | thấp | Đạt trên giấy: probe hero tự đẩy timeline, chờ `lazySite` 10×50 ms ảo, D6/D3 xanh bằng skip khi offline | mốc công cụ |
-| H-32 | thấp | `contrast.py`: `font-size:0`, nền gradient, `colors` rỗng đạt im lặng; `lh_check` `round()` banker trượt oan biên 95 | R15 |
-| H-33 | thấp | Hết giờ chỉ giết tiến trình trực tiếp (`npx→node→Chrome` mồ côi); `OSError` khi dọn hồ sơ; chưa xác nhận, có thể góp H-21 | R15 |
+| H-32 | thấp | `contrast.py`: `font-size:0`, nền gradient, `colors` rỗng đạt im lặng; `lh_check` `round()` banker trượt oan biên 95 | mốc công cụ |
+| H-33 | thấp | Hết giờ chỉ giết tiến trình trực tiếp (`npx→node→Chrome` mồ côi); `OSError` khi dọn hồ sơ; chưa xác nhận, có thể góp H-21 | mốc công cụ |
 
 ## Nợ không chặn
 - Tham số `today` của `store.overdue` che `store.today()`.
@@ -118,7 +114,10 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 - R14: L2 chưa bắt `<svg><a xlink:href>` ngoài (link điều hướng); vòng chờ `lazySite` trong probe chỉ 10 × 50 ms (biên hẹp).
 - R13: bản Anh chưa có JSON-LD, `og:image` dùng chung `og.png` chữ Việt; test chữ Việt chỉ bắt chữ có dấu; ở 360 link "Tiếng Việt" rớt dòng dưới logo.
 
+- R15: chờ font cố định 800 ms trong `MEASURE_JS` (có thể chập chờn khi mạng chậm); `test_cup_reduced_motion_block_instant` có assert `json.dumps(d)` vô nghĩa; test `scrollWidth` 360 chỉ chạy sáng.
+
 ## Quyết định gần đây
+- 2026-10-21: merge R15 (PR #48). 8/8 tiêu chí tự chạy đạt (374 passed × 3); test mới đỏ 13 ca trên `site/` cũ. Đóng H-03, H-04, H-05, H-11, H-20. (a) chấp nhận sửa `screenshot.frame_html` (polling `#out`). H-21, H-23..25, H-29, H-32, H-33 chuyển "mốc công cụ" (plan R15 để ngoài phạm vi); H-22 → leader.
 - 2026-10-21: audit R1–R14 (`docs/audits/2026-10-21.md`): 12 lỗ mới H-22..H-33 (7 vừa, 5 thấp), 0 đóng; 6 lỗ R14 đóng nhưng còn phần hở (H-23, H-25, H-29, H-30, H-31). Đề xuất: R15 thêm dev công cụ (H-23..25, 29, 32, 33); mốc todo nhỏ (H-13, H-18, H-26); leader quyết H-22, H-14; người đưa D4/D5/L5 vào `smoke` (H-12).
 - 2026-10-21: merge R14 (PR #44). 7 tiêu chí tự chạy đạt; `test_tools.py` chập chờn khi tải nặng → H-21 (R15), không chặn vì không hồi quy. Đóng H-06, H-07, H-09, H-10, H-15, H-17; bỏ H-08 khỏi bảng (D7 đạt). (c) chấp nhận `--pages` thay `--only`, `onload` font chuyển sang `main.js`.
 - 2026-10-20: merge R11 (PR #40). Workflow `pages` xanh; `smoke_pages.py` trên URL thật exit 0 (E3); đóng H-16; H-14 còn email + `robots.txt`. D7 leader duyệt (PR #38) → `lazy-landing` 17/17.

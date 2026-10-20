@@ -544,5 +544,59 @@ Không lệch quá 2 lần.
 - Đóng H-06, H-07, H-09, H-10, H-15, H-17. Đóng luôn H-08 trong bảng (leader duyệt D7, plan R14 ghi "không làm").
 - (c) tự quyết: chấp nhận hai đề xuất trong plan (`--pages` thay `--only`; `onload` font chuyển sang `main.js`), và (a) worker đổi `screenshot.py --url` không tới được từ exit 1 sang 2.
 
+## R15: Hoàn thiện site — **đạt, merged** 2026-10-21 (PR #48, `63cd730`)
+
+Worker làm dev-01..04, mỗi task 1 vòng (4 vòng, không FAIL). Supervisor kiểm trên `origin/milestone/R15` (`fb446d6`), chế độ B `--review-only`, load ~6–10:
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc). Sau merge: `smoke_pages.py` → lần 1 version cũ (đang deploy), "OK (lần 2) … @ 63cd730…", exit 0.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | verify + smoke sạch | `verify.py`, `verify.py --smoke` | sạch cả hai, đạt |
+| 2 | (L3) pytest 3 lần liền | `uv run pytest -q` × 3 | 374 / 374 / 374 passed, đạt |
+| 3 | (D4) overflow | `uv run python scripts/page_metrics.py --check-overflow` | exit 0, đạt |
+| 4 | (D3) `test_site_visual.py` ≥ 5; test font `document.fonts` hai trang | `uv run pytest -q tests/test_site_visual.py`; `uv run pytest -rA tests/test_site_fonts.py` | 8 passed; `test_fonts_loaded_through_document_fonts[vi]`, `[en]` PASSED (không skip), ca âm bỏ link font `[vi]`, `[en]` PASSED; đạt |
+| 5 | (D6) `test_site_motion.py` ≥ 4 | `uv run pytest -q tests/test_site_motion.py` | 24 passed, đạt |
+| 6 | (E5) `test_site_i18n.py` ≥ 4 | `uv run pytest -q tests/test_site_i18n.py` | 14 passed, đạt |
+| 7 | D5, E2 không tụt | `contrast.py`; `lh_check.py` | contrast exit 0; `/` trung vị 100×4 (một lần perf 99), 174071 B; `/en/` 100×4, 166359 B; "OK: đạt ngưỡng E2", exit 0; đạt |
+| 8 | ruff | `uv run ruff check .` | "All checks passed!", đạt |
+
+H-xx tái hiện: chép nhánh sang `/tmp/r15old.P0ib`, thay `site/` bằng bản `origin/main` cũ (`git archive`), chạy `test_site_mobile.py`, `test_site_fonts.py`, `test_site_ly.py` → **13 failed** / 20 passed: H-03 (4 test 360 chấm dẫn + nút header, vi/en), H-05 (`test_reduced_motion_block_in_real_css`), H-20 (8 test `test_site_ly.py`). H-04: test font tải thật xanh trên site cũ (site cũ vốn tải font; lỗ là test chỉ đọc khai báo), bị chặn bằng ca âm `test_negative_no_font_links_is_caught[vi|en]` và `test_font_problems_flags_empty_and_check_only`. H-11: `--collect-only` có id `en` ở cả 6 tệp trong Mô tả dev-04 (a11y 3, button 4, content 7, dark 1, hero 3, motion 8); tổng 295 → 374 test.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 | 0 |
+| Phút worker | ~40–60 | 85 | B3 1,42 |
+| USD (worker + supervisor) | ~2,8 | 2,53 + ~1,28 (supervisor, tạm) | B3 ~1,36 |
+| Số vòng review | 4–6 | 4 | 0 |
+
+Không lệch quá 2 lần. Phút cao hơn R14 vì mọi task có test Chrome mới tham số hoá vi/en.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Hiện lại chấm dẫn/nút gây tràn 360 | `test_360_header_button_visible_in_viewport[vi|en]`, `test_360_no_horizontal_scroll[vi|en]`; `page_metrics --check-overflow` exit 0 |
+| 2. D4 xanh dù `nowrap` tràn (H-24) | `test_360_no_horizontal_scroll` đo `scrollWidth <= 360`; supervisor đo thêm tối 360 và 320 |
+| 3. Chấm dẫn rộng 0 / mất nét | `check_cham` (≥ 16 px, `dotted`, cùng hàng giá); ca âm `test_negative_hidden_leader_is_caught` |
+| 4. `fonts.check` true giả | `test_font_problems_flags_empty_and_check_only`, ca âm bỏ link font |
+| 5. Đo trước khi font tải | `MEASURE_JS` chờ `document.fonts.ready` + 800 ms (reviewer: 800 ms cố định có thể chập chờn khi mạng chậm) |
+| 6. Khối reduced-motion vô hiệu | ca âm comment, lồng `min-width`, thiếu `transition-duration`, sai selector/thiếu `!important` |
+| 7. Chỉ thân ly dịch | `test_cup_moves_as_one_block`, ca âm `test_cup_negative_only_ly_path_moves` (đỏ trên main) |
+| 8. Gom `<g>` đổi màu tô | `test_cup_group_keeps_fills[vi|en]`; contrast exit 0 |
+| 9. Tham số hoá làm yếu test | 295 → 374; id `en` ở mọi tệp; reviewer dev-04 đối chiếu diff |
+| 10. Bản Anh phải nới assert | giá trị theo trang trong bảng tham số (reviewer dev-04) |
+
+### Kiểm biên độc lập
+- Probe của `test_site_mobile.py` chạy ở tối 360 và sáng 320 (`/tmp/r15edge/edge.py`): `/` 360 tối `scrollWidth` 360, nút 24–194 px (xuống dòng dưới bảng hiệu), chấm dẫn hẹp nhất 20,7 px; `/en/` 360 tối nút 220–336, chấm 25,2 px; 320 cả hai trang `scrollWidth` 320, nút phải 296. Không tràn.
+- Test font chạy thật (có mạng), không skip.
+- Trên nhánh hồ sơ (chỉ sửa tài liệu), `verify.py` lần đầu đỏ `test_tools.py::test_dark_mode_applied_only_in_dark[360]`; chạy lại 3 lần: 2 passed mỗi lần; `verify.py` lần sau sạch. Chập chờn Chrome kiểu H-21 (load ~7), không phải hồi quy R15.
+
+### Quyết định
+- **Merge PR #48** (merge commit, giữ nhánh). 8/8 tiêu chí có bằng chứng tự chạy. Đóng H-03, H-04, H-05, H-11, H-20.
+- (a) chấp nhận: `scripts/screenshot.py` `frame_html` chép `#out` bằng polling (ngoài phạm vi plan, cần vì `MEASURE_JS` ghi sau `fonts.ready`; test Chrome cũ xanh); test mới ở tệp mới `test_site_fonts.py`, `test_site_ly.py`; TC4 dev-03 bằng test mới thay vì mở rộng test cũ.
+- Điều chỉnh: H-21, H-23, H-24, H-25, H-29, H-32, H-33 ghi "R15" nhưng plan R15 để ngoài phạm vi → chuyển "mốc công cụ" (leader lập); H-22 → leader.
+- Ghi chú reviewer (không chặn): `scrollWidth` chỉ đo sáng (supervisor đo tối: đạt); chờ 800 ms cố định; `test_cup_reduced_motion_block_instant` có assert `json.dumps(d)` vô nghĩa.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
