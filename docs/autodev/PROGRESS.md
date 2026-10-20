@@ -495,5 +495,54 @@ Không lệch quá 2 lần. Chờ deploy (đo lần đầu): workflow `pages` �
 - Đóng H-16. H-14 đóng một phần (URL `example.github.io`); còn email giữ chỗ và `robots.txt` dưới đường con (crawler không đọc) → R14 hoặc leader.
 - Không có (c).
 
+## R14: Cứng hoá công cụ đo và luật tài nguyên — **đạt, merged** 2026-10-21 (PR #44, `66bcab8`)
+
+Worker làm dev-01..04, mỗi task 1 vòng (4 vòng, không FAIL). Supervisor kiểm trên `origin/milestone/R14` (`65be9fc`), chế độ B `--review-only`:
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc). `plan/R14.md` trên nhánh chỉ đổi trạng thái task. Sau merge: workflow `pages` run 39446462879 xanh, `smoke_pages.py` → "OK (lần 1) … @ 66bcab8…", exit 0.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | verify + smoke sạch | `verify.py`, `verify.py --smoke` | sạch cả hai, đạt |
+| 2 | (L3) pytest 3 lần liền | `uv run pytest -q` × 3 | 295 / 295 / 295 passed, đạt |
+| 3 | (E2) `lh_check.py` exit 0 | `uv run python scripts/lh_check.py` | `/` trung vị 100×4, 173667 B; `/en/` 99/100/100/100, 165845 B; exit 0, đạt |
+| 4 | (D1) `test_tools.py` | `uv run pytest -q tests/test_tools.py` × 7 | 5 lần 21 passed; **2 lần 1 failed** (`test_contrast_large_text_uses_3_to_1`, `Lỗi: Chrome quá thời gian (60 giây)` → exit 2) khi máy load ~14,5. Đạt có điều kiện, xem Quyết định |
+| 5 | (L2) `test_site_policy.py` | `uv run pytest -q tests/test_site_policy.py` | 52 passed, đạt |
+| 6 | D4, D5, `--pages /en/` | `page_metrics.py --check-overflow`, `contrast.py`, cả hai `--pages /en/` | exit 0 × 4, đạt |
+| 7 | ruff | `uv run ruff check .` | "All checks passed!", đạt |
+
+H-xx tái hiện: chép `test_screenshot_errors.py`, `test_tools_errors.py`, `test_site_policy.py` của nhánh sang bản `origin/main` cũ (`git archive`) → 48 failed (H-07: 8 test `screenshot`; H-10/H-15: 13 ca `lh_check`/`page_metrics`/`contrast`; H-09/H-06: 22 biến thể + quét `.svg` + `on*` trang thật). H-17: `test_probe_reports_missing_lazysite` (assert thông điệp "lazySite").
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 | 0 |
+| Phút worker | ~40–60 | 41 | B3 1,00 |
+| USD (worker + supervisor) | ~2,9 | 1,35 + ~1,27 (supervisor, tạm) | B3 ~0,90 |
+| Số vòng review | 4–6 | 4 | 0 |
+
+Không lệch quá 2 lần.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Siết `on*` làm E2 tụt | `onload` font chuyển sang `main.js`, `<noscript>` giữ; `lh_check.py` supervisor chạy: perf 100 / 99 |
+| 2. Timeout ngắn làm E2 đỏ giả | mặc định 180 giây; `test_lh_timeout_exit_2_and_default_timeout` |
+| 3. PNG cũ mang hash mới (H-07) | `test_shoot_loi_xoa_png_cu`, `test_page_loi_khong_de_png_cu_mang_hash_moi` (đỏ trên main) |
+| 4. Lỗi công cụ trông như đạt/trượt | `test_lh_null_score_exit_2`, `test_lh_non_finite_weight_exit_2`, `test_lh_empty_plan_exit_2_no_ok`, `test_measure_runtime_error_exit_2` |
+| 5. `--pages /en/` là thư mục | `test_normalize_pages`, `test_real_en_page_and_missing_page`; supervisor chạy thật exit 0 |
+| 6. Miễn trừ hreflang/canonical thành cửa sau | `test_h09_h06_negative_variants`; supervisor thử `rel="CANONICAL"` và `SITE_URL` bỏ `/` + `.evil.com` → bị bắt |
+| 7. Ca âm chỉ một biến thể | 22 biến thể tham số hoá; supervisor thử `<img/onload>`, `onload = `, `java\tscript:` → bị bắt |
+| 8. Hết chập chờn trên giấy | pytest 3 lần xanh; nhưng `test_tools.py` vẫn chập chờn khi máy tải nặng (H-21) |
+
+### Kiểm biên độc lập
+- Luật L2: `<svg><a xlink:href="https://evil.com">` **lọt** (link điều hướng, ngoài danh sách plan; reviewer cũng ghi). `canonical` đúng `SITE_URL` không bị bắt (đúng).
+- `lh_check.py --pages ../` và `contrast.py --pages ../../etc/hosts` → "Lỗi: trang không có trong …/site", exit 2 (không thoát ra ngoài `site/`).
+
+### Quyết định
+- **Merge PR #44** (merge commit, giữ nhánh). Cả 7 tiêu chí có bằng chứng tự chạy; tiêu chí 4 chập chờn 2/7 lần do Chrome 60 giây khi máy tải nặng (load ~14,5, nhiều phiên song song). Không phải hồi quy: test dùng trang tổng hợp, không đụng `main.js`; trước R14 cùng lỗi ra traceback, giờ ra `Lỗi: … (exit 2)` đúng thiết kế. Ghi **H-21** (thấp, R15).
+- Đóng H-06, H-07, H-09, H-10, H-15, H-17. Đóng luôn H-08 trong bảng (leader duyệt D7, plan R14 ghi "không làm").
+- (c) tự quyết: chấp nhận hai đề xuất trong plan (`--pages` thay `--only`; `onload` font chuyển sang `main.js`), và (a) worker đổi `screenshot.py --url` không tới được từ exit 1 sang 2.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->

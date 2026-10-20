@@ -8,7 +8,7 @@ Cập nhật: 2026-10-16 (supervisor, sau khi merge R6).
 - `docs/goals/due-overdue/roadmap.md`: R1–R2, xong.
 - `docs/goals/lazy-landing/roadmap.md`: R3–R13. Tiêu chí ở `criteria.md` cùng thư mục, spec thiết kế ở `docs/design/lazy-landing.md`.
 
-## Tổng quan R1–R13
+## Tổng quan R1–R15
 
 | Mốc | Mục tiêu | Tên | Trạng thái | Task | Chỉ số | Phụ thuộc | Ước tính USD | Thực tế |
 |---|---|---|---|---|---|---|---|---|
@@ -24,12 +24,13 @@ Cập nhật: 2026-10-16 (supervisor, sau khi merge R6).
 | R9 | lazy-landing | SEO và chia sẻ (OG, `og.png`, favicon, sitemap, JSON-LD) | merged 2026-10-16, PR #30 (lần 2, sau (b) dev-05, dev-06) | 4 (+2) | E1 | R6, R12 | 1,8 | chế độ B, 2 lượt: worker 64 phút; worker + supervisor 3,44 USD + ~1 (phiên duyệt lần 2, tạm) |
 | R13 | lazy-landing | Song ngữ Việt/Anh (`site/en/`, `hreflang`) | merged 2026-10-16, PR #33 | 3 | E5 | R12, R9 | 1,9 | chế độ B: worker 36 phút; worker + supervisor 1,40 + ~1,26 USD (tạm) |
 | R10 | lazy-landing | Hiệu năng (Lighthouse mobile ≥ 90 / 95, ≤ 300 KB) | merged 2026-10-16, PR #35 | 3 | E2 | R7, R8, R13 | 1,5 | chế độ B: worker 42 phút; worker + supervisor 1,24 + ~1,26 USD (tạm) |
-| R14 | lazy-landing | Dọn lỗ hổng site H-03..H-06 (đề xuất (c) của supervisor, 2026-10-16) | **cần plan** (`/autodev:plan-next R14`) | ~3–4 | giữ D3, D4, D6, L2 | R10 | ~1,5 | – |
+| R14 | lazy-landing | Cứng hoá công cụ đo và luật tài nguyên (audit H-06, H-07, H-09, H-10, H-15, H-17) | merged 2026-10-21, PR #44 | 4 | D1, L2, E2, L3 | R11 | 2,0 | chế độ B: worker 41 phút; worker + supervisor 1,35 + ~1,27 USD (tạm) |
 | R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | merged 2026-10-20, PR #40; E3 đạt trên `https://silver-rp.github.io/autodev-sandbox/` | 3 | E3 | R10 | 1,3 | chế độ B: worker 33 phút; worker + supervisor 1,04 + ~1,26 USD (tạm) |
+| R15 | lazy-landing | Hoàn thiện site: 360 giữ chấm dẫn + nút header, font tải thật, reduced-motion CSS, test cả bản Anh, ly hero (audit H-03, H-04, H-05, H-11, H-20; thêm H-21) | **cần plan** (`/autodev:plan-next R15`) | ~4 | D3, D4, D6, E5, L3 | R14 | 2,0 | – |
 
 **Tổng:**
-- Đã xong: R1–R4, R6–R13, 43 task.
-- Còn lại: R14 (cần plan), khoảng **1,5 USD**.
+- Đã xong: R1–R4, R6–R14, 47 task.
+- Còn lại: R15 (cần plan), khoảng **2,0 USD**.
 - Mục tiêu `lazy-landing` hiện đạt 17/17 chỉ số (sau R11; D7 leader duyệt 2026-10-20); `due-overdue` đạt 5/5.
 
 ## Chạy tiếp (sau khi reset hạn mức)
