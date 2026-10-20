@@ -77,5 +77,8 @@
 - dev-03 DONE (1 vòng, commit 7f5a2fc): `<g class="ly-tra">` gom thân ly, vạch trà, 2 đá, ống hút ở hai trang; `main.js` dịch nhóm này; `tests/test_site_ly.py` (11 test, cả `/` và `/en/`, ca âm; 8 đỏ trước khi sửa). TC4 (reduced-motion) đáp ứng bằng test mới `test_cup_reduced_motion_block_instant`; `test_click_reduced_motion_instant` cũ giữ nguyên. 328 test pass; overflow và contrast đạt. Ghi chú reviewer (không chặn): bỏ assert `json.dumps(d)` vô nghĩa ở cuối test reduced-motion.
 - dev-04 DONE (1 vòng, commit c00ebed): tham số hoá `vi`/`en` cho `test_site_a11y/content/hero/button/dark/motion.py` (collect 328 → 374: +26 ca tham số hoá, +20 ca âm mới `test_en_*`); bảng giá trị riêng theo trang (verbs, example, banned) trong `test_site_content.py`; `probe(..., lang)` ở `test_site_motion.py`. Không nới assert, không xoá/gộp test. `pytest -q` 3 lần: 374/374/374 passed. Ghi chú: regex gỡ script thêm `(?:\.\./)?` vì bản Anh dùng `../main.js` (reviewer chấp nhận).
 
+## R17
+- dev-01 DONE (1 vòng, commit 73b1228): `cli._is_id` (`[0-9]+` ASCII) cho `done`/`due`; `store.clean_title` (xuống dòng + tab → khoảng trắng), `add` rỗng → stderr exit 2; `store.complete` chỉ `save` khi thấy id, `done` id không có → exit 1. `tests/test_cli_errors.py` (đỏ trước khi sửa). 390 test pass. Ghi chú reviewer (không chặn): pytest ~210 giây.
+
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.

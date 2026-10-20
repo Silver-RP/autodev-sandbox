@@ -1,33 +1,28 @@
 {
-  "milestone": "R15",
+  "milestone": "R17",
   "current_task": null,
-  "started_at": "2026-10-21T02:33:06+09:00",
+  "started_at": "2026-10-21T07:29:24+09:00",
   "tasks": {
     "dev-01": {
       "status": "DONE",
       "round": 1,
-      "commit": "d548335"
+      "commit": "73b1228"
     },
     "dev-02": {
-      "status": "DONE",
-      "round": 1,
-      "commit": "900778e"
+      "status": "TODO",
+      "round": 0,
+      "commit": null
     },
     "dev-03": {
-      "status": "DONE",
-      "round": 1,
-      "commit": "7f5a2fc"
-    },
-    "dev-04": {
-      "status": "DONE",
-      "round": 1,
-      "commit": "c00ebed"
+      "status": "TODO",
+      "round": 0,
+      "commit": null
     }
   },
   "verify": {
     "last_status": "PASS",
-    "hook_runs": 57,
-    "last_hook_at": "2026-10-20T18:47:21Z",
+    "hook_runs": 58,
+    "last_hook_at": "2026-10-20T22:39:31Z",
     "last_hook_agent": "autodev:developer",
     "consecutive_blocks": 0
   },
@@ -317,6 +312,30 @@
           "status": "DONE",
           "round": 1,
           "commit": "5328535"
+        }
+      }
+    },
+    "R15": {
+      "tasks": {
+        "dev-01": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "d548335"
+        },
+        "dev-02": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "900778e"
+        },
+        "dev-03": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "7f5a2fc"
+        },
+        "dev-04": {
+          "status": "DONE",
+          "round": 1,
+          "commit": "c00ebed"
         }
       }
     }
