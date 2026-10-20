@@ -47,7 +47,7 @@ def normalize_pages(site, pages) -> list[str]:
 MEASURE_JS = r"""
 <pre id="out" style="display:none"></pre>
 <script>
-window.addEventListener('load', function () {
+function measureAll() {
   function sel(e) {
     var s = e.tagName.toLowerCase();
     if (e.id) s += '#' + e.id;
@@ -88,6 +88,16 @@ window.addEventListener('load', function () {
     var hs = getComputedStyle(h1);
     h = {font_family: hs.fontFamily, font_size: parseFloat(hs.fontSize)};
   }
+  var fonts = {faces: [], check: {}};
+  if (document.fonts) {
+    document.fonts.forEach(function (ff) {
+      fonts.faces.push({family: String(ff.family).replace(/^["']|["']$/g, ''),
+                        weight: String(ff.weight), status: ff.status});
+    });
+    ['700 40px "Baloo 2"', '400 16px "Be Vietnam Pro"'].forEach(function (q) {
+      fonts.check[q] = document.fonts.check(q);
+    });
+  }
   document.getElementById('out').textContent = JSON.stringify({
     innerWidth: iw,
     scrollWidth: document.documentElement.scrollWidth,
@@ -95,8 +105,18 @@ window.addEventListener('load', function () {
     svg_by_section: svg,
     h1: h,
     body_font: getComputedStyle(document.body).fontFamily,
-    colors: Object.keys(colors).map(function (k) { return colors[k]; })
+    colors: Object.keys(colors).map(function (k) { return colors[k]; }),
+    fonts: fonts
   });
+}
+window.addEventListener('load', function () {
+  // Chờ font: link font được main.js đổi sang stylesheet sau load, nên đợi
+  // fonts.ready, chừa một nhịp cho stylesheet về, rồi đợi fonts.ready lần nữa.
+  var f = document.fonts;
+  if (!f || !f.ready) { measureAll(); return; }
+  f.ready.then(function () {
+    setTimeout(function () { f.ready.then(measureAll, measureAll); }, 800);
+  }, measureAll);
 });
 </script>
 """
