@@ -1,6 +1,14 @@
 """Luật tài nguyên của site: check(html, css) -> danh sách vi phạm."""
 import re
+import sys
 from html.parser import HTMLParser
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from scripts.site_config import SITE_URL
+
+INTEGRITY = re.compile(r"sha(?:384|512)-[A-Za-z0-9+/_-]+={0,2}")
+JS_ATTRS = ("href", "xlink:href", "src", "action", "formaction", "data")
 
 ALLOWED_HOSTS = {
     "fonts.googleapis.com",
@@ -13,13 +21,18 @@ CSS_URL = re.compile(r"url\(\s*(['\"]?)(.*?)\1\s*\)", re.IGNORECASE | re.DOTALL)
 CSS_IMPORT = re.compile(r"@import\s+(?:url\(\s*)?['\"]?([^'\")\s;]+)", re.IGNORECASE)
 
 
+def _norm(url):
+    """Như trình duyệt: bỏ tab/xuống dòng, bỏ khoảng trắng đầu/cuối, `\\` thành `/`, hạ chữ thường."""
+    u = re.sub(r"[\t\r\n]", "", url).strip().lower()
+    return u.replace("\\", "/")
+
+
 def _is_external(url):
-    u = url.strip().lower()
-    return u.startswith(("http:", "https:", "//"))
+    return _norm(url).startswith(("http:", "https:", "//"))
 
 
 def _host(url):
-    u = url.strip().lower()
+    u = _norm(url)
     if u.startswith("//"):
         u = "x:" + u
     rest = u.split(":", 1)[1].lstrip("/")
@@ -42,7 +55,7 @@ def check_url(url, where):
     if not _is_external(url):
         return []
     out = []
-    if not url.strip().lower().startswith("https://"):
+    if not _norm(url).startswith("https://"):
         out.append(f"{where}: không phải https: {url}")
     if _host(url) not in ALLOWED_HOSTS:
         out.append(f"{where}: domain không cho phép: {url}")
@@ -58,8 +71,26 @@ class _Html(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         a = {k.lower(): (v or "") for k, v in attrs}
+        for k in a:
+            if k.startswith("on"):
+                self.v.append(f"{tag}: thuộc tính {k} (on*) không được phép")
+        for k in JS_ATTRS:
+            if k in a and _norm(a[k]).startswith("javascript:"):
+                self.v.append(f"{tag} {k}: javascript: không được phép")
+        if tag == "base" and "href" in a:
+            self.v.append(f"<base href> không được phép: {a['href']}")
+        elif tag == "object" and "data" in a:
+            self.v += check_url(a["data"], "object data")
+        elif tag in ("image", "use"):
+            for k in ("href", "xlink:href"):
+                if k in a:
+                    self.v += check_url(a[k], f"{tag} {k}")
+        elif tag == "form" and "action" in a:
+            self.v += check_url(a["action"], "form action")
+        elif tag in ("button", "input") and "formaction" in a:
+            self.v += check_url(a["formaction"], f"{tag} formaction")
         if tag == "a":
-            if a.get("href", "").strip().lower().startswith("http:"):
+            if _norm(a.get("href", "")).startswith("http:"):
                 self.v.append(f"a href dùng http: {a['href']}")
         elif tag == "script":
             src = a.get("src")
@@ -70,8 +101,8 @@ class _Html(HTMLParser):
             else:
                 self.v += check_url(src, "script src")
                 if _is_external(src):
-                    integ = a.get("integrity", "").strip().lower()
-                    if not integ.startswith(("sha384-", "sha512-")):
+                    toks = a.get("integrity", "").split()
+                    if not toks or not all(INTEGRITY.fullmatch(t) for t in toks):
                         self.v.append(f"script src thiếu integrity hợp lệ: {src}")
                     if "crossorigin" not in a:
                         self.v.append(f"script src thiếu crossorigin: {src}")
@@ -80,8 +111,11 @@ class _Html(HTMLParser):
         elif tag == "link":
             # canonical là siêu dữ liệu điều hướng, không tải tài nguyên
             # alternate + hreflang cũng chỉ là siêu dữ liệu ngôn ngữ
+            # Chỉ miễn trừ khi rel đúng một giá trị và href thuộc SITE_URL (H-06)
             rel = a.get("rel", "").strip().lower()
-            nav_meta = rel == "canonical" or (rel == "alternate" and "hreflang" in a)
+            nav_meta = (rel == "canonical" or (rel == "alternate" and "hreflang" in a)) and (
+                a.get("href", "").strip().startswith(SITE_URL)
+            )
             if "href" in a and not nav_meta:
                 self.v += check_url(a["href"], "link href")
         elif tag in ("img", "source", "iframe", "audio", "video", "embed"):
