@@ -43,8 +43,17 @@ def valid_due(text: str) -> bool:
     return True
 
 
+_BREAKS = re.compile("\r\n|[\t\n\r\x0b\x0c\x1c\x1d\x1e\x85  ]")
+
+
+def clean_title(title: str) -> str:
+    """Thay mọi ký tự xuống dòng và tab bằng một khoảng trắng."""
+    return _BREAKS.sub(" ", title)
+
+
 def add(path: Path, title: str, due: str | None = None) -> dict:
     items = load(path)
+    title = clean_title(title)
     item = {"id": max((i["id"] for i in items), default=0) + 1, "title": title, "done": False}
     if due is not None:
         item["due"] = due
@@ -68,7 +77,8 @@ def complete(path: Path, item_id: int) -> bool:
     for i in items:
         if i["id"] == item_id:
             i["done"], found = True, True
-    save(path, items)
+    if found:
+        save(path, items)
     return found
 
 
