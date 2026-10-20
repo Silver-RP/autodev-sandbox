@@ -67,5 +67,8 @@
 - dev-02 DONE (1 vòng, commit a8bfc9f): `scripts/smoke_pages.py` (`check_content(url, sha)`, cờ `--url`, `--sha`, `--retries`, `--interval`), `tests/test_smoke_pages.py` (server cục bộ thật). 222 test pass. Chạy thật trên URL Pages: sau merge (trước merge trả 404 như dự kiến). Ghi chú reviewer (không chặn): mặc định `git_sha()` (origin/main) chưa có test; `except OSError` hơi rộng.
 - dev-03 DONE (1 vòng, commit b78a503): `screenshot.py --url` nhận URL ngoài/đường con: `page_url` ghép tương đối, cỡ < 1000 dùng khung `data:` thay `__frame__.html`, `frame_html` escape tham số, `check_reachable` → 404/không nối được thì exit 1; `tests/test_screenshot_url.py` (7 test). 229 test pass. Đóng H-16. Ghi chú: ảnh 360 mới chỉ kiểm chiều rộng, chưa ai xem nội dung.
 
+## R14
+- dev-01 DONE (1 vòng, commit 216ef16): `screenshot.py` xoá `out` trước khi chụp, kiểm `returncode`/tệp mới, `TimeoutExpired` → `RuntimeError`, `dump_dom` kiểm lỗi, `--page` chỉ ghi hash sau khi chụp thành công, `main` in `Lỗi: ...` exit 2 (kể cả `--url` không tới được: 1 → 2, plan cho phép). 9 test mới ở `tests/test_screenshot_errors.py` (8 đỏ trước khi sửa); 238 test pass. Ghi chú reviewer (không chặn): siết `test_trang_thieu_exit_khac_0` thành `== 2`; timeout 60 giây còn là hằng số.
+
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
