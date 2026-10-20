@@ -6,15 +6,20 @@ import argparse
 import contextlib
 import functools
 import hashlib
+import html
 import http.server
 import os
 import shutil
 import struct
 import subprocess
+import sys
 import tempfile
 import threading
+import urllib.error
+import urllib.request
 import zlib
 from pathlib import Path
+from urllib.parse import quote, urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 FRAME_PATH = "/__frame__.html"
@@ -94,7 +99,7 @@ def frame_html(src: str, width: int, height: int) -> str:
     return (
         "<!doctype html><meta charset=utf-8>"
         "<body style='margin:0'>"
-        f'<iframe id="f" src="{src}" width="{width}" height="{height}" '
+        f'<iframe id="f" src="{html.escape(src, quote=True)}" width="{int(width)}" height="{int(height)}" '
         'style="border:0;display:block"></iframe>'
         "<pre id=\"frame-out\"></pre>"
         "<script>document.getElementById('f').addEventListener('load',function(){"
@@ -139,12 +144,41 @@ def serve(directory):
         thread.join(timeout=5)
 
 
-def page_url(base: str, page: str, width: int, height: int) -> str:
-    """URL để chụp/đo ở bề rộng width: 1280 trực tiếp, nhỏ hơn qua iframe."""
-    page = page if page.startswith("/") else "/" + page
+def is_external(base: str) -> bool:
+    """True nếu base không phải server nội bộ ở gốc (host ngoài hoặc có đường con)."""
+    u = urlparse(base)
+    return u.hostname not in ("127.0.0.1", "localhost") or bool(u.path.strip("/"))
+
+
+def page_url(base: str, page: str, width: int, height: int, external: bool | None = None) -> str:
+    """URL để chụp/đo ở bề rộng width: 1280 trực tiếp, nhỏ hơn qua iframe.
+
+    Server nội bộ: khung ảo __frame__.html. Server ngoài (hoặc có đường con): ghép
+    đường dẫn tương đối với base (giữ đường con) và khung là data: URL.
+    """
+    if external is None:
+        external = is_external(base)
+    if not external:
+        page = page if page.startswith("/") else "/" + page
+        if width >= 1000:
+            return base + page
+        return f"{base}{FRAME_PATH}?src={quote(page)}&w={int(width)}&h={int(height)}"
+    root = base if base.endswith("/") else base + "/"
+    target = root + page.lstrip("/")
     if width >= 1000:
-        return base + page
-    return f"{base}{FRAME_PATH}?src={page}&w={width}&h={height}"
+        return target
+    return "data:text/html;charset=utf-8," + quote(frame_html(target, width, height), safe="")
+
+
+def check_reachable(url: str) -> None:
+    """Ném RuntimeError nếu server trả lỗi HTTP hoặc không kết nối được."""
+    try:
+        with urllib.request.urlopen(url, timeout=15) as r:
+            r.read(1)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"{url}: HTTP {e.code}") from None
+    except (urllib.error.URLError, OSError) as e:
+        raise RuntimeError(f"{url}: không kết nối được ({e})") from None
 
 
 def chrome_args(width: int, height: int, mode: str) -> list[str]:
@@ -250,17 +284,23 @@ def main(argv=None) -> int:
                 one(base)
         return 0
 
-    def run(base: str) -> None:
+    def run(base: str, external: bool = False) -> None:
         for pg in pages:
+            if external:
+                check_reachable(page_url(base, pg, 1280, a.height, external=True))
             prefix = shot_prefix(pg)
             for w in widths:
                 for m in modes:
                     path = out / f"{prefix}{w}-{m}.png"
-                    shoot(page_url(base, pg, w, a.height), path, w, a.height, m)
+                    shoot(page_url(base, pg, w, a.height, external=external), path, w, a.height, m)
                     print(path)
 
     if a.url:
-        run(a.url.rstrip("/"))
+        try:
+            run(a.url.rstrip("/"), external=True)
+        except RuntimeError as e:
+            print(f"lỗi: {e}", file=sys.stderr)
+            return 1
     else:
         with serve(a.site or ROOT / "site") as base:
             run(base)
