@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-21 · Nguồn: duyệt R14 (supervisor) + audit R4–R10 (`docs/audits/2026-10-16.md`)
+Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`) + duyệt R14 (supervisor)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -22,7 +22,7 @@ Cập nhật: 2026-10-21 · Nguồn: duyệt R14 (supervisor) + audit R4–R10 (
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** (xong).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit 2026-10-16 ước thực tế ≈ 80%; R14 đóng 6 lỗ công cụ/luật, còn H-03..05, H-11, H-12, H-14, H-20 (R15 / leader). Nên `/autodev:audit` đo lại.
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit 2026-10-21 ước thực tế ≈ 75–80% (đẹp ~68%, kỹ thuật ~85%, phát hành ~65%); hero lệch spec (H-22). `due-overdue` thực tế ≈ 92% (H-13, H-26).
 
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
@@ -92,6 +92,18 @@ Cập nhật: 2026-10-21 · Nguồn: duyệt R14 (supervisor) + audit R4–R10 (
 | H-19 | thấp | `due-overdue/goal.json` còn `planned`; `criteria.md` nền cũ | người |
 | H-20 | thấp | Nút hero dịch ly nhưng đá, ống hút đứng yên | R15 |
 | H-21 | thấp | `test_tools.py` (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) → exit 2; supervisor thấy 2/7 lần ở load ~14,5 | R15 |
+| H-22 | vừa | Hero thiếu laptop, người ngủ gật, hơi nước, tương tác ngáp như `docs/design/lazy-landing.md`; chưa ghi "lệch đã chấp nhận"; D7 duyệt trước khi H-07 sửa | R15 / leader |
+| H-23 | vừa | `screenshot.py --page/--pages` không kiểm HTTP: trang 404 vẫn exit 0, đóng hash `og.svg` lên ảnh sai | R15 |
+| H-24 | vừa | `page_metrics --check-overflow` chỉ đo `getBoundingClientRect().right`, bỏ `scrollWidth`: chữ `nowrap` tràn vẫn exit 0 | R15 |
+| H-25 | vừa | `lh_check.py --site <thư mục không có index.html>` vẫn chạy Lighthouse, có thể in OK | R15 |
+| H-26 | vừa | `todo done ²` → `ValueError` traceback; `todo add ""` ghi việc rỗng; tiêu đề có tab/xuống dòng hỏng `list` | mốc todo |
+| H-27 | vừa | `smoke_pages.py` (E3): `origin/main` không fetch, lỗi git traceback, không kiểm `main.js`/`robots.txt`/`sitemap.xml`, `/en/` không kiểm version | mốc công cụ |
+| H-28 | vừa | `pages.yml` deploy mỗi push `main` không chờ ruff/pytest; test workflow chỉ regex, không chạy `sed` | mốc công cụ |
+| H-29 | thấp | Lỗi công cụ còn exit 1: `--widths abc`, màu `color(srgb …)`, `--pages ../x`; `--pages /en` bị từ chối | R15 |
+| H-30 | thấp | L2 còn lọt `input type=image`, `video poster`, `srcset`, `meta refresh`, `iframe srcdoc`, `integrity=""`, `image-set()` | mốc công cụ |
+| H-31 | thấp | Đạt trên giấy: probe hero tự đẩy timeline, chờ `lazySite` 10×50 ms ảo, D6/D3 xanh bằng skip khi offline | mốc công cụ |
+| H-32 | thấp | `contrast.py`: `font-size:0`, nền gradient, `colors` rỗng đạt im lặng; `lh_check` `round()` banker trượt oan biên 95 | R15 |
+| H-33 | thấp | Hết giờ chỉ giết tiến trình trực tiếp (`npx→node→Chrome` mồ côi); `OSError` khi dọn hồ sơ; chưa xác nhận, có thể góp H-21 | R15 |
 
 ## Nợ không chặn
 - Tham số `today` của `store.overdue` che `store.today()`.
@@ -107,6 +119,7 @@ Cập nhật: 2026-10-21 · Nguồn: duyệt R14 (supervisor) + audit R4–R10 (
 - R13: bản Anh chưa có JSON-LD, `og:image` dùng chung `og.png` chữ Việt; test chữ Việt chỉ bắt chữ có dấu; ở 360 link "Tiếng Việt" rớt dòng dưới logo.
 
 ## Quyết định gần đây
+- 2026-10-21: audit R1–R14 (`docs/audits/2026-10-21.md`): 12 lỗ mới H-22..H-33 (7 vừa, 5 thấp), 0 đóng; 6 lỗ R14 đóng nhưng còn phần hở (H-23, H-25, H-29, H-30, H-31). Đề xuất: R15 thêm dev công cụ (H-23..25, 29, 32, 33); mốc todo nhỏ (H-13, H-18, H-26); leader quyết H-22, H-14; người đưa D4/D5/L5 vào `smoke` (H-12).
 - 2026-10-21: merge R14 (PR #44). 7 tiêu chí tự chạy đạt; `test_tools.py` chập chờn khi tải nặng → H-21 (R15), không chặn vì không hồi quy. Đóng H-06, H-07, H-09, H-10, H-15, H-17; bỏ H-08 khỏi bảng (D7 đạt). (c) chấp nhận `--pages` thay `--only`, `onload` font chuyển sang `main.js`.
 - 2026-10-20: merge R11 (PR #40). Workflow `pages` xanh; `smoke_pages.py` trên URL thật exit 0 (E3); đóng H-16; H-14 còn email + `robots.txt`. D7 leader duyệt (PR #38) → `lazy-landing` 17/17.
 - 2026-10-16: audit R4–R10 (`docs/audits/2026-10-16.md`): 14 lỗ mới H-07..H-20 (2 cao), 0 đóng; độ khớp thực tế ≈ 80% (đẹp đúng hướng ~65%, kỹ thuật ~85%, phát hành ~60%); đề xuất leader duyệt D7 trước R14/R11.
