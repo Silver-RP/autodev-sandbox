@@ -1,6 +1,6 @@
 {
   "milestone": "R14",
-  "current_task": "dev-02",
+  "current_task": "dev-03",
   "started_at": "2026-10-20T22:34:19+09:00",
   "tasks": {
     "dev-01": {
@@ -9,12 +9,12 @@
       "commit": "216ef16"
     },
     "dev-02": {
-      "status": "IN_PROGRESS",
-      "round": 0,
-      "commit": null
+      "status": "DONE",
+      "round": 1,
+      "commit": "5dd66cb"
     },
     "dev-03": {
-      "status": "TODO",
+      "status": "IN_PROGRESS",
       "round": 0,
       "commit": null
     },
@@ -26,8 +26,8 @@
   },
   "verify": {
     "last_status": "PASS",
-    "hook_runs": 50,
-    "last_hook_at": "2026-10-20T13:43:21Z",
+    "hook_runs": 51,
+    "last_hook_at": "2026-10-20T13:56:06Z",
     "last_hook_agent": "autodev:developer",
     "consecutive_blocks": 0
   },
