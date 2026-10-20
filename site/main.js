@@ -26,7 +26,7 @@
     if (!btn) return;
     var xanh = document.querySelector("#hero .ghe-xanh");
     var doo = document.querySelector("#hero .ghe-do");
-    var ly = document.querySelector("#hero .ly");
+    var ly = document.querySelector("#hero .ly-tra");
     function apply(on) {
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       btn.textContent = on

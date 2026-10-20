@@ -135,13 +135,6 @@ a {
   align-items: center;
 }
 
-/* Ở 360 nút trên header rơi xuống dòng riêng, trùng nút ngay dưới tiêu đề hero: bỏ bớt */
-@media (max-width: 40rem) {
-  header .nut {
-    display: none;
-  }
-}
-
 @media (min-width: 64rem) {
   #hero {
     grid-template-columns: 1fr 1fr;
@@ -287,13 +280,22 @@ footer {
 }
 
 @media (max-width: 40rem) {
-  .gia {
+  /* Tên món một dòng; dòng dưới là chấm dẫn co lại rồi giá (cùng hàng) */
+  .ten {
     flex-basis: 100%;
-    order: 3;
   }
 
   .cham {
-    display: none;
+    flex: 1 1 1rem;
+    min-width: 1rem;
+    transform: none;
+    align-self: flex-end;
+    margin-bottom: 0.45em;
+  }
+
+  .gia {
+    flex: 0 1 auto;
+    min-width: 0;
   }
 }
 
@@ -417,4 +419,16 @@ footer {
 
 #hoi-dap details p {
   margin: 0 0 var(--space-2);
+}
+
+/* Giảm chuyển động: tôn trọng tuỳ chọn của hệ điều hành */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

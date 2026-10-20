@@ -24,6 +24,15 @@ CSS = (SITE / "style.css").read_text(encoding="utf-8")
 GSAP_TAG = re.search(r"<script[^>]*gsap[^>]*>", HTML).group(0)
 GSAP_URL = re.search(r'src="([^"]+)"', GSAP_TAG).group(1)
 
+# Bảng tham số theo trang (vi, en): tệp, mã HTML, đường dẫn main.js.
+LANGS = ["vi", "en"]
+PAGE_FILE = {"vi": "index.html", "en": "en/index.html"}
+PAGE_HTML = {
+    "vi": HTML,
+    "en": (SITE / "en" / "index.html").read_text(encoding="utf-8"),
+}
+MAIN_SRC = {"vi": "main.js", "en": "../main.js"}
+
 PROBE = """<pre id="out"></pre><script>
 document.addEventListener('DOMContentLoaded', function () { setTimeout(function () {
   var s = document.querySelectorAll('section');
@@ -39,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () { setTimeout(function 
 
 
 OFF_PAGE = """<!doctype html><meta charset=utf-8><body>
-<iframe id="f" src="/index.html" sandbox="allow-same-origin" width="1280" height="800"></iframe>
+<iframe id="f" src="/@@PAGE@@" sandbox="allow-same-origin" width="1280" height="800"></iframe>
 <pre id="out"></pre><script>
 document.getElementById('f').addEventListener('load', function () {
   var d = this.contentDocument, s = d.querySelectorAll('section');
@@ -75,20 +84,22 @@ needs_chrome = pytest.mark.skipif(not _chrome(), reason="không có Chrome")
 needs_net = pytest.mark.skipif(not _online(), reason="không có mạng")
 
 
-def probe(tmp_path, html_edit=lambda h: h, js_enabled=True):
+def probe(tmp_path, html_edit=lambda h: h, js_enabled=True, lang="vi"):
     site = tmp_path / "site"
     if site.exists():
         shutil.rmtree(site)
     shutil.copytree(SITE, site)
-    page = site / "index.html"
+    page = site / PAGE_FILE[lang]
     text = html_edit(page.read_text(encoding="utf-8"))
     if js_enabled:
         page.write_text(text.replace("</body>", PROBE + "</body>"), encoding="utf-8")
-        entry = "/index.html"
+        entry = "/" + PAGE_FILE[lang]
     else:
         # iframe sandbox không có allow-scripts = tắt JS thật; trang cha (có JS) đo style
         page.write_text(text, encoding="utf-8")
-        (site / "off.html").write_text(OFF_PAGE, encoding="utf-8")
+        (site / "off.html").write_text(
+            OFF_PAGE.replace("@@PAGE@@", PAGE_FILE[lang]), encoding="utf-8"
+        )
         entry = "/off.html"
     with sh.serve(site) as base:
         return sh.dump_dom(base + entry, 1280, 800, "light")
@@ -103,22 +114,46 @@ def read(dom):
 # --- SRI ---
 
 
-def test_gsap_tag_attributes():
-    assert "crossorigin" in GSAP_TAG and "defer" in GSAP_TAG
-    assert re.search(r'integrity="sha384-[A-Za-z0-9+/]{64}"', GSAP_TAG)
-    assert re.search(r"gsap@\d+\.\d+\.\d+/", GSAP_URL)
-    assert re.search(r'<script[^>]*src="main\.js"[^>]*\bdefer\b', HTML)
-    assert check(html=HTML) == []
+def _gsap_tag(html):
+    return re.search(r"<script[^>]*gsap[^>]*>", html).group(0)
+
+
+@pytest.mark.parametrize("lang", LANGS)
+def test_gsap_tag_attributes(lang):
+    html = PAGE_HTML[lang]
+    tag = _gsap_tag(html)
+    url = re.search(r'src="([^"]+)"', tag).group(1)
+    assert "crossorigin" in tag and "defer" in tag
+    assert re.search(r'integrity="sha384-[A-Za-z0-9+/]{64}"', tag)
+    assert re.search(r"gsap@\d+\.\d+\.\d+/", url)
+    assert re.search(
+        r'<script[^>]*src="' + re.escape(MAIN_SRC[lang]) + r'"[^>]*\bdefer\b', html
+    )
+    assert check(html=html) == []
 
 
 @needs_net
-def test_sri_hash_matches_cdn_file():
+@pytest.mark.parametrize("lang", LANGS)
+def test_sri_hash_matches_cdn_file(lang):
+    tag = _gsap_tag(PAGE_HTML[lang])
+    url = re.search(r'src="([^"]+)"', tag).group(1)
     try:
-        body = urllib.request.urlopen(GSAP_URL, timeout=15).read()
+        body = urllib.request.urlopen(url, timeout=15).read()
     except OSError:
         pytest.skip("không tải được CDN")
     digest = "sha384-" + base64.b64encode(hashlib.sha384(body).digest()).decode()
-    assert digest in GSAP_TAG
+    assert digest in tag
+
+
+def test_en_gsap_unpinned_version_is_caught():
+    bad = PAGE_HTML["en"].replace("gsap@3.12.5", "gsap@latest")
+    assert not re.search(r"gsap@\d+\.\d+\.\d+/", _gsap_tag(bad))
+
+
+def test_en_gsap_without_sri_is_caught():
+    bad = re.sub(r'\sintegrity="[^"]*"', "", PAGE_HTML["en"])
+    assert not re.search(r'integrity="sha384-', _gsap_tag(bad))
+    assert check(html=bad) != []
 
 
 # --- làm nền tăng dần ---
@@ -153,18 +188,20 @@ def test_main_js_adds_js_class_only_with_gsap():
 
 
 @needs_chrome
-def test_js_disabled_sections_visible(tmp_path):
+@pytest.mark.parametrize("lang", LANGS)
+def test_js_disabled_sections_visible(tmp_path, lang):
     for _ in range(2):  # gọi lặp lại
-        d = read(probe(tmp_path, js_enabled=False))
+        d = read(probe(tmp_path, js_enabled=False, lang=lang))
         assert d["js"] is False and d["gsap"] is False
         assert d["sections"] >= 4
         assert d["opacity"] == [1] * d["sections"]
 
 
 @needs_chrome
-def test_broken_cdn_sections_visible(tmp_path):
+@pytest.mark.parametrize("lang", LANGS)
+def test_broken_cdn_sections_visible(tmp_path, lang):
     bad = lambda h: h.replace("gsap@3.12.5", "gsap@0.0.1")
-    d = read(probe(tmp_path, bad))
+    d = read(probe(tmp_path, bad, lang=lang))
     assert d["gsap"] is False and d["js"] is False
     assert d["sections"] >= 4
     assert d["opacity"] == [1] * d["sections"]
@@ -172,8 +209,9 @@ def test_broken_cdn_sections_visible(tmp_path):
 
 @needs_chrome
 @needs_net
-def test_with_cdn_gsap_present_and_sections_visible(tmp_path):
-    d = read(probe(tmp_path))
+@pytest.mark.parametrize("lang", LANGS)
+def test_with_cdn_gsap_present_and_sections_visible(tmp_path, lang):
+    d = read(probe(tmp_path, lang=lang))
     if not d["gsap"]:
         pytest.skip("CDN không tải được")
     assert d["js"] is True
@@ -259,9 +297,12 @@ def test_identity_helper():
 
 @needs_chrome
 @needs_net
-def test_hero_settled_after_2s(tmp_path):
+@pytest.mark.parametrize("lang", LANGS)
+def test_hero_settled_after_2s(tmp_path, lang):
     for _ in range(2):
-        d = read_hero(probe(tmp_path, lambda h: h.replace("</body>", HERO_PROBE + "</body>")))
+        d = read_hero(
+            probe(tmp_path, lambda h: h.replace("</body>", HERO_PROBE + "</body>"), lang=lang)
+        )
         assert d["gsap"] is True, "online mà gsap không nạp"
         assert d["should"] is True and d["tl"] is True
         assert d["dur"] <= 1.5
@@ -272,12 +313,13 @@ def test_hero_settled_after_2s(tmp_path):
 
 @needs_chrome
 @needs_net
-def test_reduced_motion_no_timeline(tmp_path):
+@pytest.mark.parametrize("lang", LANGS)
+def test_reduced_motion_no_timeline(tmp_path, lang):
     def edit(h):
         h = h.replace("<script src=\"https://cdn", REDUCE + "<script src=\"https://cdn", 1)
         return h.replace("</body>", HERO_PROBE + "</body>")
 
-    d = read_hero(probe(tmp_path, edit))
+    d = read_hero(probe(tmp_path, edit, lang=lang))
     assert d["gsap"] is True, "online mà gsap không nạp"
     assert d["should"] is False and d["tl"] is False
     for v in d["items"].values():
@@ -286,12 +328,13 @@ def test_reduced_motion_no_timeline(tmp_path):
 
 @needs_chrome
 @needs_net
-def test_probe_reports_missing_lazysite(tmp_path):
+@pytest.mark.parametrize("lang", LANGS)
+def test_probe_reports_missing_lazysite(tmp_path, lang):
     def edit(h):
-        h = re.sub(r'<script[^>]*src="main\.js"[^>]*></script>', "", h)
+        h = re.sub(r'<script[^>]*src="(?:\.\./)?main\.js"[^>]*></script>', "", h)
         return h.replace("</body>", HERO_PROBE + "</body>")
 
-    dom = probe(tmp_path, edit)
+    dom = probe(tmp_path, edit, lang=lang)
     assert read(dom)["gsap"] is True, "online mà gsap không nạp"
     with pytest.raises(AssertionError, match="lazySite"):
         read_hero(dom)

@@ -102,9 +102,10 @@ def frame_html(src: str, width: int, height: int) -> str:
         f'<iframe id="f" src="{html.escape(src, quote=True)}" width="{int(width)}" height="{int(height)}" '
         'style="border:0;display:block"></iframe>'
         "<pre id=\"frame-out\"></pre>"
-        "<script>document.getElementById('f').addEventListener('load',function(){"
-        "var d=this.contentDocument,o=d&&d.getElementById('out');"
-        "document.getElementById('frame-out').textContent=o?o.textContent:'';});</script>"
+        "<script>(function(){var f=document.getElementById('f');"
+        "function copy(){var d=f.contentDocument,o=d&&d.getElementById('out');"
+        "if(o&&o.textContent)document.getElementById('frame-out').textContent=o.textContent;}"
+        "f.addEventListener('load',copy);setInterval(copy,100);})();</script>"
     )
 
 

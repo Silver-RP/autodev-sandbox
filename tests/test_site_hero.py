@@ -2,7 +2,14 @@ import re
 from html.parser import HTMLParser
 from pathlib import Path
 
+import pytest
+
 HTML = (Path(__file__).parent.parent / "site" / "index.html").read_text(encoding="utf-8")
+PAGES = {
+    "vi": HTML,
+    "en": (Path(__file__).parent.parent / "site" / "en" / "index.html").read_text(encoding="utf-8"),
+}
+LANGS = list(PAGES)
 DRAW = {"path", "rect", "circle", "ellipse", "line", "polyline", "polygon"}
 
 
@@ -40,8 +47,9 @@ def hero_svgs(src=HTML):
     return p.svgs
 
 
-def test_hero_svg_structure():
-    svgs = hero_svgs()
+@pytest.mark.parametrize("lang", LANGS)
+def test_hero_svg_structure(lang):
+    svgs = hero_svgs(PAGES[lang])
     assert len(svgs) >= 1
     s = svgs[0]
     assert s["draw"] >= 3
@@ -49,8 +57,9 @@ def test_hero_svg_structure():
     assert s["attrs"].get("viewbox")  # HTMLParser hạ chữ thường tên thuộc tính
 
 
-def test_hero_svg_no_wide_fixed_width():
-    for s in hero_svgs():
+@pytest.mark.parametrize("lang", LANGS)
+def test_hero_svg_no_wide_fixed_width(lang):
+    for s in hero_svgs(PAGES[lang]):
         w = s["attrs"].get("width")
         if w and "%" not in w:
             m = re.match(r"\s*([\d.]+)", w)
@@ -64,8 +73,9 @@ def lien_he_svgs(src=HTML):
     return re.findall(r"<svg\b(.*?)</svg>", m.group(1), re.DOTALL)
 
 
-def test_lien_he_empty_chair_svg():
-    svgs = lien_he_svgs()
+@pytest.mark.parametrize("lang", LANGS)
+def test_lien_he_empty_chair_svg(lang):
+    svgs = lien_he_svgs(PAGES[lang])
     assert len(svgs) == 1
     s = svgs[0]
     assert len(re.findall(r"<(?:path|rect|circle|ellipse|line)\b", s)) >= 3
@@ -91,3 +101,22 @@ def test_svg_outside_hero_not_counted_and_empty_input():
     assert hero_svgs("") == []
     # gọi lặp lại không rò trạng thái
     assert len(hero_svgs()) == len(hero_svgs())
+
+
+# --- ca âm trên HTML bản Anh có lỗi (R15 dev-04) ---
+
+
+def test_en_hero_svg_without_title_is_caught():
+    bad = re.sub(r"<title[^>]*>.*?</title>", "", PAGES["en"], flags=re.DOTALL)
+    assert not hero_svgs(bad)[0]["title"]
+
+
+def test_en_hero_svg_with_too_few_shapes_is_caught():
+    bad = re.sub(r"<(?:path|rect|circle|ellipse|line)\b[^>]*/>", "", PAGES["en"])
+    assert hero_svgs(bad)[0]["draw"] < 3
+
+
+def test_en_empty_chair_with_hex_paint_is_caught():
+    bad = PAGES["en"].replace('class="ghe-trong"', 'class="ghe-trong" stroke="#ff0000"', 1)
+    svgs = lien_he_svgs(bad)
+    assert len(svgs) == 1 and "#" in svgs[0]
