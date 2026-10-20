@@ -44,7 +44,7 @@
     {"id": "R10", "title": "Hiệu năng: Lighthouse mobile >= 90/95, tổng tải <= 300 KB", "depends_on": ["R7", "R8", "R13"], "metrics": ["E2"],
      "est_usd": 1.5, "est_hours": 0.3, "status": "done", "plan_file": "plan/R10.md"},
     {"id": "R11", "title": "Triển khai GitHub Pages + smoke URL thật", "depends_on": ["R10"], "metrics": ["E3"],
-     "est_usd": 1.3, "est_hours": 0.2, "status": "planned", "plan_file": "plan/R11.md"}
+     "est_usd": 1.3, "est_hours": 0.2, "status": "done", "plan_file": "plan/R11.md"}
   ],
   "cut_order": ["R11", "R13", "R10", "R9", "R12", "R7"],
   "human_only": [

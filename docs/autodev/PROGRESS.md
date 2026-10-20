@@ -455,5 +455,45 @@ Không lệch quá 2 lần.
 - Chấp nhận (a): `stylesheet_hrefs` bỏ qua `<link>` trong `<noscript>`; fixture Lighthouse dựng inline trong `tests/test_tools.py`.
 - (c) tự quyết: plan R10 không có task cho H-03..H-06 (việc "thêm task (b) trước R10" chưa làm). Không chặn R10 vì tiêu chí R10 đủ; H-03..H-06 chuyển sang **R14 (mới): dọn lỗ hổng site**, phụ thuộc R10, không cần Pages nên chạy được trước R11. Cần `/autodev:plan-next R14`.
 
+## R11: Triển khai GitHub Pages — **đạt, merged** 2026-10-20 (PR #40, `099dfd9`)
+
+Worker làm dev-01..03, mỗi task 1 vòng (3 vòng, không FAIL). Supervisor kiểm trên `origin/milestone/R11` (`ffdc755`), chế độ B `--review-only`:
+`verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc). 229 test.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | `verify.py` sạch | `python3 .../scripts/verify.py` | sạch, đạt |
+| 2 | Sau merge: `smoke_pages.py` exit 0 (E3) | merge → `gh run watch 39428889863` (workflow `pages`, `success`, headSha `099dfd9`) → `uv run python scripts/smoke_pages.py` | "OK (lần 1): https://silver-rp.github.io/autodev-sandbox/ @ 099dfd9bcf04…", exit 0, đạt. `/en/` cũng có `meta version` = `099dfd9…`; `sitemap.xml` 200 |
+| 3 | `test_site_seo.py`, `test_site_i18n.py` xanh với `SITE_URL` mới | `uv run pytest -q tests/test_site_seo.py tests/test_site_i18n.py tests/test_pages_workflow.py tests/test_smoke_pages.py tests/test_screenshot_url.py` | 45 passed, đạt; `grep -rn example.github.io site/ scripts/` rỗng |
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 3 | 3 | 0 |
+| Phút worker | ~15–25 | 33 | B3 1,31 |
+| USD (worker + supervisor) | ~1,6 | 1,04 + ~1,26 (supervisor, tạm) | B3 ~1,43 |
+| Số vòng review | 3–4 | 3 | 0 |
+
+Không lệch quá 2 lần. Chờ deploy (đo lần đầu): workflow `pages` ≈ 1 phút, smoke đạt ngay lần 1.
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Deploy bản cũ / cache | `smoke_pages.py` so `meta[name=version]` với `origin/main`; `test_smoke_pages.py` (`--sha khac` → exit 1); supervisor thử cục bộ `--sha abc` → exit 1 |
+| 2. Repo private chưa bật Pages | leader đổi public, bật Pages (`build_type: workflow`); `gh api .../pages` xác nhận; env `github-pages` chỉ cho `main` |
+| 3. Kill giữa deploy | có `workflow_dispatch`, deploy nguyên khối theo artifact; chưa thử thật |
+| 4. URL còn `example.github.io` | test dev-01 quét `site/`; grep của supervisor rỗng |
+
+### Kiểm biên độc lập
+- `smoke_pages.py` với server cục bộ dưới đường con `/autodev-sandbox` (không `/` cuối): `--sha dev` exit 0; `--sha abc --retries 2 --interval 0` exit 1; host chết (`127.0.0.1:1`) exit 1 gọn (HTTP 0); URL thật trước merge: 404, exit 1. Đúng.
+- `screenshot.py --url https://silver-rp.github.io/autodev-sandbox/ --widths 360 --modes light`: exit 0, ảnh 360 đủ font, CSS (giữ đường con); `--url .../khong-co/` → exit 1. H-16 đóng (`tests/test_screenshot_url.py` xanh).
+- Hai trang không có `href`/`src` gốc tuyệt đối `/…` (grep), nên tài nguyên chạy được dưới `/autodev-sandbox/`.
+
+### Quyết định
+- **Merge PR #40** (merge commit, giữ nhánh). E3 đạt; D7 leader đã duyệt (PR #38) → `lazy-landing` 17/17 = 100% theo lệnh đo.
+- Đóng H-16. H-14 đóng một phần (URL `example.github.io`); còn email giữ chỗ và `robots.txt` dưới đường con (crawler không đọc) → R14 hoặc leader.
+- Không có (c).
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->

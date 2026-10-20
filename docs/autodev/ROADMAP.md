@@ -25,12 +25,12 @@ Cập nhật: 2026-10-16 (supervisor, sau khi merge R6).
 | R13 | lazy-landing | Song ngữ Việt/Anh (`site/en/`, `hreflang`) | merged 2026-10-16, PR #33 | 3 | E5 | R12, R9 | 1,9 | chế độ B: worker 36 phút; worker + supervisor 1,40 + ~1,26 USD (tạm) |
 | R10 | lazy-landing | Hiệu năng (Lighthouse mobile ≥ 90 / 95, ≤ 300 KB) | merged 2026-10-16, PR #35 | 3 | E2 | R7, R8, R13 | 1,5 | chế độ B: worker 42 phút; worker + supervisor 1,24 + ~1,26 USD (tạm) |
 | R14 | lazy-landing | Dọn lỗ hổng site H-03..H-06 (đề xuất (c) của supervisor, 2026-10-16) | **cần plan** (`/autodev:plan-next R14`) | ~3–4 | giữ D3, D4, D6, L2 | R10 | ~1,5 | – |
-| R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | plan đã duyệt; **chờ leader bật Pages** | 2 | E3 | R10 | 1,3 | – |
+| R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | merged 2026-10-20, PR #40; E3 đạt trên `https://silver-rp.github.io/autodev-sandbox/` | 3 | E3 | R10 | 1,3 | chế độ B: worker 33 phút; worker + supervisor 1,04 + ~1,26 USD (tạm) |
 
 **Tổng:**
-- Đã xong: R1–R4, R6–R10, R12, R13, 40 task.
-- Còn lại: R14 (cần plan), R11 (2 task, chờ leader bật Pages), khoảng **2,8 USD**.
-- Mục tiêu `lazy-landing` hiện đạt 15/17 chỉ số (sau R10); `due-overdue` đạt 5/5.
+- Đã xong: R1–R4, R6–R13, 43 task.
+- Còn lại: R14 (cần plan), khoảng **1,5 USD**.
+- Mục tiêu `lazy-landing` hiện đạt 17/17 chỉ số (sau R11; D7 leader duyệt 2026-10-20); `due-overdue` đạt 5/5.
 
 ## Chạy tiếp (sau khi reset hạn mức)
 
