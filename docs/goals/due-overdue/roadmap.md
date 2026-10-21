@@ -64,12 +64,30 @@ Thêm 2026-10-21 (leader uỷ quyền; theo audit 2026-10-16 H-13, H-18 và 2026
   1. *Test song song chập chờn*: dùng `multiprocessing` với số lần cố định, kiểm số việc và id duy nhất; không dựa thời gian.
   2. *`os.replace` phá symlink*: test ghi qua symlink, đích được cập nhật, link còn nguyên.
 
+## R18: Todo CLI không traceback, không treo, không ghi hỏng
+Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
+- **Mục tiêu:** giữ đúng lời R17 "CLI không bao giờ ném traceback hay ghi file khi lỗi" cho cả đầu vào lạ, khoá bị giữ và file có quyền/link đặc biệt.
+- **Phạm vi:**
+  1. H-35: id quá dài (> 4300 chữ số), JSON lồng sâu hoặc số nguyên khổng lồ trong file, argv không UTF-8 → thông báo một dòng, exit 2, không `Traceback`, file nguyên byte.
+  2. H-36: `store.lock` có timeout (vài giây); tiến trình khác giữ khoá → lệnh thoát exit 2 với thông báo, không treo.
+  3. H-37: `load` từ chối `id` âm hoặc trùng → exit 2, không ghi.
+  4. H-38: `save` không ghi đè file chỉ đọc (0444), giữ hard link và quyền file cũ, symlink tự trỏ → exit 2; lỗi gốc không bị che; tên file dài/thư mục chỉ đọc → exit 2, không `Traceback`.
+- **Chỉ số giữ:** A1, A2, A3, A4.
+- **Ước tính:** ~4 task, **3 USD**, **1,4 giờ** (theo R17 đo: 3 task, 60 phút worker, 2,53 USD; cả bộ pytest ~3–5 phút mỗi lần verify).
+- **Xong khi:** mỗi ý có test đỏ trên `origin/main` trước khi sửa (tên test theo audit: `test_cli_errors.py::test_done_huge_id_exit_2`, `::test_deeply_nested_json_exit_2`, `::test_load_rejects_negative_id`, `::test_load_rejects_duplicate_id`, `test_store_safety.py::test_lock_timeout_exit_2`, `::test_self_symlink_exit_2`, `test_atomic_save.py::test_readonly_file_not_overwritten`, `::test_hardlink_preserved`); stderr các ca không chứa `Traceback`; `uv run pytest -q`, `uv run ruff check .` sạch; smoke A5 vẫn đạt.
+- **Phụ thuộc:** R17.
+- **Pre-mortem:**
+  1. *Test khoá chập chờn hoặc chậm*: tiến trình con giữ khoá qua cờ đồng bộ (file/pipe), không `sleep` đoán; timeout khoá chỉnh được qua biến môi trường để test chạy dưới 2 giây.
+  2. *Giữ hard link/quyền làm mất tính nguyên tử của R17*: không bỏ `os.replace` cho trường hợp thường; chỉ đổi cách xử lý khi file có `st_nlink > 1` hoặc chỉ đọc, và test hai tiến trình `add` song song của R17 vẫn xanh.
+  3. *Bắt ngoại lệ quá rộng che lỗi lập trình*: chỉ bắt các lớp lỗi đã liệt kê (`ValueError`, `RecursionError`, `OSError`, `UnicodeError`) ở biên CLI, quy về `StoreError`; test không dùng `except Exception`.
+
 ## Tổng
 | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|
 | R1 | – | A1 (A3, A4) | 4 | 0,5 |
 | R2 | R1 | A2, A5 (A3, A4) | 4 | 0,4 |
 | R17 | R2 | A1, A2, A3, A4 | 1,5 | 0,3 |
+| R18 | R17 | A1, A2, A3, A4 | 3 | 1,4 |
 | **Tổng** | | | **8** | **0,9** |
 
 ## Thứ tự cắt

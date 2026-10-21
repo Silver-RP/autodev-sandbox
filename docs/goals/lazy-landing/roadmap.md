@@ -244,6 +244,24 @@ Thêm 2026-10-21 (leader uỷ quyền; theo audit 2026-10-21).
   1. *Siết `scrollWidth` làm D4 đỏ thật*: sửa trang cho hết tràn, không nới đo.
   2. *Pages chờ test làm deploy chậm/hỏng*: workflow vẫn `workflow_dispatch`; smoke sau merge xác nhận.
 
+## R19: Công cụ đo và cổng deploy không lách được
+Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
+- **Mục tiêu:** không công cụ đo nào exit 0 khi không đo, không lỗi môi trường nào ra traceback exit 1 (trùng "trượt"); smoke E3 không đỏ oan; cổng "chờ test" của Pages không lách được.
+- **Phạm vi:**
+  1. H-43: `screenshot.py` danh sách rỗng (`--modes ""`, `--pages ""`, `--pages ,`) → exit 2, `Lỗi:`.
+  2. H-44: `screenshot`, `page_metrics`, `contrast`: `CHROME` không có, `--out`/`--file` là thư mục hoặc dưới tệp, `--url foo`, JSON/Unicode hỏng từ Chrome → exit 2, `Lỗi:`, không `Traceback`; docstring `screenshot.py` có bảng mã 0/1/2.
+  3. H-40: `smoke_pages.py` `--url foo`, `--interval` âm, `--retries` ≤ 0, `IncompleteRead`/`HTTPException` → exit 2 (lỗi tham số) hoặc thử lại (lỗi mạng), không `Traceback`.
+  4. H-45 + H-27 (phần còn lại): `smoke_pages` tính lại SHA `origin/main` mỗi lần thử (hoặc đạt khi trang mang SHA mới hơn là hậu duệ của SHA ban đầu, chọn một và ghi hợp đồng trong docstring); git có `timeout` và `GIT_TERMINAL_PROMPT=0`; kiểm `/main.js`, `/robots.txt`, `/sitemap.xml` 200 và `meta version` của `/en/` khớp SHA.
+  5. H-46: `test_pages_workflow.py` kiểm job `test` có cấu trúc: từ chối `|| true`, `continue-on-error`, `if:` ở bước/job `test`, `if: always()` ở `build`/`deploy`; quyền `pages: write`/`id-token: write` chuyển xuống job `deploy`; mọi job có `timeout-minutes`.
+- **Chỉ số giữ:** D1, D4, D5, E3, L3.
+- **Ước tính:** ~4 task, **3,5 USD**, **1,5 giờ** (theo R16 đo: 4 task, 90 phút worker, 2,16 + ~1,34 USD).
+- **Xong khi:** mỗi ý có test ca âm đỏ trên `origin/main` trước khi sửa (tên theo cột "Test cần có" của audit); `uv run pytest -q`, `uv run ruff check .` sạch; D4, D5 exit 0; sau merge Pages deploy (workflow mới) xanh và `smoke_pages.py` exit 0.
+- **Phụ thuộc:** R16.
+- **Pre-mortem:**
+  1. *Đổi quyền `pages.yml` làm deploy hỏng sau merge*: chỉ phát hiện được khi chạy thật; giữ `workflow_dispatch`, chạy E3 ngay sau merge, nếu đỏ thì sửa trong mốc chứ không nới test.
+  2. *Bắt `OSError`/`ValueError` chung che lỗi "trượt" thật*: exit 1 chỉ dành cho kết quả đo trượt; ca tham số hoá cho cả 5 script kiểm cả hai phía (lỗi công cụ → 2, trang tràn/tương phản thấp → 1).
+  3. *Smoke tính lại SHA nên đạt khi deploy cũ treo*: test repo tạm có `main` đi tiếp; trang mang SHA cũ hơn SHA ban đầu vẫn phải trượt.
+
 ## Tổng
 | Thứ tự chạy | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|---|
@@ -261,6 +279,7 @@ Thêm 2026-10-21 (leader uỷ quyền; theo audit 2026-10-21).
 | 13 | R16 | R15 | D1, D2, D4, E2, E3, L3 | 2,5 | 0,5 |
 | 11 | R14 | R11 | D1, L2, E2, L3 | 2,0 | 0,4 |
 | 12 | R15 | R14 | D3, D4, D6, E5, L3 | 2,0 | 0,4 |
+| 14 | R19 | R16 | D1, D4, D5, E3, L3 | 3,5 | 1,5 |
 | | **Tổng (R4–R13, trừ R5 đã cắt)** | | | **19,0** | **2,4** |
 
 ## Thứ tự cắt
