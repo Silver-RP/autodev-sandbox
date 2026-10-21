@@ -3,9 +3,11 @@
 import contextlib
 import fcntl
 import json
+import math
 import os
 import re
 import tempfile
+import time
 from datetime import date
 from pathlib import Path
 
@@ -56,12 +58,36 @@ def lock_path(path: Path) -> str:
     return os.path.dirname(os.path.realpath(path))
 
 
+def _lock_timeout() -> float:
+    raw = os.environ.get("TODO_LOCK_TIMEOUT")
+    if raw is None:
+        return 5.0
+    try:
+        value = float(raw)
+    except ValueError:
+        value = float("nan")
+    if not math.isfinite(value) or value <= 0:
+        raise StoreError(f"TODO_LOCK_TIMEOUT không hợp lệ: {raw!r} (cần số thực hữu hạn > 0, giây)")
+    return value
+
+
 @contextlib.contextmanager
 def lock(path: Path):
-    """Khoá độc quyền flock quanh đọc-sửa-ghi."""
+    """Khoá độc quyền flock quanh đọc-sửa-ghi; chờ tối đa TODO_LOCK_TIMEOUT giây."""
+    timeout = _lock_timeout()
     fd = os.open(lock_path(path), os.O_RDONLY)
     try:
-        fcntl.flock(fd, fcntl.LOCK_EX)
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    raise StoreError(
+                        f"{path}: đang bị khoá bởi tiến trình khác (quá {timeout:g} giây)"
+                    ) from None
+                time.sleep(0.02)
         yield
     finally:
         os.close(fd)
