@@ -82,5 +82,8 @@
 - dev-02 DONE (1 vòng, commit 8aa9317): `store.StoreError`, `load` kiểm UTF-8/JSON/gốc list/phần tử dict có `id` int; `cli.main` bắt → stderr một dòng, exit 2, không ghi file. 14 test đỏ trước khi sửa; 406 test pass. Ghi chú reviewer (c): chưa kiểm `title`/`done` (xem "Đề xuất chờ duyệt" trong plan).
 - dev-03 DONE (1 vòng, commit e1cdea0): `save` ghi vào `realpath` (symlink giữ nguyên); `store.lock(path)`/`lock_path` là `flock` trên thư mục chứa đích, `add`/`set_due`/`complete` giữ khoá quanh load-sửa-ghi. `tests/test_store_safety.py` (6 test, đỏ trước khi sửa; 5 lần liền xanh). 412 test pass. CLI thật: `done ²` 2, `add ""` 2, `done 9` 1, `list` JSON hỏng 2, không Traceback. Ghi chú reviewer (không chặn): thư mục `TODO_FILE` không có vẫn traceback (ngoài phạm vi, đã ở đề xuất).
 
+## R16
+- dev-01 DONE (1 vòng, commit e62de75): `screenshot.py` gọi `check_reachable` trước mỗi lần chụp (`--site`/`--url`, `--page`/`--pages`), 404 → `Lỗi: <url>: HTTP 404` exit 2, không PNG; `--page … --url` không ghi `source-sha256`; lỗi tham số (`--widths`, `--height`, `--out` là tệp, `..`) exit 2. `tests/test_screenshot_http.py` (16 test, 14 đỏ trước khi sửa). Ghi chú reviewer (không chặn): `check_reachable` gọi lặp mỗi tổ hợp width × mode; `%2e%2e` không bị chặn ở tham số nhưng server trả 404.
+
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
