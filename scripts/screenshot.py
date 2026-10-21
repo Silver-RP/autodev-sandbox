@@ -267,13 +267,25 @@ def main(argv=None) -> int:
     ap.add_argument("--size", default="1200x630", help="WxH cho --page")
     ap.add_argument("--file", help="tệp PNG đầu ra cho --page")
     a = ap.parse_args(argv)
-    widths = [int(w) for w in a.widths.split(",") if w]
+    try:
+        widths = [int(w) for w in a.widths.split(",") if w]
+    except ValueError:
+        ap.error(f"--widths không hợp lệ: {a.widths!r} (dạng 360,1280)")
+    if not widths or any(w <= 0 for w in widths):
+        ap.error(f"--widths phải là số nguyên dương: {a.widths!r}")
+    if a.height <= 0:
+        ap.error(f"--height phải > 0: {a.height}")
     modes = [m for m in a.modes.split(",") if m]
     for m in modes:
         if m not in ("light", "dark"):
             ap.error(f"chế độ không hợp lệ: {m}")
     out = Path(a.out)
+    if out.exists() and not out.is_dir():
+        ap.error(f"--out là tệp, không phải thư mục: {out}")
     pages = [p if p.startswith("/") else "/" + p for p in a.pages.split(",") if p]
+    for p in pages + ([a.page] if a.page else []):
+        if ".." in p.replace("\\", "/").split("/"):
+            ap.error(f"đường dẫn thoát khỏi site/: {p!r}")
 
     try:
         return _main(a, ap, widths, modes, out, pages)
@@ -293,9 +305,14 @@ def _main(a, ap, widths, modes, out, pages) -> int:
         page = a.page if a.page.startswith("/") else "/" + a.page
 
         def one(base: str) -> None:
+            try:
+                check_reachable(base + page)
+            except RuntimeError:
+                Path(a.file).unlink(missing_ok=True)
+                raise
             shoot(base + page, Path(a.file), w, h, "light")
             src = Path(a.site or ROOT / "site") / page.lstrip("/")
-            if src.is_file():
+            if not a.url and src.is_file():
                 png_add_text(a.file, "source-sha256", sha256_file(src))
             print(a.file)
 
@@ -308,12 +325,16 @@ def _main(a, ap, widths, modes, out, pages) -> int:
 
     def run(base: str, external: bool = False) -> None:
         for pg in pages:
-            if external:
-                check_reachable(page_url(base, pg, 1280, a.height, external=True))
+            real = page_url(base, pg, 1280, a.height, external=external)
             prefix = shot_prefix(pg)
             for w in widths:
                 for m in modes:
                     path = out / f"{prefix}{w}-{m}.png"
+                    try:
+                        check_reachable(real)
+                    except RuntimeError:
+                        path.unlink(missing_ok=True)
+                        raise
                     shoot(page_url(base, pg, w, a.height, external=external), path, w, a.height, m)
                     print(path)
 
