@@ -2,13 +2,13 @@
 
 Nguyên tắc: ưu tiên auto-dev nhưng không làm sai mục tiêu dự án thử.
 
-Cập nhật: 2026-10-21 (supervisor, sau khi merge R18).
+Cập nhật: 2026-10-21 (supervisor, sau khi merge R19).
 
 **Lộ trình chi tiết:**
 - `docs/goals/due-overdue/roadmap.md`: R1–R2, xong.
 - `docs/goals/lazy-landing/roadmap.md`: R3–R13. Tiêu chí ở `criteria.md` cùng thư mục, spec thiết kế ở `docs/design/lazy-landing.md`.
 
-## Tổng quan R1–R18
+## Tổng quan R1–R19
 
 | Mốc | Mục tiêu | Tên | Trạng thái | Task | Chỉ số | Phụ thuộc | Ước tính USD | Thực tế |
 |---|---|---|---|---|---|---|---|---|
@@ -30,10 +30,11 @@ Cập nhật: 2026-10-21 (supervisor, sau khi merge R18).
 | R17 | due-overdue | Cứng hoá todo CLI: id ASCII, tiêu đề rỗng/xuống dòng, `done` id không có, JSON hỏng exit 2, ghi qua symlink, khoá `flock` (audit H-26, H-13, H-18) | merged 2026-10-21, PR #52 | 3 | A1, A2, A3, A4 | R2 | 1,5 | chế độ B: worker 60 phút; worker + supervisor 1,20 + ~1,33 USD (tạm) |
 | R16 | lazy-landing | Công cụ đo và deploy chặt: screenshot kiểm HTTP, overflow `scrollWidth`, `lh_check` thiếu `index.html`, smoke fetch, Pages chờ test, exit 2 lỗi công cụ, spec hero theo trang đã duyệt (audit H-22..H-25, H-27 một phần, H-28, H-29) | merged 2026-10-21, PR #56; E3 đạt @ `ff8c12f` | 4 | D1, D2, D4, E2, E3, L3 | R15 | 2,5 (plan 3,2) | chế độ B: worker 90 phút; worker + supervisor 2,16 + ~1,34 USD (tạm) |
 | R18 | due-overdue | Todo CLI không traceback, không treo, không ghi hỏng: đầu vào lạ exit 2, khoá có timeout `TODO_LOCK_TIMEOUT`, `load` từ chối id âm/trùng, `save` giữ quyền và hard link (audit H-35..H-38) | merged 2026-10-21, PR #62 | 4 | A1, A2, A3, A4 | R17 | 3,0 (plan 3,1) | chế độ B: worker 91 phút; worker + supervisor 2,40 + ~1,38 USD (tạm) |
+| R19 | lazy-landing | Công cụ đo và cổng deploy không lách được: 3 script đo lỗi môi trường exit 2, `smoke_pages` tham số/mạng/git timeout, SHA tính lại mỗi lần thử, kiểm `en/` + tài nguyên; `pages.yml` quyền theo job, timeout, cổng test kiểm cấu trúc (audit H-27, H-40, H-43..H-46) | merged 2026-10-21, PR #65; E3 đạt @ `805cbe0` | 4 | D1, D4, D5, E3, L3 | R16 | 3,5 | chế độ B: worker 90 phút; worker + supervisor 2,62 + ~1,44 USD (tạm) |
 
 **Tổng:**
-- Đã xong: R1–R4, R6–R18, 62 task. `due-overdue`: mọi mốc `done`; `lazy-landing`: còn R19.
-- Còn lại: R19 (`lazy-landing`, công cụ đo và cổng deploy: H-43, H-44, H-40, H-45, H-27, H-46) đã vào `goal.json` (PR #60), chưa có `plan/R19.md` → `/autodev:plan-next R19`. H-34, H-41 (todo) chờ leader.
+- Đã xong: R1–R4, R6–R19, 66 task. `due-overdue`, `lazy-landing`: mọi mốc `done`.
+- Còn lại: chưa có mốc nào trong `goal.json`. Đề xuất: audit sau R18, R19 (`/autodev:audit R18 R19`) rồi `/autodev:propose-next`; mốc kiểm chứng H-21, H-31, H-39, H-42; mốc công cụ nhỏ H-49, H-50, H-30, H-32, H-33. H-34, H-41 (todo) chờ leader.
 - Mục tiêu `lazy-landing` hiện đạt 17/17 chỉ số (sau R11; D7 leader duyệt 2026-10-20); `due-overdue` đạt 5/5.
 
 ## Chạy tiếp (sau khi reset hạn mức)
