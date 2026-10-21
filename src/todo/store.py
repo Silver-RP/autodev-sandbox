@@ -17,10 +17,16 @@ class StoreError(ValueError):
 
 
 def load(path: Path) -> list[dict]:
-    if not path.exists():
+    try:
+        os.stat(path)
+    except FileNotFoundError:
         return []
+    except OSError as e:
+        raise StoreError(f"{path}: không truy cập được ({e.strerror})") from e
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as e:
+        raise StoreError(f"{path}: không đọc được ({e.strerror})") from e
     except UnicodeDecodeError as e:
         raise StoreError(f"{path}: không phải UTF-8 ({e.reason})") from e
     except json.JSONDecodeError as e:
@@ -104,17 +110,38 @@ def save(path: Path, items: list[dict]) -> None:
         raise StoreError(f"{path}: dữ liệu không phải UTF-8 hợp lệ, không ghi") from e
     except ValueError as e:
         raise StoreError(f"{path}: không ghi được JSON ({e})") from e
+    try:
+        st = os.stat(path)
+    except FileNotFoundError:
+        st = None
+    except OSError as e:
+        raise StoreError(f"{path}: không truy cập được ({e.strerror})") from e
+    if st is not None and not os.access(path, os.W_OK):
+        raise StoreError(f"{path}: file không ghi được (chỉ đọc), không ghi đè")
+    if st is not None and st.st_nlink > 1:
+        _write_in_place(path, data)
+        return
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     try:
         with os.fdopen(fd, "wb") as f:
-            os.chmod(tmp, path.stat().st_mode & 0o777 if path.exists() else 0o666 & ~_umask())
+            os.chmod(tmp, st.st_mode & 0o777 if st else 0o666 & ~_umask())
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp, path)
     except BaseException:
-        os.unlink(tmp)
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(tmp)
         raise
+
+
+def _write_in_place(path: Path, data: bytes) -> None:
+    """File có hard link: ghi tại chỗ để giữ inode, link và quyền."""
+    with open(path, "r+b") as f:
+        f.truncate(0)
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
 
 
 def valid_due(text: str) -> bool:

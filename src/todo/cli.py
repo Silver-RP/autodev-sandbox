@@ -79,7 +79,7 @@ def main(argv: list[str] | None = None) -> int:
     path = Path(os.environ.get("TODO_FILE", "todo.json"))
     try:
         return _run(argv, path)
-    except (store.StoreError, ValueError, RecursionError) as e:
+    except (store.StoreError, ValueError, RecursionError, UnicodeError, OSError) as e:
         return _fail(str(e) or type(e).__name__)
 
 
