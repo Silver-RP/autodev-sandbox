@@ -84,6 +84,7 @@
 
 ## R16
 - dev-01 DONE (1 vòng, commit e62de75): `screenshot.py` gọi `check_reachable` trước mỗi lần chụp (`--site`/`--url`, `--page`/`--pages`), 404 → `Lỗi: <url>: HTTP 404` exit 2, không PNG; `--page … --url` không ghi `source-sha256`; lỗi tham số (`--widths`, `--height`, `--out` là tệp, `..`) exit 2. `tests/test_screenshot_http.py` (16 test, 14 đỏ trước khi sửa). Ghi chú reviewer (không chặn): `check_reachable` gọi lặp mỗi tổ hợp width × mode; `%2e%2e` không bị chặn ở tham số nhưng server trả 404.
+- dev-02 DONE (1 vòng, commit 0d598ce): `MEASURE_JS` thêm đo `html.scrollWidth > clientWidth` và phần tử `overflow-x: visible` có `scrollWidth > clientWidth + 1` (khung cuộn không tính); `parse_widths` dùng chung (`--widths` abc/0/âm exit 2); `normalize_pages` nhận `/en`, từ chối `..`; `contrast.parse_color` đọc `color(srgb …)`, màu lạ → `Lỗi:` exit 2. `tests/test_overflow_scrollwidth.py` (19 test, ca nowrap/tham số/màu đỏ trước khi sửa). `site/` thật vẫn D4 exit 0, không phải sửa `style.css`. Ghi chú reviewer (không chặn): chưa probe symlink trong `site/` trỏ ra ngoài.
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
