@@ -1,8 +1,9 @@
+import json
 import os
 
 import pytest
 
-from todo import store
+from todo import cli, store
 
 
 def test_failed_save_keeps_old_file_and_leaves_no_temp(tmp_path, monkeypatch):
@@ -37,11 +38,6 @@ def test_save_keeps_normal_file_mode(tmp_path):
     finally:
         os.umask(umask)
     assert path.stat().st_mode & 0o777 == 0o644
-
-
-import json  # noqa: E402
-
-from todo import cli  # noqa: E402
 
 
 def _one_item(path):
