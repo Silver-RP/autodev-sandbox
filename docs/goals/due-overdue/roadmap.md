@@ -81,6 +81,22 @@ Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
   2. *Giữ hard link/quyền làm mất tính nguyên tử của R17*: không bỏ `os.replace` cho trường hợp thường; chỉ đổi cách xử lý khi file có `st_nlink > 1` hoặc chỉ đọc, và test hai tiến trình `add` song song của R17 vẫn xanh.
   3. *Bắt ngoại lệ quá rộng che lỗi lập trình*: chỉ bắt các lớp lỗi đã liệt kê (`ValueError`, `RecursionError`, `OSError`, `UnicodeError`) ở biên CLI, quy về `StoreError`; test không dùng `except Exception`.
 
+## R20: Todo CLI chịu file thiếu khoá, pipe đóng, TODO_FILE không phải file thường
+Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 4).
+- **Mục tiêu:** khép phần còn hở của lời R17/R18 "CLI không traceback, không treo": file thiếu/sai kiểu khoá, stdout bị đóng giữa chừng, `TODO_FILE` là FIFO hay thiết bị đều ra thông báo một dòng và mã thoát đúng hợp đồng.
+- **Phạm vi:**
+  1. H-34: `store.load` từ chối phần tử thiếu `title`/`done` hoặc sai kiểu (`title` không phải chuỗi, `done` không phải bool, `due` có mà không phải chuỗi ngày hợp lệ) → `StoreError`, exit 2, không `Traceback`, cho cả `list`, `overdue`, `add`, `done`, `due`; file nguyên byte. Việc không có `due` vẫn hợp lệ (brief).
+  2. H-53: `todo list`/`overdue` ghi vào pipe đã đóng (`| head -1`) → thoát 0 hoặc 2, stderr không chứa `Exception ignored`/`BrokenPipeError`, không mã 120.
+  3. H-54: `TODO_FILE` không phải file thường (FIFO, thiết bị) → exit 2 "không phải file thường" trước khi mở đọc, không treo; file vượt giới hạn kích thước (hằng trong `store.py`) → exit 2.
+- **Chỉ số giữ:** A1, A2, A3, A4 (smoke A5 vẫn đạt).
+- **Ước tính:** ~3 task, **2,5 USD**, **1 giờ** (theo R18 đo: 4 task, 2,40 + ~1,38 USD; mốc này ít ý hơn).
+- **Xong khi:** mỗi ý có test đỏ trên `origin/main` trước khi sửa (tên theo audit: `test_cli_errors.py::test_load_rejects_bad_title_done_types` tham số hoá thiếu/sai kiểu cho `list` và `overdue`; subprocess `todo list` với stdout pipe đóng → returncode ∈ {0, 2}, không `Exception ignored`; `test_store_safety.py` `os.mkfifo` + `subprocess.run(timeout=5)` → exit 2); `uv run pytest -q`, `uv run ruff check .` sạch; smoke A5 vẫn đạt.
+- **Phụ thuộc:** R18.
+- **Pre-mortem:**
+  1. *Kiểm kiểu chặt làm file cũ hợp lệ bị từ chối*: chỉ đòi các khoá mà `add` luôn ghi (`id`, `title`, `done`); `due` vẫn tuỳ chọn; test giữ ca file R1 không có `due` và file do `add` tạo vẫn đọc được.
+  2. *Xử lý BrokenPipe che lỗi ghi thật hoặc test chập chờn*: chỉ bắt `BrokenPipeError` ở biên in và chuyển stdout về `os.devnull` trước khi thoát; test dùng đủ nhiều việc (≥ 20000) và đóng đầu đọc rõ ràng, không dựa vào thời gian.
+  3. *Test FIFO treo cả bộ pytest khi bản sửa hỏng*: luôn chạy qua `subprocess.run(timeout=5)`, bỏ qua trên nền tảng không có `os.mkfifo`; kiểm `S_ISREG` bằng `os.stat` trước `open`, không mở rồi mới kiểm.
+
 ## Tổng
 | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|
@@ -88,6 +104,7 @@ Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
 | R2 | R1 | A2, A5 (A3, A4) | 4 | 0,4 |
 | R17 | R2 | A1, A2, A3, A4 | 1,5 | 0,3 |
 | R18 | R17 | A1, A2, A3, A4 | 3 | 1,4 |
+| R20 | R18 | A1, A2, A3, A4 | 2,5 | 1 |
 | **Tổng** | | | **8** | **0,9** |
 
 ## Thứ tự cắt

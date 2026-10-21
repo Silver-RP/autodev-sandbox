@@ -262,6 +262,22 @@ Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
   2. *Bắt `OSError`/`ValueError` chung che lỗi "trượt" thật*: exit 1 chỉ dành cho kết quả đo trượt; ca tham số hoá cho cả 5 script kiểm cả hai phía (lỗi công cụ → 2, trang tràn/tương phản thấp → 1).
   3. *Smoke tính lại SHA nên đạt khi deploy cũ treo*: test repo tạm có `main` đi tiếp; trang mang SHA cũ hơn SHA ban đầu vẫn phải trượt.
 
+## R21: Cổng deploy và công cụ đo không lách được, lần 2
+Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 4).
+- **Mục tiêu:** cổng "chờ test" của Pages không còn kiểu đột biến nào lọt `workflow_problems`; `screenshot.py` không ra traceback với lỗi HTTP; test "không chấp nhận deploy cũ" thật sự đỏ trên mã cũ.
+- **Phạm vi:**
+  1. H-51: `screenshot.py --url` gặp `http.client.HTTPException` (`InvalidURL`, `BadStatusLine`, `IncompleteRead`) → exit 2, stderr `Lỗi:`, không `Traceback`, đúng bảng 0/1/2 trong docstring.
+  2. H-52: `workflow_problems` kiểm mọi job/bước chứ không chỉ `test`: từ chối `permissions: write-all` (chuỗi), `env` có `PYTEST_ADDOPTS` ở job/bước `test`, `defaults.run.shell` hoặc `shell` có `|| true`, `working-directory` lạ, `continue-on-error`/`if: false` ở bước `build`/`deploy`, `needs: deploy` ở `test`, job thứ tư có `pages: write` hoặc `deploy-pages`, trigger ngoài tập đóng (`push.branches` + `workflow_dispatch`), `timeout-minutes` không phải số nguyên trong trần, bước đệm `exit 0`, `runs-on` khác `ubuntu-*`, `uses` ngoài danh sách cho phép. Mỗi kiểu một ca âm riêng trong `test_workflow_negative_cases`; `pages.yml` thật vẫn trả `[]`.
+  3. H-55: test mới trong `test_tools_git_site.py`: SHA `origin/main` đổi giữa hai lần thử, trang kẹt ở SHA đầu → `smoke_pages` rc=1; ghi trong hồ sơ mốc bằng chứng test này đỏ khi chạy với `scripts/*.py` của `28dbcac`.
+- **Chỉ số giữ:** D1, E3, L3.
+- **Ước tính:** ~3 task, **3,5 USD**, **1,5 giờ** (theo R19 đo: 4 task, 5 vòng, 2,62 + ~1,44 USD; H-52 là phần lớn nhất).
+- **Xong khi:** mỗi ý có test ca âm đỏ trên `origin/main` trước khi sửa (H-55: đỏ trên `28dbcac`); `uv run pytest -q`, `uv run ruff check .` sạch; D1 exit 0; sau merge Pages deploy xanh và `smoke_pages.py` exit 0.
+- **Phụ thuộc:** R19.
+- **Pre-mortem:**
+  1. *`workflow_problems` chặt quá làm `pages.yml` thật hoặc deploy hỏng*: chỉ sửa hàm kiểm và test, không đổi `pages.yml` trừ khi một ca âm chỉ ra nó đang lách; giữ ca dương `pages.yml` thật → `[]`; chạy E3 ngay sau merge.
+  2. *Ca âm xanh nhờ lỗi khác chứ không nhờ đột biến đang kiểm (như H-46)*: mỗi ca khẳng định thông báo lỗi cụ thể nêu đúng đột biến, không chỉ `!= []`.
+  3. *Test H-55 chập chờn vì dựa thời gian*: dùng repo bare cục bộ và đếm lần thử để đổi `main` sau lần 1, không `sleep` đoán; `--interval` nhỏ.
+
 ## Tổng
 | Thứ tự chạy | Mốc | Phụ thuộc | Chỉ số | USD | Giờ máy |
 |---|---|---|---|---|---|
@@ -280,6 +296,7 @@ Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
 | 11 | R14 | R11 | D1, L2, E2, L3 | 2,0 | 0,4 |
 | 12 | R15 | R14 | D3, D4, D6, E5, L3 | 2,0 | 0,4 |
 | 14 | R19 | R16 | D1, D4, D5, E3, L3 | 3,5 | 1,5 |
+| 15 | R21 | R19 | D1, E3, L3 | 3,5 | 1,5 |
 | | **Tổng (R4–R13, trừ R5 đã cắt)** | | | **19,0** | **2,4** |
 
 ## Thứ tự cắt
