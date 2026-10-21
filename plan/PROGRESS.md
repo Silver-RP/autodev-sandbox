@@ -90,6 +90,7 @@
 
 ## R18
 - dev-01 DONE (1 vòng, commit d8a19da): `store.load` quy `RecursionError`/`ValueError` (số khổng lồ) về `StoreError`; `save` dựng bytes UTF-8 trước khi tạo file tạm; `cli._to_id` chặn id quá dài ở `done`/`due`, `cli._fail` in một dòng an toàn với surrogate; `add` kiểm tiêu đề mã hoá được. Test thêm vào `tests/test_cli_errors.py` (10 đỏ trước khi sửa). 479 test pass. Ghi chú reviewer (không chặn): thông báo `ValueError` của Python lộ nguyên văn; `due` in nguyên chuỗi ngày dài.
+- dev-02 DONE (1 vòng, commit d5101ad): `store.load` ném `StoreError` khi `id` < 0 hoặc trùng (nêu số thứ tự phần tử và id; id 0 hợp lệ). Test thêm vào `tests/test_cli_errors.py` (11 đỏ trước khi sửa); mọi lệnh exit 2, file nguyên byte.
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
