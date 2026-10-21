@@ -1,7 +1,9 @@
 """Smoke test trang đã deploy lên GitHub Pages.
 
 Dùng: python scripts/smoke_pages.py [--url URL] [--sha SHA]
-Exit 0 khi đạt, 1 khi sau mọi lần thử vẫn lỗi.
+Không có --sha: chạy `git fetch origin main` rồi `git rev-parse origin/main`.
+Mã thoát: 0 = đạt; 1 = sau mọi lần thử vẫn lỗi; 2 = lỗi công cụ (git: không phải
+repo, không có remote, fetch lỗi, không có git).
 """
 
 import argparse
@@ -59,14 +61,26 @@ def check_content(url, sha):
     return errors
 
 
-def git_sha():
-    out = subprocess.run(
-        ["git", "rev-parse", "origin/main"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+class GitError(RuntimeError):
+    pass
+
+
+def _git(*args):
+    try:
+        out = subprocess.run(["git", *args], capture_output=True, text=True,
+                             check=False)
+    except OSError as e:
+        raise GitError(f"không chạy được git: {e}") from e
+    if out.returncode != 0:
+        raise GitError(f"git {' '.join(args)} lỗi ({out.returncode}): "
+                       f"{out.stderr.strip()[-300:]}")
     return out.stdout.strip()
+
+
+def git_sha():
+    """SHA của origin/main sau khi fetch; lỗi git ném GitError."""
+    _git("fetch", "origin", "main")
+    return _git("rev-parse", "origin/main")
 
 
 def main(argv=None):
@@ -76,7 +90,11 @@ def main(argv=None):
     p.add_argument("--retries", type=int, default=10)
     p.add_argument("--interval", type=float, default=30)
     args = p.parse_args(argv)
-    sha = args.sha or git_sha()
+    try:
+        sha = args.sha or git_sha()
+    except GitError as e:
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
     errors = []
     for attempt in range(1, max(args.retries, 1) + 1):
         errors = check_content(args.url, sha)

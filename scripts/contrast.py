@@ -1,7 +1,7 @@
 """Kiểm tương phản WCAG AA cho từng khối chữ trên trang thật (qua page_metrics).
 
 Mã thoát: 0 = mọi cặp màu đạt; 1 = có cặp tương phản thấp; 2 = lỗi công cụ
-(trang không có trong site, danh sách trang/tổ hợp rỗng, Chrome lỗi/timeout, DOM rỗng).
+(`--widths` không hợp lệ, màu không đọc được, trang không có trong site, danh sách trang/tổ hợp rỗng, Chrome lỗi/timeout, DOM rỗng).
 """
 
 from __future__ import annotations
@@ -32,6 +32,11 @@ def parse_color(s: str) -> tuple[int, int, int]:
     m = re.match(r"rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)", s)
     if m:
         r, g, b = (round(float(x)) for x in m.groups())
+        return r, g, b
+    m = re.fullmatch(
+        r"color\(\s*srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*(?:/[^)]*)?\)", s)
+    if m:
+        r, g, b = (round(min(max(float(x), 0), 1) * 255) for x in m.groups())
         return r, g, b
     raise ValueError(f"không đọc được màu: {s!r}")
 
@@ -79,7 +84,11 @@ def main(argv=None) -> int:
     ap.add_argument("--modes", default="light,dark")
     ap.add_argument("--pages", help="danh sách trang, mặc định mọi trang có thật")
     a = ap.parse_args(argv)
-    widths = [int(w) for w in a.widths.split(",") if w]
+    try:
+        widths = pm.parse_widths(a.widths)
+    except RuntimeError as e:
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
     modes = [m for m in a.modes.split(",") if m]
     for m in modes:
         if m not in ("light", "dark"):
@@ -90,7 +99,7 @@ def main(argv=None) -> int:
         if not (pages and widths and modes):
             raise RuntimeError("không có trang/độ rộng/chế độ nào để đo")
         bad = failures(pm.collect(a.site, widths, modes, pages=pages))
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
         print(f"Lỗi: {e}", file=sys.stderr)
         return 2
     if bad:

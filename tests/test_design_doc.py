@@ -75,3 +75,27 @@ def test_banned_colors_only_as_negations():
         assert bad not in section("Bảng màu").upper()
         assert bad not in palette("Sáng") + palette("Tối")
     assert "#F4F1EA" not in t.upper()
+
+
+OLD = "Phần spec cũ bị bỏ"
+
+
+def test_dropped_spec_section_lists_old_items():
+    body = section(OLD)
+    for w in ("laptop", "ngủ gật", "hơi nước", "ngáp"):
+        assert w in body, w
+
+
+def test_old_items_gone_outside_dropped_section():
+    t = text()
+    m = re.search(rf"^## {OLD}.*$", t, re.MULTILINE)
+    rest = t[m.end():]
+    n = re.search(r"^#{1,2} ", rest, re.MULTILINE)
+    outside = t[: m.start()] + (rest[n.start():] if n else "")
+    for w in ("laptop", "ngủ gật", "ngáp", "deploying"):
+        assert w not in outside, w
+
+
+def test_motion_mentions_button_and_aria_pressed():
+    body = section("Nguyên tắc")  # mục ## cuối cùng cùng tên
+    assert "Bấm thử cho vui" in body and "aria-pressed" in body

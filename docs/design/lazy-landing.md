@@ -89,8 +89,8 @@ Tương phản đã tính:
 │ LƯỜI CODE STUDIO  ▔▔▔(gạch trà đá)                       [Gửi thư cho tôi]│
 ├──────────────────────────────────────────────────────────────────────────┤
 │ Làm web cho bạn.                         │      (SVG: 2 ghế nhựa xanh/đỏ,  │
-│ Ngồi xuống uống ly trà đá đã.            │       ly trà đá, laptop đang   │
-│ Bạn kể, AI viết, tôi bấm deploy.         │       "tự code", người ngủ gật)│
+│ Ngồi xuống uống ly trà đá đã.            │       bàn thấp, ly trà đá có   │
+│ Bạn kể, AI viết, tôi bấm deploy.         │       đá viên và ống hút)      │
 │ [Gửi thư cho tôi]                        │                                │
 ├──────────────────────────────────────────────────────────────────────────┤
 │ Menu hôm nay                                                             │
@@ -131,15 +131,16 @@ Tương phản đã tính:
 
 ## Nguyên tắc
 1. **Điểm nhấn duy nhất là bảng menu.** Dấu chấm dẫn giữa tên món và giá (CSS `border-bottom: dotted` hoặc `::after` với `leader`), giá màu Ghế nhựa đỏ. Mọi phần khác tiết chế.
-2. **Đồ vật của quán là đồ hoạ:** ghế nhựa đẩu (xanh, đỏ), ly trà đá có đá viên, nồi lẩu, laptop. SVG nét Mực bảng 2,5px, tô màu phẳng, không gradient, không bóng.
+2. **Đồ vật của quán là đồ hoạ:** ghế nhựa đẩu (xanh, đỏ), ly trà đá có đá viên và ống hút, bàn thấp, nồi lẩu. Chỉ vẽ đồ vật thật có trên trang. SVG nét Mực bảng 2,5px, tô màu phẳng, không gradient, không bóng.
 3. **Ngôn ngữ của quán cho nội dung:**
    - "Menu hôm nay", "Gọi món thế nào", "Ghé quán" (thay cho "Liên hệ" trong tiêu đề hiển thị; id vẫn `lien-he`);
    - nút "Gửi thư cho tôi";
    - không chữ đệm.
 4. **Số thứ tự chỉ ở "Gọi món thế nào"**, vì đó là chuỗi bước thật.
 5. **Chuyển động (R7):**
-   - một khoảnh khắc lúc tải trang: hai cái ghế "được kéo ra" và hơi nước bốc từ ly;
-   - tương tác: nút "Để tôi lười giúp bạn" làm người trong minh hoạ ngáp và laptop hiện dòng "deploying…".
+   - một khoảnh khắc lúc tải trang: `h1` và minh hoạ hiện dần lên;
+   - tương tác: nút "Bấm thử cho vui" kéo hai ghế lại gần và nhấc ly, bật `aria-pressed`;
+   - reduced-motion: đặt ngay trạng thái cuối, không chạy chuyển động.
 6. **Bỏ bớt một món phụ kiện:** không thêm hoạ tiết nền, không dải gradient, không icon trang trí ngoài các đồ vật của quán.
 
 ## Dấu hiệu AI đã tránh
@@ -150,6 +151,15 @@ Tương phản đã tính:
 5. **Khung mẫu:** không nhãn VIẾT HOA giãn chữ trên tiêu đề (chỉ bảng hiệu là chữ sơn); không chuỗi `A · B · C`; không nhãn "CHỮ — mảnh"; màu chữ là Mực bảng `#22313F`, không phải `#111`; không font mono; không `→` sau link.
 
 **Tự phê bình:** đề "landing page cho freelancer làm web" thường ra một hero gradient với 3 thẻ giá. Hướng này lấy riêng chất liệu quán cóc Việt và cách gọi món, nên khó ra trùng. Nếu thấy giống trang khác, bỏ trước tiên mọi thứ không thuộc quán.
+
+## Phần spec cũ bị bỏ
+Leader duyệt D7 (2026-10-20) trên trang hiện tại, nên spec được sửa theo trang đã duyệt thay vì vẽ thêm. Các chi tiết sau của bản spec đầu không làm:
+- laptop "tự code" trong hero;
+- người ngủ gật trong hero;
+- hơi nước bốc từ ly lúc tải trang;
+- người ngáp và laptop hiện dòng "deploying…" khi bấm nút.
+
+Lý do: trang đã duyệt chỉ có hai ghế, ly trà đá và nút "Bấm thử cho vui"; thêm người và máy tính làm hero rối và lệch chất quán cóc.
 
 ## Hai hướng không chọn (tham khảo)
 - **Hướng 1 — Giờ ngủ trưa:** Lá chuối `#2F6B4F`, Nắng trưa `#F6D365`, Võng hồng `#E86A92`, Gió mát `#EEF5F1`, Mực `#1E2A38`; Pangolin + Be Vietnam Pro; tiêu đề hero võng xuống như cái võng.

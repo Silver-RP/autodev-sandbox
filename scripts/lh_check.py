@@ -145,6 +145,14 @@ def main(argv=None, runner=None) -> int:
     a = ap.parse_args(argv)
     runner = runner or run_lighthouse
 
+    site_dir = Path(a.site)
+    if not site_dir.is_dir():
+        print(f"Lỗi: --site không phải thư mục: {site_dir}", file=sys.stderr)
+        return 2
+    if not (site_dir / "index.html").is_file():
+        print(f"Lỗi: không có index.html trong {site_dir}", file=sys.stderr)
+        return 2
+
     npx = shutil.which("npx")
     env = dict(os.environ)
     if runner is run_lighthouse:
