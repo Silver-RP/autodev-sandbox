@@ -2,7 +2,14 @@
 
 Mã thoát: 0 = xong (và không tràn khi có --check-overflow); 1 = có tràn ngang
 (--check-overflow); 2 = lỗi công cụ (trang không có trong site, danh sách trang
-hoặc tổ hợp đo rỗng, Chrome lỗi/timeout, DOM rỗng).
+hoặc tổ hợp đo rỗng, `--widths` không phải số nguyên dương, `--pages` thoát khỏi
+site, Chrome lỗi/timeout, DOM rỗng).
+
+Phép đo tràn (--check-overflow) báo khi: `documentElement.scrollWidth > clientWidth`
+(selector `html`); hoặc phần tử có `getBoundingClientRect().right > innerWidth + 1`;
+hoặc phần tử `overflow-x: visible` có `scrollWidth > clientWidth + 1` (nội dung tràn
+khỏi khung của chính nó, vd chữ `nowrap`). Giả định: phần tử `overflow-x` là
+`auto`/`scroll`/`hidden`/`clip` là khung cuộn/cắt có chủ ý nên không tính.
 """
 
 from __future__ import annotations
@@ -36,11 +43,34 @@ def normalize_pages(site, pages) -> list[str]:
         p = p.strip()
         if not p.startswith("/"):
             p = "/" + p
+        root = Path(site).resolve()
+        target = (root / p.lstrip("/")).resolve()
+        if ".." in p.split("/") or (target != root and root not in target.parents):
+            raise RuntimeError(f"trang thoát khỏi {site}: {p}")
+        if target.is_dir() and not p.endswith("/"):
+            p += "/"
         if p.endswith("/"):
             p += "index.html"
         if not (Path(site) / p.lstrip("/")).is_file():
             raise RuntimeError(f"trang không có trong {site}: {p}")
         out.append(p)
+    return out
+
+
+def parse_widths(text: str) -> list[int]:
+    """`360,1280` -> [360, 1280]; không phải số nguyên dương thì RuntimeError."""
+    out = []
+    for w in text.split(","):
+        w = w.strip()
+        if not w:
+            continue
+        try:
+            n = int(w)
+        except ValueError:
+            raise RuntimeError(f"--widths không hợp lệ: {w!r}") from None
+        if n <= 0:
+            raise RuntimeError(f"--widths phải > 0: {n}")
+        out.append(n)
     return out
 
 
@@ -63,13 +93,17 @@ function measureAll() {
     return 'rgb(255, 255, 255)';
   }
   var iw = window.innerWidth, overflow = [], svg = {}, colors = {};
+  if (document.documentElement.scrollWidth > document.documentElement.clientWidth)
+    overflow.push('html');
   var all = document.querySelectorAll('body, body *');
   for (var i = 0; i < all.length; i++) {
     var e = all[i];
     if (e.id === 'out') continue;
     var r = e.getBoundingClientRect();
-    if (r.width > 0 && r.right > iw + 1) overflow.push(sel(e));
     var cs = getComputedStyle(e);
+    if (r.width > 0 && r.right > iw + 1) overflow.push(sel(e));
+    else if (cs.overflowX === 'visible' && e.clientWidth > 0 &&
+             e.scrollWidth > e.clientWidth + 1) overflow.push(sel(e));
     var own = '';
     for (var n = e.firstChild; n; n = n.nextSibling)
       if (n.nodeType === 3) own += n.nodeValue;
@@ -165,7 +199,11 @@ def main(argv=None) -> int:
     ap.add_argument("--pages", help="danh sách trang, mặc định mọi trang có thật")
     ap.add_argument("--check-overflow", action="store_true")
     a = ap.parse_args(argv)
-    widths = [int(w) for w in a.widths.split(",") if w]
+    try:
+        widths = parse_widths(a.widths)
+    except RuntimeError as e:
+        print(f"Lỗi: {e}", file=sys.stderr)
+        return 2
     modes = [m for m in a.modes.split(",") if m]
     for m in modes:
         if m not in ("light", "dark"):
