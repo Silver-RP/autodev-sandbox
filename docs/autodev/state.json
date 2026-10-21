@@ -7,8 +7,8 @@
   "open_gaps": [
     {"id": "H-12", "severity": "medium", "text": "D4, D5, E2, L5 không trong verify/smoke/CI; contrast.py mặc định 1280, bỏ ::before", "milestone": null},
     {"id": "H-14", "severity": "medium", "text": "Email hello@example.com giữ chỗ bị test khoá, không hiện thành chữ; robots.txt dưới đường con /autodev-sandbox/ crawler không đọc (URL example.github.io đã sửa ở R11)", "milestone": null},
-    {"id": "H-19", "severity": "low", "text": "due-overdue/goal.json còn planned; criteria.md nền cũ", "milestone": null},
-    {"id": "H-21", "severity": "low", "text": "test_tools.py (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) -> exit 2; 2/7 lần ở load ~14,5", "milestone": null},
+    {"id": "H-19", "severity": "low", "text": "lazy-landing/criteria.md nền cũ (4/17, L3 69), ROADMAP.md còn R3-R13; goal.json đã sửa", "milestone": null},
+    {"id": "H-21", "severity": "medium", "text": "Cả bộ test chập chờn khi tải nặng (Chrome quá 60 giây -> exit 2; audit R16: 1 failed, tải 27); Pages chờ cả bộ nên chặn deploy", "milestone": null},
     {"id": "H-27", "severity": "low", "text": "smoke_pages.py (E3) không kiểm main.js/robots/sitemap, /en/ không kiểm version (phần fetch/lỗi git đóng ở R16)", "milestone": null},
     {"id": "H-30", "severity": "low", "text": "L2 còn lọt input type=image, video poster, srcset, meta refresh, iframe srcdoc, integrity rỗng, image-set()", "milestone": null},
     {"id": "H-31", "severity": "low", "text": "Đạt trên giấy: probe hero tự đẩy timeline, chờ lazySite 10x50 ms ảo, D6/D3 xanh bằng skip khi offline", "milestone": null},
@@ -20,9 +20,16 @@
     {"id": "H-37", "severity": "medium", "text": "todo: load không từ chối id âm/trùng; add sinh id âm không done được; done đánh dấu cả hai id trùng", "milestone": null},
     {"id": "H-38", "severity": "medium", "text": "todo save tmp+replace: ghi đè file 0444, đứt hard link, symlink vòng, thư mục chỉ đọc, tên dài -> traceback", "milestone": null},
     {"id": "H-39", "severity": "medium", "text": "Đóng H-04/05/11/20 yếu: 23 skip offline, H-11 mới 6/8 tệp, probe 360 đo trước font, ca âm rỗng, test tautology", "milestone": null},
-    {"id": "H-40", "severity": "low", "text": "smoke_pages --url sai/--interval/--retries âm -> traceback exit 1 (phần screenshot đóng ở R16)", "milestone": null},
+    {"id": "H-40", "severity": "medium", "text": "smoke_pages --url foo/--interval âm/HTTPException -> traceback exit 1 (đã tái hiện; phần screenshot đóng ở R16)", "milestone": null},
     {"id": "H-41", "severity": "low", "text": "todo list: cột due rỗng vỡ shell read; title/due từ file không làm sạch; README thiếu hợp đồng CLI", "milestone": null},
-    {"id": "H-42", "severity": "low", "text": "#luoi-nut: ghế đỏ không test; nhãn vi cứng trong main.js", "milestone": null}
+    {"id": "H-42", "severity": "low", "text": "#luoi-nut: ghế đỏ không test; nhãn vi cứng trong main.js", "milestone": null},
+    {"id": "H-43", "severity": "medium", "text": "screenshot.py --modes \"\"/--pages \"\" exit 0, không chụp gì", "milestone": null},
+    {"id": "H-44", "severity": "medium", "text": "CHROME sai, lỗi ghi tệp, screenshot --url foo -> traceback exit 1 (3 script); screenshot.py thiếu bảng mã 0/1/2", "milestone": null},
+    {"id": "H-45", "severity": "medium", "text": "smoke_pages: SHA lấy một lần, origin/main theo refspec, git không timeout, --retries 0 im lặng (chưa tái hiện)", "milestone": null},
+    {"id": "H-46", "severity": "medium", "text": "test_pages_workflow lách được (|| true, continue-on-error, if: always()); quyền Pages cấp workflow cho job test", "milestone": null},
+    {"id": "H-47", "severity": "low", "text": "H-22 đóng bằng sửa spec: chưa hỏi lại leader về hero; dòng Leader duyệt không test", "milestone": null},
+    {"id": "H-48", "severity": "low", "text": "Bản Anh không JSON-LD, og:image chữ Việt, không test", "milestone": null},
+    {"id": "H-49", "severity": "low", "text": "page_metrics mặc định thu hẹp im lặng khi thiếu en/; scrollWidth báo oan off-canvas; check_reachable nhận mọi 2xx", "milestone": null}
   ],
   "milestones": {
     "runs": [
@@ -48,6 +55,7 @@
   },
   "outlook": [],
   "decisions": [
+    {"date": "2026-10-21", "text": "Audit R16 (docs/audits/2026-10-21-3.md): 7 lỗ mới H-43..H-49 (4 vừa, 3 thấp); H-22..H-25, H-28 xác nhận đóng; H-29 mở lại một phần; H-40, H-21 nâng vừa; lazy-landing thực tế ~78-82%, due-overdue ~95%; đề xuất R18 todo, R19 kiểm chứng, R20 công cụ"},
     {"date": "2026-10-21", "text": "Merge R16 (PR #56); 8/8 tiêu chí tự chạy đạt (467 passed x2; Pages test->build->deploy xanh, smoke_pages OK @ ff8c12f); test mới đỏ 42 ca trên code cũ; đóng H-22, H-23, H-24, H-25, H-28, H-29; (c) H-27 chỉ đóng phần fetch/lỗi git, H-40 thu hẹp còn smoke_pages"},
     {"date": "2026-10-21", "text": "Audit R15, R17 (docs/audits/2026-10-21-2.md): 8 lỗ mới H-35..H-42 (5 vừa, 3 thấp), 0 đóng; xác nhận H-13, H-18, H-26, H-03 đóng thật; H-04, H-05, H-11, H-20 đóng một phần (H-39); due-overdue thực tế ~95%, lazy-landing ~76-80%; đề xuất R16 công cụ, R18 todo, R19 kiểm chứng"},
     {"date": "2026-10-21", "text": "Merge R17 (PR #52); 7/7 tiêu chí tự chạy đạt (412 passed, song song 5 lần xanh, CLI thật exit 2/2/1/2 không traceback); test mới đỏ 34 ca trên code cũ; đóng H-13, H-18, H-26; (c) ghi H-34 (title/done, lỗi OS) thay vì chặn"},
