@@ -96,6 +96,7 @@
 
 ## R19
 - dev-01 DONE (1 vòng, commit cccb27f): `screenshot` danh sách rỗng (`--modes ""`, `--pages ""`/`,`) exit 2 và docstring có bảng mã thoát; `screenshot`/`page_metrics`/`contrast` bắt `(RuntimeError, OSError, ValueError)` → `Lỗi:` exit 2; `page_metrics.measure` quy JSON/Unicode hỏng về `RuntimeError` nêu trang, độ rộng, chế độ. Test mới `tests/test_tools_env_errors.py` (16 đỏ trước khi sửa, 18 xanh; 2 ca dương exit 1 giữ). Ghi chú reviewer (không chặn): `--pages " , "` (khoảng trắng) vẫn exit 0.
+- dev-02 DONE (2 vòng, commits 18065d4, 27cdd3b): `smoke_pages` kiểm `--url` (http/https + host), `--interval` (không âm, không nan), `--retries` (> 0) → `Lỗi:` exit 2 trước khi gọi git/mạng; `fetch` bắt `HTTPException`/`ValueError` (Request tạo trong `try`) → thử lại; `_git` có timeout 60 giây và `GIT_TERMINAL_PROMPT=0`, `TimeoutExpired` → exit 2. Test mới `tests/test_smoke_pages_args.py` (9/10 đỏ trước khi sửa). Vòng 1 FAIL: URL `http://[bad/` còn Traceback (B1), sửa ở vòng 2. 542 test pass.
 
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
