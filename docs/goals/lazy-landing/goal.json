@@ -52,7 +52,9 @@
     {"id": "R16", "title": "Công cụ đo và deploy chặt: screenshot kiểm HTTP, overflow dùng scrollWidth, lh_check thiếu index báo lỗi, smoke fetch trước, Pages chờ test, exit 2 cho lỗi công cụ, spec hero theo trang đã duyệt (audit H-23, H-24, H-25, H-27, H-28, H-29, H-22)", "depends_on": ["R15"], "metrics": ["D1", "D2", "D4", "E2", "E3", "L3"],
      "est_usd": 2.5, "est_hours": 0.5, "status": "done", "plan_file": "plan/R16.md"},
     {"id": "R19", "title": "Công cụ đo và cổng deploy không lách được: screenshot/page_metrics/contrast lỗi môi trường exit 2, smoke_pages chịu SHA mới và lỗi mạng, pages.yml cổng test thật (audit H-43, H-44, H-40, H-45, H-27, H-46)", "depends_on": ["R16"], "metrics": ["D1", "D4", "D5", "E3", "L3"],
-     "est_usd": 3.5, "est_hours": 1.5, "status": "done", "plan_file": "plan/R19.md"}
+     "est_usd": 3.5, "est_hours": 1.5, "status": "done", "plan_file": "plan/R19.md"},
+    {"id": "R21", "title": "Cổng deploy và công cụ đo không lách được lần 2: workflow_problems kiểm mọi job/bước, screenshot bắt HTTPException, test deploy cũ đỏ trên mã cũ (audit H-52, H-51, H-55)", "depends_on": ["R19"], "metrics": ["D1", "E3", "L3"],
+     "est_usd": 3.5, "est_hours": 1.5, "status": "planned", "proposed": true}
   ],
   "cut_order": ["R11", "R13", "R10", "R9", "R12", "R7"],
   "human_only": [
