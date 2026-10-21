@@ -88,5 +88,8 @@
 - dev-03 DONE (1 vòng, commit 10ca65e): `lh_check` kiểm `--site` là thư mục có `index.html` trước khi gọi runner (thiếu → `Lỗi:` exit 2); `smoke_pages.git_sha()` chạy `git fetch origin main` rồi `rev-parse origin/main`, lỗi git/thiếu git → `GitError` → `Lỗi:` exit 2, có `--sha` thì không gọi git; docstring ghi mã 0/1/2. `tests/test_tools_git_site.py` (6 test đỏ trước khi sửa). Ghi chú reviewer (không chặn): chưa có test riêng cho fetch lỗi do remote không tồn tại.
 - dev-04 DONE (1 vòng, commit b7feb9a): `pages.yml` thêm job `test` (ruff + pytest), `build needs: test`; `pyyaml` vào nhóm `dev`; `tests/test_pages_workflow.py` đọc YAML bằng `yaml.safe_load`, có ca âm và chạy thật bước "Ghi phiên bản" (shim `sed` cho BSD); `docs/design/lazy-landing.md` sửa wireframe 1280, Nguyên tắc 2, 5, thêm mục "Phần spec cũ bị bỏ" (giữ `Leader duyệt: đạt`); 3 test mới ở `test_design_doc.py`. `pytest -q` 2 lần liền 467 passed. Đo mốc: D4 exit 0, D1 21 passed, E2 `/` 100×4 174 KB, `/en/` 100×4 166 KB, D5 exit 0. Ghi chú reviewer (không chặn): hai test version-step lặp khối dựng env; PATH cố định `/usr/bin:/bin`.
 
+## R18
+- dev-01 DONE (1 vòng, commit d8a19da): `store.load` quy `RecursionError`/`ValueError` (số khổng lồ) về `StoreError`; `save` dựng bytes UTF-8 trước khi tạo file tạm; `cli._to_id` chặn id quá dài ở `done`/`due`, `cli._fail` in một dòng an toàn với surrogate; `add` kiểm tiêu đề mã hoá được. Test thêm vào `tests/test_cli_errors.py` (10 đỏ trước khi sửa). 479 test pass. Ghi chú reviewer (không chặn): thông báo `ValueError` của Python lộ nguyên văn; `due` in nguyên chuỗi ngày dài.
+
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
