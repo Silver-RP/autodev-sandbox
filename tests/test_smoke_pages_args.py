@@ -21,6 +21,8 @@ SITE = Path(__file__).resolve().parent.parent / "site"
         ["--sha", "x", "--interval", "-1"],
         ["--sha", "x", "--retries", "0"],
         ["--sha", "x", "--retries", "-1"],
+        ["--url", "http://[bad/", "--sha", "x"],
+        ["--sha", "x", "--interval", "nan"],
     ],
 )
 def test_tham_so_sai_exit_2(argv, monkeypatch, capsys):
@@ -33,6 +35,10 @@ def test_tham_so_sai_exit_2(argv, monkeypatch, capsys):
     err = capsys.readouterr().err
     assert "Lỗi:" in err
     assert "Traceback" not in err
+
+
+def test_fetch_url_di_dang_la_loi_mang():
+    assert smoke_pages.fetch("http://[bad/") == (0, b"")
 
 
 def test_interval_0_hop_le(monkeypatch):

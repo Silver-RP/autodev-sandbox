@@ -26,7 +26,7 @@ except ModuleNotFoundError:  # chạy trực tiếp: python scripts/smoke_pages.
     from site_config import SITE_URL
 
 GIT_TIMEOUT = 60
-MARKER ="Lười Code Studio"
+MARKER = "Lười Code Studio"
 EXTRA_PATHS = ("en/", "style.css", "og.png")
 VERSION_RE = re.compile(
     r'<meta\s+name="version"\s+content="([^"]*)"', re.IGNORECASE
@@ -35,8 +35,8 @@ VERSION_RE = re.compile(
 
 def fetch(url, timeout=15):
     """Trả (status, body bytes); lỗi HTTP trả mã lỗi, lỗi mạng trả (0, b'')."""
-    req = urllib.request.Request(url, headers={"Cache-Control": "no-cache"})
     try:
+        req = urllib.request.Request(url, headers={"Cache-Control": "no-cache"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status, r.read()
     except urllib.error.HTTPError as e:
@@ -103,11 +103,16 @@ def main(argv=None):
     p.add_argument("--retries", type=int, default=10)
     p.add_argument("--interval", type=float, default=30)
     args = p.parse_args(argv)
-    parts = urllib.parse.urlsplit(args.url)
+    try:
+        parts = urllib.parse.urlsplit(args.url)
+        host = parts.hostname
+        scheme = parts.scheme
+    except ValueError:
+        host, scheme = None, ""
     problem = None
-    if parts.scheme not in ("http", "https") or not parts.hostname:
+    if scheme not in ("http", "https") or not host:
         problem = f"--url phải là http/https có host: {args.url!r}"
-    elif args.interval < 0:
+    elif not (args.interval >= 0):
         problem = f"--interval phải >= 0: {args.interval}"
     elif args.retries <= 0:
         problem = f"--retries phải > 0: {args.retries}"
