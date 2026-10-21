@@ -35,5 +35,8 @@
     "run": null,
     "url": null,
     "note": ""
+  },
+  "experiments": {
+    "superpowers": true
   }
 }
