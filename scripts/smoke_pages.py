@@ -1,7 +1,12 @@
 """Smoke test trang đã deploy lên GitHub Pages.
 
 Dùng: python scripts/smoke_pages.py [--url URL] [--sha SHA]
-Không có --sha: chạy `git fetch origin main` rồi `git rev-parse origin/main`.
+Hợp đồng SHA: không có --sha thì MỖI LẦN THỬ fetch lại và lấy SHA `main` của remote
+(`git fetch origin +refs/heads/main:refs/remotes/origin/main` rồi
+`git rev-parse origin/main`; refspec tường minh nên đúng cả ở clone
+--single-branch khác nhánh). Đạt khi `/` và `/en/` đều mang đúng SHA mới nhất đó;
+trang mang SHA cũ hơn `main` hiện tại luôn trượt. Có --sha thì cố định, không gọi git.
+Tài nguyên phải 200: en/, style.css, og.png, main.js, robots.txt, sitemap.xml.
 Mã thoát: 0 = đạt; 1 = sau mọi lần thử vẫn lỗi; 2 = lỗi công cụ (git: không phải
 repo, không có remote, fetch lỗi, không có git, git quá GIT_TIMEOUT giây) hoặc
 tham số sai (--url không phải http/https có host, --interval < 0, --retries <= 0).
@@ -27,7 +32,7 @@ except ModuleNotFoundError:  # chạy trực tiếp: python scripts/smoke_pages.
 
 GIT_TIMEOUT = 60
 MARKER = "Lười Code Studio"
-EXTRA_PATHS = ("en/", "style.css", "og.png")
+EXTRA_PATHS = ("style.css", "og.png", "main.js", "robots.txt", "sitemap.xml")
 VERSION_RE = re.compile(
     r'<meta\s+name="version"\s+content="([^"]*)"', re.IGNORECASE
 )
@@ -50,18 +55,19 @@ def check_content(url, sha):
     """Kiểm một lần; trả danh sách lỗi (rỗng là đạt)."""
     base = url if url.endswith("/") else url + "/"
     errors = []
-    status, body = fetch(base)
-    if status != 200:
-        errors.append(f"{base}: HTTP {status}")
-    else:
+    for page, need_marker in ((base, True), (base + "en/", False)):
+        status, body = fetch(page)
+        if status != 200:
+            errors.append(f"{page}: HTTP {status}")
+            continue
         html = body.decode("utf-8", errors="replace")
-        if MARKER not in html:
-            errors.append(f"{base}: thiếu '{MARKER}'")
+        if need_marker and MARKER not in html:
+            errors.append(f"{page}: thiếu '{MARKER}'")
         m = VERSION_RE.search(html)
         if not m:
-            errors.append(f"{base}: thiếu meta version")
+            errors.append(f"{page}: thiếu meta version")
         elif m.group(1) != sha:
-            errors.append(f"{base}: version {m.group(1)!r} != {sha!r}")
+            errors.append(f"{page}: version {m.group(1)!r} != {sha!r}")
     for path in EXTRA_PATHS:
         status, _ = fetch(base + path)
         if status != 200:
@@ -91,8 +97,8 @@ def _git(*args):
 
 
 def git_sha():
-    """SHA của origin/main sau khi fetch; lỗi git ném GitError."""
-    _git("fetch", "origin", "main")
+    """SHA `main` của remote sau khi fetch (rev-parse origin/main); lỗi ném GitError."""
+    _git("fetch", "origin", "+refs/heads/main:refs/remotes/origin/main")
     return _git("rev-parse", "origin/main")
 
 
@@ -119,13 +125,14 @@ def main(argv=None):
     if problem:
         print(f"Lỗi: {problem}", file=sys.stderr)
         return 2
-    try:
-        sha = args.sha or git_sha()
-    except GitError as e:
-        print(f"Lỗi: {e}", file=sys.stderr)
-        return 2
-    errors = []
-    for attempt in range(1, max(args.retries, 1) + 1):
+    sha = args.sha
+    for attempt in range(1, args.retries + 1):
+        if not args.sha:
+            try:
+                sha = git_sha()
+            except GitError as e:
+                print(f"Lỗi: {e}", file=sys.stderr)
+                return 2
         errors = check_content(args.url, sha)
         if not errors:
             print(f"OK (lần {attempt}): {args.url} @ {sha}")

@@ -49,13 +49,13 @@ def test_interval_0_hop_le(monkeypatch):
 def test_incomplete_read_thu_lai(tmp_path, capsys):
     d = tmp_path / "site"
     shutil.copytree(SITE, d)
-    idx = d / "index.html"
-    idx.write_text(
-        idx.read_text(encoding="utf-8").replace(
-            'name="version" content="dev"', 'name="version" content="abc123"'
-        ),
-        encoding="utf-8",
-    )
+    for idx in (d / "index.html", d / "en" / "index.html"):
+        idx.write_text(
+            idx.read_text(encoding="utf-8").replace(
+                'name="version" content="dev"', 'name="version" content="abc123"'
+            ),
+            encoding="utf-8",
+        )
     count = {"n": 0}
     base = functools.partial(
         http.server.SimpleHTTPRequestHandler, directory=str(d)
