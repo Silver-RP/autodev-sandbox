@@ -14,11 +14,7 @@
     {"id": "H-31", "severity": "low", "text": "Đạt trên giấy: probe hero tự đẩy timeline, chờ lazySite 10x50 ms ảo, D6/D3 xanh bằng skip khi offline", "milestone": null},
     {"id": "H-32", "severity": "low", "text": "contrast.py: font-size:0, nền gradient, colors rỗng đạt im lặng; lh_check round() banker trượt oan biên 95", "milestone": null},
     {"id": "H-33", "severity": "low", "text": "Hết giờ chỉ giết tiến trình trực tiếp (npx-node-Chrome mồ côi); OSError khi dọn hồ sơ; chưa xác nhận, có thể góp H-21", "milestone": null},
-    {"id": "H-34", "severity": "low", "text": "todo: load chưa kiểm title (str), done (bool) -> list traceback KeyError; lỗi OS (thư mục TODO_FILE không có/là thư mục, không quyền, đĩa đầy, symlink treo) traceback", "milestone": null},
-    {"id": "H-35", "severity": "medium", "text": "todo: id >4300 chữ số, JSON lồng sâu (RecursionError), argv không UTF-8 -> traceback exit 1", "milestone": null},
-    {"id": "H-36", "severity": "medium", "text": "todo: flock thư mục không timeout, treo im lặng khi tiến trình khác giữ khoá", "milestone": null},
-    {"id": "H-37", "severity": "medium", "text": "todo: load không từ chối id âm/trùng; add sinh id âm không done được; done đánh dấu cả hai id trùng", "milestone": null},
-    {"id": "H-38", "severity": "medium", "text": "todo save tmp+replace: ghi đè file 0444, đứt hard link, symlink vòng, thư mục chỉ đọc, tên dài -> traceback", "milestone": null},
+    {"id": "H-34", "severity": "low", "text": "todo: load chưa kiểm title (str), done (bool) -> list traceback KeyError (phần lỗi OS đóng gián tiếp ở R18: OSError -> exit 2)", "milestone": null},
     {"id": "H-39", "severity": "medium", "text": "Đóng H-04/05/11/20 yếu: 23 skip offline, H-11 mới 6/8 tệp, probe 360 đo trước font, ca âm rỗng, test tautology", "milestone": null},
     {"id": "H-40", "severity": "medium", "text": "smoke_pages --url foo/--interval âm/HTTPException -> traceback exit 1 (đã tái hiện; phần screenshot đóng ở R16)", "milestone": null},
     {"id": "H-41", "severity": "low", "text": "todo list: cột due rỗng vỡ shell read; title/due từ file không làm sạch; README thiếu hợp đồng CLI", "milestone": null},
@@ -49,12 +45,14 @@
       {"id": "R14", "status": "merged", "pr": 44, "merge_commit": "66bcab8"},
       {"id": "R15", "status": "merged", "pr": 48, "merge_commit": "63cd730"},
       {"id": "R17", "status": "merged", "pr": 52, "merge_commit": "3a18132"},
-      {"id": "R16", "status": "merged", "pr": 56, "merge_commit": "ff8c12f"}
+      {"id": "R16", "status": "merged", "pr": 56, "merge_commit": "ff8c12f"},
+      {"id": "R18", "status": "merged", "pr": 62, "merge_commit": "f05759b"}
     ],
     "plugin": []
   },
   "outlook": [],
   "decisions": [
+    {"date": "2026-10-21", "text": "Merge R18 (PR #62); 8/8 tiêu chí tự chạy đạt (verify lần 2 sạch, lần 1 đỏ 1 test site H-21; test_store_safety 5x23; CLI thật 4 ca exit 2 không traceback, file nguyên); 8 test roadmap đỏ trên code cũ (lock treo); đóng H-35..H-38; H-34 thu hẹp còn kiểu title/done"},
     {"date": "2026-10-21", "text": "Audit R16 (docs/audits/2026-10-21-3.md): 7 lỗ mới H-43..H-49 (4 vừa, 3 thấp); H-22..H-25, H-28 xác nhận đóng; H-29 mở lại một phần; H-40, H-21 nâng vừa; lazy-landing thực tế ~78-82%, due-overdue ~95%; đề xuất R18 todo, R19 kiểm chứng, R20 công cụ"},
     {"date": "2026-10-21", "text": "Merge R16 (PR #56); 8/8 tiêu chí tự chạy đạt (467 passed x2; Pages test->build->deploy xanh, smoke_pages OK @ ff8c12f); test mới đỏ 42 ca trên code cũ; đóng H-22, H-23, H-24, H-25, H-28, H-29; (c) H-27 chỉ đóng phần fetch/lỗi git, H-40 thu hẹp còn smoke_pages"},
     {"date": "2026-10-21", "text": "Audit R15, R17 (docs/audits/2026-10-21-2.md): 8 lỗ mới H-35..H-42 (5 vừa, 3 thấp), 0 đóng; xác nhận H-13, H-18, H-26, H-03 đóng thật; H-04, H-05, H-11, H-20 đóng một phần (H-39); due-overdue thực tế ~95%, lazy-landing ~76-80%; đề xuất R16 công cụ, R18 todo, R19 kiểm chứng"},

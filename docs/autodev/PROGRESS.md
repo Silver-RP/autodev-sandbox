@@ -703,5 +703,63 @@ H-xx tái hiện: `git archive origin/main` (trước merge) sang `/tmp/r16old.L
 - Chấp nhận (a): `test_pages_workflow.py` viết lại theo YAML (2 test cũ giữ); shim `sed` trên macOS thay `skip`. Giả định `overflow-x` khác `visible` = khung cuộn hợp lệ.
 - Ghi chú reviewer (không chặn): `check_reachable` gọi lặp mỗi tổ hợp width × mode; test version-step cố định `PATH=/usr/bin:/bin`; chưa probe symlink trong `site/` trỏ ra ngoài.
 
+## R18: Todo CLI không traceback, không treo, không ghi hỏng — **đạt, merged** 2026-10-21 (PR #62, `f05759b`)
+
+Worker làm dev-01..04, mỗi task 1 vòng (4 vòng, không FAIL). Supervisor kiểm trên `origin/milestone/R18` (`819e758`), chế độ B `--review-only`. `verify.py` lần 1 → "1 lỗi mới so với baseline: `tests/test_site_ly.py::test_cup_moves_as_one_block[vi]`" (Chrome probe; `site/` và test site không đổi trong PR; `test_site_ly.py` chạy riêng 3 lần → 11 passed); lần 2 → "sạch". `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: job `push` đỏ `test_site_ly.py::test_cup_negative_only_ly_path_moves[en]` ("probe không chạy", 1 failed / 510 passed), chạy lại → pass; job `pull_request` pass. Main không có check bắt buộc. Tệp đổi khớp phạm vi (`cli.py`, `store.py`, 3 file test, plan chỉ đổi trạng thái).
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | verify + smoke sạch | `verify.py` (2 lần), `verify.py --smoke` | lần 1 đỏ 1 test site (H-21), lần 2 sạch; smoke sạch; đạt |
+| 2 | (A1) `test_due.py` ≥ 7 | `uv run pytest -q tests/test_due.py` | 24 passed, đạt |
+| 3 | (A2) `test_overdue.py` ≥ 6 | `uv run pytest -q tests/test_overdue.py` | 7 passed, đạt |
+| 4 | (A3) cả bộ 0 failed | `verify.py` lần 2 (pytest cả bộ, baseline rỗng); CI chạy lại | sạch; CI 511 test, 2 job pass; đạt |
+| 5 | (A4) ruff | `uv run ruff check .` | "All checks passed!", đạt |
+| 6 | 3 file test + 8 tên | `uv run pytest -q tests/test_cli_errors.py tests/test_store_safety.py tests/test_atomic_save.py`; `--collect-only` | 85 passed; đủ 8 tên (27 ca tham số); 8 đỏ trên code cũ (dưới); đạt |
+| 7 | 5 lần liền; khoá < 2 giây | vòng 5 lần `tests/test_store_safety.py`; `::test_lock_timeout_exit_2 --durations=1` | 23 passed × 5, exit 0; ca chậm nhất 0,37 giây; đạt |
+| 8 | CLI thật 4 ca | `TODO_FILE=$(mktemp -d)/t.json`: `done <5000 chữ số 1>`; `list` id −1; `add x` file 0444; `list` trên `[`×100000 | exit 2/2/2/2; 0 `Traceback`; stdout rỗng; `shasum` + `stat` (mtime, inode, mode) trước/sau giống; stderr: `id không hợp lệ (quá dài): 5000 chữ số`, `…: phần tử 1 có "id" âm (-1)`, `…: file không ghi được (chỉ đọc), không ghi đè`, `…: JSON lồng quá sâu`; đạt |
+
+H-xx tái hiện: `git archive origin/main` (trước merge) sang `/tmp/r18old.t3l2`, chép 3 file test mới vào, chạy từng test roadmap: `test_done_huge_id_exit_2` 2 failed, `test_deeply_nested_json_exit_2` 4 failed, `test_load_rejects_negative_id` 5 failed, `test_load_rejects_duplicate_id` 5 failed, `test_lock_timeout_exit_2` **treo** (giết sau 60 giây), `test_self_symlink_exit_2` 6 failed, `test_readonly_file_not_overwritten` 1 failed, `test_hardlink_preserved` 1 failed. Đóng H-35, H-36, H-37, H-38.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 | 0 |
+| Phút worker | ~70–90 | 91 | ~1,0–1,3 (B3 1,01) |
+| USD (worker + supervisor) | ~3,1 | 2,40 + ~1,38 (supervisor, tạm) | B3 ~1,22 |
+| Số vòng review | 4–6 | 4 | 0 |
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Test khoá chập chờn/chậm | `Event` báo đã giữ khoá, `TODO_LOCK_TIMEOUT=0.3`; 5 × 23 passed; 0,37 giây |
+| 2. Hard link làm mất nguyên tử | ghi tại chỗ chỉ khi `st_nlink > 1`; `test_failed_save_keeps_old_file_and_leaves_no_temp`, `test_two_processes_add_in_parallel` xanh |
+| 3. Bắt ngoại lệ quá rộng | `grep -nE 'except (Exception\|BaseException)' src/todo/cli.py` không ra dòng (exit 1); H-34 `[{"id":1,"title":"a"}]` vẫn traceback như cũ (supervisor chạy) |
+| 4. Id dài chỉ chặn ở `done` | `test_done_huge_id_exit_2` tham số `done`/`due` |
+| 5. Số khổng lồ trong file | test id 1+5000 số 0 và 4300 chữ số 9 (`add` không ghi, không file tạm) |
+| 6. argv không UTF-8 chỉ trong tiến trình | test `subprocess` argv bytes cho `add`, `due` |
+| 7. Id âm/trùng chỉ chặn một lệnh | `test_load_rejects_*` tham số 5 lệnh |
+| 8. Timeout khoá ném lỗi thô | `test_lock_timeout_exit_2` (exit 2, stderr "đang bị khoá") |
+| 9. `TODO_LOCK_TIMEOUT` sai | test `abc`, `-1`, `0`, `nan`, `inf`; supervisor `-0` → exit 2 |
+| 10. `os.access` rồi vẫn `os.replace` | `test_readonly_file_not_overwritten` (nội dung, mode, inode); CLI thật ca 0444 |
+| 11. Symlink vòng coi như chưa có | `test_self_symlink_exit_2` (tự trỏ, `a → b → a`) |
+| 12. Dọn tmp che lỗi gốc | test monkeypatch `os.replace`/`os.unlink` ("gốc" trong thông báo) |
+
+### Kiểm biên độc lập
+- `TODO_FILE` là thư mục: `list`, `add x` → exit 2 `…: không đọc được (Is a directory)`, không traceback.
+- Symlink → file có hard link: `add y` exit 0, link giữ, `st_nlink` 2, link cứng thấy việc mới, không file tạm.
+- `done 000…1` (5000 ký tự, số 0 đầu) → exit 2 "quá dài" (không phải exit 1); chấp nhận theo giả định plan (cú pháp).
+- `TODO_LOCK_TIMEOUT=" 1e-9"` → `add` exit 0 (không ai giữ khoá); `-0` → exit 2; id `1e400` trong file → exit 2 "không phải số nguyên".
+- Thông báo lỗi `load` dùng đường dẫn người dùng (`/var/…`), `save` dùng `realpath` (`/private/var/…`): không nhất quán, không chặn.
+
+### Thí nghiệm superpowers (8c)
+`superpowers:requesting-code-review` gọi trên diff `2d3a076..819e758`; supervisor tự review theo mẫu `code-reviewer.md` (headless, không mở subagent). Kết luận: sẵn sàng merge. Không Critical/Important. Minor: `_write_in_place` cắt rồi ghi (kill giữa chừng còn file rỗng; đánh đổi plan đã chấp nhận); `os.access(W_OK)` vô tác dụng khi root, TOCTOU; thông báo "id quá dài" lặp ở `done`/`due`; đường dẫn lỗi `load`/`save` khác nhau. Gác lại (ngoài phạm vi): H-34 (`title`/`done`), H-41. So R17 (không thí nghiệm): không thêm phát hiện chặn; thêm 1 ca biên (đường dẫn khác nhau).
+
+### Quyết định
+- **Merge PR #62** (merge commit, giữ nhánh). 8/8 tiêu chí có bằng chứng tự chạy. `due-overdue` R18 `done`.
+- (c) tự quyết: H-34 thu hẹp còn phần kiểu `title`/`done` (phần lỗi OS đã exit 2 nhờ dev-04, supervisor thử `TODO_FILE` là thư mục); lỗi đỏ 1 test site trong verify lần 1 và CI `push` không chặn (không đụng `site/`, chạy lại xanh, họ H-21).
+- Giả định plan chấp nhận: `TODO_LOCK_TIMEOUT` mặc định 5 giây (docstring `cli.py` chưa ghi, nợ nhỏ); id `0` hợp lệ; id quá dài exit 2; ghi tại chỗ khi có hard link.
+- Việc cần người: `/private/tmp/r18-base` (worktree tách rời do developer dev-04 tạo, ngoài repo) cần `git worktree remove`.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
