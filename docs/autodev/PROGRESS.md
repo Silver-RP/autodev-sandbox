@@ -761,5 +761,59 @@ H-xx tái hiện: `git archive origin/main` (trước merge) sang `/tmp/r18old.t
 - Giả định plan chấp nhận: `TODO_LOCK_TIMEOUT` mặc định 5 giây (docstring `cli.py` chưa ghi, nợ nhỏ); id `0` hợp lệ; id quá dài exit 2; ghi tại chỗ khi có hard link.
 - Việc cần người: `/private/tmp/r18-base` (worktree tách rời do developer dev-04 tạo, ngoài repo) cần `git worktree remove`.
 
+## R19: Công cụ đo và cổng deploy không lách được — **đạt, merged** 2026-10-21 (PR #65, `805cbe0`)
+
+Worker làm dev-01..04: dev-02 2 vòng (vòng 1 FAIL: `--url http://[bad/` còn traceback), còn lại 1 vòng (5 vòng). Supervisor kiểm trên `origin/milestone/R19` (`244ae55`), chế độ B `--review-only`. Tệp đổi khớp phạm vi (4 script, `pages.yml`, 5 tệp test; plan chỉ đổi trạng thái; `test_workflow_permissions_triggers_concurrency` đổi assert quyền đúng ngoại lệ plan). Assert cũ không nới (`test_smoke_pages.py` chỉ thêm version cho `en/index.html` trong fixture). CI PR 2 job pass; main không có check bắt buộc.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | verify + smoke sạch | `verify.py`, `verify.py --smoke` | "sạch" (3 phút 20); `ok A5 overdue`, "sạch"; đạt |
+| 2 | (L3) pytest × 2, ruff | `uv run pytest -q` 2 lần; `uv run ruff check .` | 569 passed (196 giây) × 2; "All checks passed!"; đạt |
+| 3 | (D1) `test_tools.py` ≥ 5 | `uv run pytest -q tests/test_tools.py` | 21 passed; đạt |
+| 4 | (D4) overflow | `uv run python scripts/page_metrics.py --check-overflow` | exit 0; đạt |
+| 5 | (D5) contrast | `uv run python scripts/contrast.py` | "OK: mọi cặp màu đạt WCAG AA", exit 0; đạt |
+| 6 | (E3) sau merge | trước merge `pytest -q tests/test_smoke_pages.py tests/test_tools_git_site.py tests/test_pages_workflow.py`; sau merge run `pages` 39562762336 rồi `uv run python scripts/smoke_pages.py` | 56 passed; job `test`, `build` (`pages: read`), `deploy` đều success; "OK (lần 1): https://silver-rp.github.io/autodev-sandbox/ @ 805cbe0…" exit 0 (bản mới: kiểm `en/` version, `main.js`, `robots.txt`, `sitemap.xml`); đạt |
+| 7 | ca âm mới đỏ trên code cũ | `git archive origin/main` (trước merge) → `/tmp/r19old.cNRc`, chép 5 tệp test mới, chạy | 56 failed, 31 passed; đạt (dưới) |
+
+H-xx tái hiện (tiêu chí 7, đỏ trên code cũ): H-43 `test_screenshot_danh_sach_rong_exit_2` ×3; H-44 `test_chrome_khong_co_exit_2` ×3, `test_screenshot_file_duoi_tep_exit_2`, `…file_la_thu_muc…`, `…out_duoi_tep…`, `…url_khong_scheme…`, `test_dom_hong_exit_2_nen_ten_trang` ×4, `test_screenshot_docstring_co_bang_ma_thoat`; H-40 `test_tham_so_sai_exit_2` ×8, `test_incomplete_read_thu_lai`, `test_fetch_url_di_dang_la_loi_mang`; H-45 `test_git_timeout_exit_2`, `test_git_kwargs_timeout_va_env`, `test_sha_recomputed_each_attempt_passes_when_site_catches_up`, `test_git_sha_single_branch_clone_other_branch`; H-27 `test_missing_resource_reported` ×3, `test_en_version_mismatch_or_missing`; H-46 `test_workflow_negative_cases` ×17, `test_workflow_timeouts_and_job_permissions`, `test_workflow_real_has_no_problems`. Đóng H-27, H-40, H-43, H-44, H-45, H-46. Ghi chú: `test_stale_deploy_not_accepted_when_main_moves_on` và `test_initial_sha_site_not_ok_after_main_advances` xanh cả trên code cũ (main đi tiếp trước lần thử 1); supervisor bổ sung probe đúng kịch bản (dưới).
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 | 0 |
+| Phút worker | ~70–95 | 90 | ~0,95–1,3 (B3 1,00) |
+| USD (worker + supervisor) | ~3,5 | 2,62 + ~1,44 (supervisor, tạm) | B3 ~1,16 |
+| Số vòng review | 4–6 | 5 | 0 |
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. Chuyển quyền làm deploy hỏng | run `pages` 39562762336 sau merge: `build` (`pages: read`) + `deploy` success; `smoke_pages` OK @ `805cbe0` |
+| 2. Gộp `except` che "trượt" thật | `test_tools_env_errors.py` ca dương `@needs_chrome` (tràn → 1, `#777`/`#888` → 1) xanh trong 569 passed |
+| 3. So nhầm SHA ban đầu | dev-03 TC 2 yếu (xanh cả trên code cũ); supervisor probe: lần 1 trang cũ hơn A, sau sleep `main` → B và trang tới A → exit 1 (passed) |
+| 4. `screenshot` danh sách rỗng exit 0 | `test_screenshot_danh_sach_rong_exit_2` (`""`, `,`); còn `" , "` lọt (H-50) |
+| 5. `CHROME` sai / `--file` dưới tệp | `test_chrome_khong_co_exit_2` ×3, `test_screenshot_file_*`; supervisor `CHROME=/khong/co` CLI → `Lỗi: [Errno 2] …` exit 2 |
+| 6. DOM `<pre>` hỏng | `test_dom_hong_exit_2_nen_ten_trang` ×4 |
+| 7. `--retries 0`, `--interval -1`, `--url foo` | `test_tham_so_sai_exit_2` ×8; còn `--interval inf`/`1e12` traceback (H-50) |
+| 8. `IncompleteRead` | `test_incomplete_read_thu_lai` |
+| 9. git treo chờ mật khẩu | `test_git_timeout_exit_2`, `test_git_kwargs_timeout_va_env` |
+| 10. `origin/main` cũ ở clone `--single-branch` | `test_git_sha_single_branch_clone_other_branch` |
+| 11. `/en/` version cũ, tài nguyên 404 | `test_missing_resource_reported` ×3, `test_en_version_mismatch_or_missing`; E3 thật kiểm cả 6 đường |
+| 12. Test workflow lách được | `test_workflow_negative_cases` 17 ca; còn lọt `permissions: write-all`, `shell: … \|\| true` (H-50) |
+
+### Kiểm biên độc lập
+- Probe `/tmp/r19probe/test_probe_r19.py` (dùng helper `test_tools_git_site.py`): deploy ban đầu tới muộn sau khi `main` đi tiếp → exit 1; xoá remote `origin` giữa lần thử 1 và 2 → exit 2, `Lỗi:`, không traceback. 2 passed.
+- `smoke_pages.py --sha x --retries 2 --interval inf` (cả `1e400`, `1e12`) → `OverflowError` traceback exit 1 (`time.sleep`). Tham số vô lý, không chặn; ghi H-50.
+- `CHROME=/khong/co screenshot.py --pages " , "` → exit 2 (vì Chrome); với Chrome thật worker ghi exit 0, chụp trang tên rỗng (H-50).
+
+### Thí nghiệm superpowers (8c)
+`superpowers:requesting-code-review` gọi trên diff `origin/main..244ae55`; supervisor tự review theo mẫu `code-reviewer.md` (headless, không mở subagent). Kết luận: sẵn sàng merge. Không Critical/Important. Minor: `--interval` vô hạn/quá lớn traceback; `--pages " , "` không strip; `workflow_problems` lọt `write-all` dạng chuỗi, `shell:` có `|| true`, `working-directory`; test TC 2 dev-03 không phân biệt code cũ/mới; `--sha ""` rơi về nhánh gọi git. Gác lại (ngoài phạm vi): H-49, H-21. So R18: thêm 1 phát hiện test yếu (TC 2), được supervisor bù bằng probe.
+
+### Quyết định
+- **Merge PR #65** (merge commit, giữ nhánh). 7/7 tiêu chí có bằng chứng tự chạy; E3 sau merge exit 0. `lazy-landing` R19 `done`.
+- (c) tự quyết: đóng H-27, H-40, H-43, H-44, H-45, H-46; phần hở nhỏ còn lại (`--interval inf`, `--pages " , "`, `workflow_problems` lọt `write-all`/`shell`, test TC 2 yếu) gộp thành H-50 (thấp) thay vì chặn: ngoài TC plan, không ảnh hưởng người dùng thật.
+- Giả định plan chấp nhận: `build` giữ `pages: read` (run thật xanh, không cần nâng); `--retries 0` exit 2; tính lại SHA mỗi lần thử.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->
