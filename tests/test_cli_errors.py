@@ -233,3 +233,47 @@ def test_surrogate_argv_in_process_exit_2(tf, capsys, argv):
     assert cap.err.strip() and "Traceback" not in cap.err
     assert _snap(tf) == before
     json.loads(tf.read_text(encoding="utf-8"))
+
+
+_NEG = '[{"id": -1, "title": "a", "done": false}]'
+_DUP = '[{"id": 1, "title": "a", "done": false}, {"id": 1, "title": "b", "done": false}]'
+
+
+@pytest.mark.parametrize("argv", _CMDS)
+def test_load_rejects_negative_id(tf, capsys, argv):
+    tf.write_text(_NEG, encoding="utf-8")
+    before = _snap(tf)
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert "-1" in cap.err and "Traceback" not in cap.err
+    assert cap.out == ""
+    assert _snap(tf) == before
+
+
+@pytest.mark.parametrize("argv", _CMDS)
+def test_load_rejects_duplicate_id(tf, capsys, argv):
+    tf.write_text(_DUP, encoding="utf-8")
+    before = _snap(tf)
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert "trùng" in cap.err and "1" in cap.err and "Traceback" not in cap.err
+    assert cap.out == ""
+    assert _snap(tf) == before
+
+
+def test_load_negative_and_duplicate_raise_store_error(tf):
+    tf.write_text(_NEG, encoding="utf-8")
+    with pytest.raises(store.StoreError, match="-1"):
+        store.load(tf)
+    tf.write_text(_DUP, encoding="utf-8")
+    with pytest.raises(store.StoreError, match="phần tử 2"):
+        store.load(tf)
+
+
+def test_load_accepts_zero_id(tf):
+    tf.write_text(
+        '[{"id": 0, "title": "a", "done": false}, {"id": 2, "title": "b", "done": false}]',
+        encoding="utf-8",
+    )
+    assert [i["id"] for i in store.load(tf)] == [0, 2]
+    assert [i["id"] for i in store.load(tf)] == [0, 2]

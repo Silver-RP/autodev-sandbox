@@ -29,6 +29,7 @@ def load(path: Path) -> list[dict]:
         raise StoreError(f"{path}: JSON không đọc được ({e})") from e
     if not isinstance(data, list):
         raise StoreError(f"{path}: gốc phải là danh sách")
+    seen: set[int] = set()
     for n, item in enumerate(data, 1):
         if not isinstance(item, dict):
             raise StoreError(f"{path}: phần tử {n} không phải đối tượng")
@@ -36,6 +37,11 @@ def load(path: Path) -> list[dict]:
             raise StoreError(f'{path}: phần tử {n} thiếu "id"')
         if not isinstance(item["id"], int) or isinstance(item["id"], bool):
             raise StoreError(f'{path}: phần tử {n} có "id" không phải số nguyên')
+        if item["id"] < 0:
+            raise StoreError(f'{path}: phần tử {n} có "id" âm ({item["id"]})')
+        if item["id"] in seen:
+            raise StoreError(f'{path}: phần tử {n} có "id" trùng ({item["id"]})')
+        seen.add(item["id"])
     return data
 
 
