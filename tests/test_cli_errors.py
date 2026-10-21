@@ -158,3 +158,78 @@ def test_empty_file_is_error(tf, capsys):
 
 def test_missing_file_is_empty_list(tf):
     assert store.load(tf) == []
+
+
+# ---- R18 dev-01: đầu vào lạ -> exit 2 ----
+import json
+import os
+import subprocess
+import sys
+
+_ONE = '[{"id": 1, "title": "a", "done": false}]'
+
+
+@pytest.mark.parametrize("argv", [["done", "9" * 5000], ["due", "9" * 5000, "2026-10-20"]])
+def test_done_huge_id_exit_2(tf, capsys, argv):
+    tf.write_text(_ONE, encoding="utf-8")
+    before = _snap(tf)
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert cap.out == ""
+    assert "Traceback" not in cap.err
+    assert len(cap.err.strip().splitlines()) == 1
+    assert _snap(tf) == before
+
+
+@pytest.mark.parametrize("argv", [["list"], ["overdue"], ["add", "x"], ["done", "1"]])
+def test_deeply_nested_json_exit_2(tf, capsys, argv):
+    tf.write_bytes(b"[" * 100000)
+    before = _snap(tf)
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert str(tf) in cap.err and "Traceback" not in cap.err
+    assert _snap(tf) == before
+
+
+def test_huge_int_in_file_exit_2(tf, capsys):
+    tf.write_text('[{"id": 1' + "0" * 5000 + ', "title": "a", "done": false}]', encoding="utf-8")
+    assert cli.main(["list"]) == 2
+    cap = capsys.readouterr()
+    assert str(tf) in cap.err and "Traceback" not in cap.err
+
+
+def test_add_with_id_too_big_to_write_exit_2(tf, capsys):
+    tf.write_text('[{"id": ' + "9" * 4300 + ', "title": "a", "done": false}]', encoding="utf-8")
+    before = _snap(tf)
+    assert cli.main(["add", "x"]) == 2
+    cap = capsys.readouterr()
+    assert "Traceback" not in cap.err and cap.err.strip()
+    assert _snap(tf) == before
+    assert [p.name for p in tf.parent.iterdir()] == [tf.name]
+
+
+@pytest.mark.parametrize("argv", [[b"add", b"a\xff"], [b"due", b"1", b"\xff"]])
+def test_non_utf8_argv_subprocess_exit_2(tf, argv):
+    tf.write_text(_ONE, encoding="utf-8")
+    before = _snap(tf)
+    code = "import sys; from todo import cli; sys.exit(cli.main())"
+    r = subprocess.run(
+        [os.fsencode(sys.executable), b"-c", code.encode(), *argv],
+        env={**os.environ, "TODO_FILE": str(tf)},
+        capture_output=True,
+        check=False,
+    )
+    assert r.returncode == 2, r.stderr
+    assert b"Traceback" not in r.stderr and r.stderr.strip()
+    assert _snap(tf) == before
+
+
+@pytest.mark.parametrize("argv", [["add", "a\udcff"], ["due", "1", "\udcff"]])
+def test_surrogate_argv_in_process_exit_2(tf, capsys, argv):
+    tf.write_text(_ONE, encoding="utf-8")
+    before = _snap(tf)
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert cap.err.strip() and "Traceback" not in cap.err
+    assert _snap(tf) == before
+    json.loads(tf.read_text(encoding="utf-8"))

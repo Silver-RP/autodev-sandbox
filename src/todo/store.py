@@ -23,6 +23,10 @@ def load(path: Path) -> list[dict]:
         raise StoreError(f"{path}: không phải UTF-8 ({e.reason})") from e
     except json.JSONDecodeError as e:
         raise StoreError(f"{path}: JSON hỏng ({e.msg}, dòng {e.lineno} cột {e.colno})") from e
+    except RecursionError as e:
+        raise StoreError(f"{path}: JSON lồng quá sâu") from e
+    except ValueError as e:
+        raise StoreError(f"{path}: JSON không đọc được ({e})") from e
     if not isinstance(data, list):
         raise StoreError(f"{path}: gốc phải là danh sách")
     for n, item in enumerate(data, 1):
@@ -60,11 +64,19 @@ def lock(path: Path):
 def save(path: Path, items: list[dict]) -> None:
     """Ghi nguyên tử vào đích thật (qua symlink): file tạm cùng thư mục đích, fsync, os.replace."""
     path = Path(os.path.realpath(path))
+    try:
+        data = (json.dumps(items, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    except RecursionError as e:
+        raise StoreError(f"{path}: dữ liệu lồng quá sâu để ghi") from e
+    except UnicodeEncodeError as e:
+        raise StoreError(f"{path}: dữ liệu không phải UTF-8 hợp lệ, không ghi") from e
+    except ValueError as e:
+        raise StoreError(f"{path}: không ghi được JSON ({e})") from e
     fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
+        with os.fdopen(fd, "wb") as f:
             os.chmod(tmp, path.stat().st_mode & 0o777 if path.exists() else 0o666 & ~_umask())
-            f.write(json.dumps(items, ensure_ascii=False, indent=2) + "\n")
+            f.write(data)
             f.flush()
             os.fsync(f.fileno())
         os.replace(tmp, path)
