@@ -816,4 +816,43 @@ H-xx tái hiện (tiêu chí 7, đỏ trên code cũ): H-43 `test_screenshot_dan
 - Giả định plan chấp nhận: `build` giữ `pages: read` (run thật xanh, không cần nâng); `--retries 0` exit 2; tính lại SHA mỗi lần thử.
 
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
+## Số đo plugin B1–B5 (định nghĩa: ROADMAP bảng B)
+
+### B1 Lỗi lọt qua review (lỗ hổng mới mức cao + vừa / task trong phạm vi audit; ngưỡng ≤ 0,5)
+
+| Audit | Phạm vi | Lỗ hổng mới cao+vừa | Task | B1 |
+|---|---|---|---|---|
+| 2026-10-16.md | – | 8 | 0 | – |
+| 2026-10-21-2.md | – | 5 | 0 | – |
+| 2026-10-21-3.md | – | 4 | 0 | – |
+| 2026-10-21-4.md | – | 5 | 0 | – |
+| 2026-10-21.md | – | 7 | 0 | – |
+
+### B2 Độ chặt review: 4/66 task cần ≥ 2 vòng (6%). Đọc cùng B1: B2 thấp mà B1 cao là reviewer lỏng.
+
+### B3–B5 theo mốc (B3: thực tế / ước tính, 1,0 = trong khoảng, ngưỡng 0,5–2; B4: số lần runner dừng, ngưỡng 0; B5: chi phí trên task)
+
+| Mốc | Task | Phút worker | USD | Phút/task | USD/task | Lượt | B3 phút | B3 USD | B4 dừng |
+|---|---|---|---|---|---|---|---|---|---|
+| R1 | 3 | 4 | 1,46 | 1,4 | 0,49 | 53 | 0,28 | 0,37 | 0 |
+| R10 | 3 | 42 | 2,52 | 13,9 | 0,84 | 93 | 1,67 | 1,68 | 0 |
+| R11 | 3 | 33 | 2,39 | 10,9 | 0,80 | 84 | 1,31 | 1,49 | 1 |
+| R12 | 3 | 31 | 1,98 | 10,2 | 0,66 | 72 | 1,53 | 0,86 | 0 |
+| R13 | 3 | 36 | 2,59 | 12,1 | 0,86 | 92 | 1,81 | 1,37 | 0 |
+| R14 | 4 | 41 | 2,80 | 10,2 | 0,70 | 72 | 1,00 | 0,96 | 0 |
+| R15 | 4 | 85 | 4,44 | 21,4 | 1,11 | 125 | 1,42 | 1,59 | 0 |
+| R16 | 4 | 90 | 4,19 | 22,5 | 1,05 | 114 | 1,00 | 1,31 | 0 |
+| R17 | 3 | 60 | 2,62 | 20,1 | 0,87 | 82 | 3,02 | 1,25 | 0 |
+| R18 | 4 | 91 | 4,72 | 22,8 | 1,18 | 111 | 1,01 | 1,52 | 0 |
+| R19 | 4 | 90 | 5,52 | 22,6 | 1,38 | 141 | 1,00 | 1,58 | 1 |
+| R2 | 3 | 4 | 1,52 | 1,3 | 0,51 | 61 | 0,40 | 0,51 | 0 |
+| R3 | 3 | – | – | – | – | – | – | – | – |
+| R4 | 4 | 20 | 2,18 | 5,1 | 0,55 | 67 | 1,35 | 1,21 | 0 |
+| R5 | 4 | – | – | – | – | – | – | – | – |
+| R6 | 5 | 44 | 3,57 | 8,8 | 0,71 | 91 | 1,25 | 1,08 | 0 |
+| R7 | 3 | 34 | 2,86 | 11,2 | 0,95 | 81 | 1,69 | 1,24 | 0 |
+| R8 | 4 | 43 | 2,83 | 10,8 | 0,71 | 89 | 1,73 | 1,01 | 0 |
+| R9 | 6 | 64 | 4,45 | 10,6 | 0,74 | 144 | 3,19 | 2,47 | 1 |
+
+– = mốc chưa chạy. Phút = giờ thật của worker trong `run.log` (ước tính chỉ tính worker); USD gồm worker + supervisor. `+ ~x`: chưa có `runs/*.json` của supervisor (nó đang chạy), cộng tạm chi phí supervisor trung bình; chạy lại `--write` sau khi mốc xong để có số thật. Mốc trước R4 chạy chế độ A (không có `runs/*.json`) nên hiện –.
 <!-- metrics:end -->
