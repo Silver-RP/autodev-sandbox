@@ -94,5 +94,8 @@
 - dev-03 DONE (1 vòng, commit b1d2bf6): `store.lock` thử `flock(LOCK_EX|LOCK_NB)` đến hạn `TODO_LOCK_TIMEOUT` (mặc định 5 giây), hết hạn hoặc giá trị sai (`abc`, `-1`, `0`, `nan`, `inf`, rỗng) → `StoreError`, exit 2. Test trong `tests/test_store_safety.py` (9 đỏ trước khi sửa; 16 test xanh). Ghi chú reviewer: `test_site_button.py::test_click_toggles_aria_pressed[en]` đỏ một lần ở verify đầu, chạy riêng xanh (flaky, ngoài phạm vi).
 - dev-04 DONE (1 vòng, commits 94c6264, 57c398d): `save` từ chối file không ghi được (0444), ghi tại chỗ khi `st_nlink > 1`, dọn tmp không che lỗi gốc; `load`/`save` quy `OSError` (kể cả vòng symlink) về `StoreError`; `cli.main` bắt thêm `UnicodeError, OSError` (không `except Exception`). Cả 8 test roadmap đỏ trên `origin/main` cũ, xanh trên nhánh; `test_store_safety.py` 5 lần liền 23 passed; 511 passed cả bộ. Ghi chú reviewer: ghi tại chỗ mất nguyên tử khi kill giữa chừng (plan chấp nhận); `os.access` vô tác dụng với root.
 
+## R19
+- dev-01 DONE (1 vòng, commit cccb27f): `screenshot` danh sách rỗng (`--modes ""`, `--pages ""`/`,`) exit 2 và docstring có bảng mã thoát; `screenshot`/`page_metrics`/`contrast` bắt `(RuntimeError, OSError, ValueError)` → `Lỗi:` exit 2; `page_metrics.measure` quy JSON/Unicode hỏng về `RuntimeError` nêu trang, độ rộng, chế độ. Test mới `tests/test_tools_env_errors.py` (16 đỏ trước khi sửa, 18 xanh; 2 ca dương exit 1 giữ). Ghi chú reviewer (không chặn): `--pages " , "` (khoảng trắng) vẫn exit 0.
+
 ## Đề xuất chờ duyệt
 - (đã xử lý bằng dev-06) R9 dev-02: tiêu chí "og.png mới hơn og.svg" dựa mtime; đã đổi sang hash nguồn nhúng trong PNG.
