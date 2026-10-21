@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-21 · Nguồn: audit sau R16 (`docs/audits/2026-10-21-3.md`) + duyệt R15, R17, R16 (supervisor)
+Cập nhật: 2026-10-21 · Nguồn: audit sau R16 (`docs/audits/2026-10-21-3.md`) + duyệt R15, R17, R16, R18 (supervisor)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -22,16 +22,16 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R16 (`docs/audits/2026-10-21-3.md
 | R15 | merged | PR #48 (`63cd730`); 4 task, mỗi task 1 vòng; 374 test pass; D3, D4, D6, E5 giữ; đóng H-03, H-04, H-05, H-11, H-20 |
 | R17 | merged | PR #52 (`3a18132`); 3 task, mỗi task 1 vòng; 412 test pass; A1–A4 giữ; đóng H-13, H-18, H-26; ghi H-34 |
 | R16 | merged | PR #56 (`ff8c12f`); 4 task, mỗi task 1 vòng; 467 test pass × 2; D1, D2, D4, E2, E3 giữ; đóng H-22..H-25, H-28, H-29; H-27 một phần |
+| R18 | merged | PR #62 (`f05759b`); 4 task, mỗi task 1 vòng; 511 test; A1–A4 giữ; đóng H-35..H-38; H-34 thu hẹp |
 
 ## Mục tiêu và tiêu chí
-- `due-overdue`: 5/5 = **100%** theo lệnh đo; audit R15+R17 ước thực tế ≈ 95% (hở H-34..H-37).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit sau R16 ước thực tế ≈ 78–82% (đẹp ~73%, kỹ thuật ~88%, phát hành ~70%). `due-overdue` sau R17 còn hở H-34.
-
+- `due-overdue`: 5/5 = **100%** theo lệnh đo; sau R18 còn hở H-34 (kiểu `title`/`done`), H-41.
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit sau R16 ước thực tế ≈ 78–82% (đẹp ~73%, kỹ thuật ~88%, phát hành ~70%).
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
 | L1 | `uv run pytest -q tests/test_site.py` | 0 failed, ≥ 6 | 11 passed, đạt |
 | L2 | `uv run pytest -q tests/test_site_policy.py` | 0 failed, ≥ 6 | 52 passed, đạt |
-| L3 | `uv run pytest -q` | 0 failed | 467 passed × 2 lần liền, đạt (R16) |
+| L3 | `uv run pytest -q` | 0 failed | 511 passed, 0 failed (R18; test site chập chờn H-21), đạt |
 | L4 | `uv run ruff check .` | 0 lỗi | sạch, đạt |
 | L5 | smoke HTTP (`criteria.md`) | `200` hai dòng | đạt |
 | D1 | `uv run pytest -q tests/test_tools.py` | 0 failed, ≥ 5, không skip | 21 passed; chập chờn 2/7 lần khi máy tải nặng (H-21) |
@@ -94,11 +94,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R16 (`docs/audits/2026-10-21-3.md
 | H-31 | thấp | Đạt trên giấy: probe hero tự đẩy timeline, chờ `lazySite` 10×50 ms ảo, D6/D3 xanh bằng skip khi offline | mốc công cụ |
 | H-32 | thấp | `contrast.py`: `font-size:0`, nền gradient, `colors` rỗng đạt im lặng; `lh_check` `round()` banker trượt oan biên 95 | mốc công cụ |
 | H-33 | thấp | Hết giờ chỉ giết tiến trình trực tiếp (`npx→node→Chrome` mồ côi); `OSError` khi dọn hồ sơ; chưa xác nhận, có thể góp H-21 | mốc công cụ |
-| H-34 | thấp | `todo`: `load` chưa kiểm `title` (str), `done` (bool): `[{"id":1,"title":"a"}]` → `list` traceback `KeyError`; lỗi OS (thư mục của `TODO_FILE` không có/là thư mục, không quyền, đĩa đầy, symlink treo) traceback | mốc todo (leader duyệt) |
-| H-35 | vừa | `todo`: id > 4300 chữ số, JSON lồng sâu (`RecursionError`), argv không UTF-8 → traceback exit 1 (trùng mã "không có việc") | mốc todo |
-| H-36 | vừa | `store.lock` `flock` không timeout: tiến trình khác giữ khoá thư mục thì lệnh ghi treo im lặng | mốc todo |
-| H-37 | vừa | `load` không từ chối id âm/trùng: `add` sinh id âm không `done` được; `done` đánh dấu cả hai id trùng | mốc todo |
-| H-38 | vừa | `save` tmp+replace: ghi đè file 0444, đứt hard link, symlink vòng bị thay, thư mục chỉ đọc/tên dài → traceback | mốc todo |
+| H-34 | thấp | `todo`: `load` chưa kiểm `title` (str), `done` (bool): `[{"id":1,"title":"a"}]` → `list` traceback `KeyError` (phần lỗi OS đóng gián tiếp ở R18: `OSError` → exit 2) | mốc todo (leader duyệt) |
 | H-39 | vừa | Đóng H-04/05/11/20 yếu: 23 test skip offline (verify không đếm), H-11 mới 6/8 tệp (seo, share, visual, menu còn chỉ `index.html`), probe 360 đo trước font, ca âm rỗng, `test_site_ly.py:217` tautology | mốc kiểm chứng |
 | H-40 | vừa | `smoke_pages --url foo`, `--interval` âm, `HTTPException` → traceback exit 1 (đã tái hiện; phần `screenshot` đóng ở R16) | mốc công cụ |
 | H-41 | thấp | `todo list` cột `due` rỗng vỡ shell `read`; title/due từ file không làm sạch; README thiếu hợp đồng CLI | mốc todo (leader duyệt) |
@@ -127,6 +123,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R16 (`docs/audits/2026-10-21-3.md
 - R15: chờ font cố định 800 ms trong `MEASURE_JS` (có thể chập chờn khi mạng chậm); `test_cup_reduced_motion_block_instant` có assert `json.dumps(d)` vô nghĩa; test `scrollWidth` 360 chỉ chạy sáng.
 
 ## Quyết định gần đây
+- 2026-10-21: merge R18 (PR #62). 8/8 tiêu chí tự chạy đạt (verify lần 2 sạch, lần 1 đỏ 1 test site H-21; `test_store_safety` 5 × 23 passed; CLI thật 4 ca exit 2, file nguyên byte); 8 test roadmap đỏ trên code cũ (test khoá treo). Đóng H-35..H-38; H-34 thu hẹp còn kiểu `title`/`done`.
 - 2026-10-21: audit R16 (`docs/audits/2026-10-21-3.md`): 7 lỗ mới H-43..H-49 (4 vừa, 3 thấp); H-22..H-25, H-28 xác nhận đóng (92 test tự chạy xanh); H-29 mở lại một phần (H-43, H-44); H-40, H-21 nâng vừa. Thực tế lazy-landing ~78–82%, due-overdue ~95%. Đề xuất R18 todo, R19 kiểm chứng (+H-21, H-46), R20 công cụ; leader: H-47, H-48.
 - 2026-10-21: merge R16 (PR #56). 8/8 tiêu chí tự chạy đạt (467 passed × 2; Pages test → build → deploy xanh, `smoke_pages` OK @ `ff8c12f`); test mới đỏ 42 ca trên code cũ. Đóng H-22 (spec theo trang đã duyệt), H-23, H-24, H-25, H-28, H-29. (c) H-27 chỉ đóng phần fetch/lỗi git, phần kiểm thêm tài nguyên giữ mở; H-40 thu hẹp còn `smoke_pages`.
 - 2026-10-21: audit R15, R17 (`docs/audits/2026-10-21-2.md`): 8 lỗ mới H-35..H-42 (5 vừa, 3 thấp), 0 đóng; xác nhận H-13, H-18, H-26, H-03 đóng thật; H-04, H-05, H-11, H-20 đóng một phần (H-39). Đề xuất: R16 công cụ (H-23..25, 27..30, 32, 33, 40), R18 todo (H-34..38, 41), R19 kiểm chứng (H-39, H-31, H-42); leader/người: H-22, H-14, H-12.
