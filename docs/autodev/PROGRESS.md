@@ -651,5 +651,57 @@ Phút lệch quá 2 lần: ước tính lấy R1/R2 (4 phút, 30–52 test) như
 - (c) tự quyết: ghi H-34 (thấp) thay vì chặn merge: `load` chưa kiểm `title`/`done`; lỗi OS traceback. Lý do: roadmap R17 và tiêu chí mốc chỉ đòi `id`; mục tiêu "không bao giờ traceback" của roadmap còn hở hai ý này, cần leader đưa vào mốc todo sau.
 - Giả định plan đã chấp nhận: `flock` trên thư mục; không gộp/cắt khoảng trắng.
 
+## R16: Công cụ đo và deploy chặt — **đạt, merged** 2026-10-21 (PR #56, `ff8c12f`)
+
+Worker làm dev-01..04, mỗi task 1 vòng (4 vòng, không FAIL). Supervisor kiểm trên `origin/milestone/R16` (`fbbf217`), chế độ B `--review-only`: `verify.py` → "sạch (không có lỗi mới so với baseline)"; `verify.py --smoke` → `ok A5 overdue`, "sạch". CI PR: 2 job `test` pass (main không có check bắt buộc). Tệp đổi khớp phạm vi plan (5 script, `pages.yml`, spec, test, `pyproject.toml`/`uv.lock`); `site/` không đổi.
+
+### Tiêu chí cấp mốc
+| # | Tiêu chí | Lệnh tự chạy | Kết quả |
+|---|---|---|---|
+| 1 | verify + smoke sạch | `verify.py`, `verify.py --smoke` | sạch cả hai, đạt |
+| 2 | (L3) cả bộ 2 lần liền | `verify.py` (pytest lần 1) rồi `uv run pytest -q` | lần 1 sạch; lần 2 467 passed (175 giây), 0 failed; đạt |
+| 3 | (D4) overflow có `scrollWidth`, `/` + `/en/` | `uv run python scripts/page_metrics.py --check-overflow` | exit 0, đạt |
+| 4 | (D1) `test_tools.py` ≥ 5 | `uv run pytest -q tests/test_tools.py` | 21 passed, đạt |
+| 5 | (D2) spec + D7 | `uv run pytest -q tests/test_design_doc.py`; `grep -q '^Leader duyệt: đạt'` | 10 passed; grep exit 0; `Hướng đã chọn: 2 — Quán cóc đầu ngõ`; đạt |
+| 6 | (E2) Lighthouse | `uv run python scripts/lh_check.py` | `/` trung vị 100×4, 173 763 B; `/en/` 100×4, 165 939 B; "OK: đạt ngưỡng E2"; đạt |
+| 7 | (E3) sau merge | trước merge `pytest -q tests/test_smoke_pages.py tests/test_pages_workflow.py`; sau merge run `pages` 39528831394 rồi `uv run python scripts/smoke_pages.py` | 20 passed; job `test` → `build` → `deploy` đều success; "OK (lần 1): https://silver-rp.github.io/autodev-sandbox/ @ ff8c12f…"; đạt |
+| 8 | (D5) contrast; ruff | `uv run python scripts/contrast.py`; `uv run ruff check .` | exit 0; "All checks passed!"; đạt |
+
+H-xx tái hiện: `git archive origin/main` (trước merge) sang `/tmp/r16old.LcWL`, chép 5 tệp test mới/đổi + `pyproject.toml`/`uv.lock`, chạy → **42 failed** / 25 passed: H-24 `test_nowrap_text_in_clipped_box_is_overflow`; H-29 `test_bad_params_exit2` (12 ca), `test_normalize_pages_dir_without_slash`, `test_contrast_*`; H-28 `test_workflow_test_job_and_needs_chain`, ca âm, `test_jobs_exist[test]`; H-23 `test_site_pages_404_*`, `test_page_404_*` (site + url), `test_page_url_khong_ghi_source_sha`, `test_loi_tham_so_exit_2` (8 ca); H-25 `test_lh_missing_index_exit2`, `test_lh_site_not_exists`, `test_lh_site_is_file`; H-27 `test_git_sha_fetches_first`, `test_main_not_a_repo_exit2`, `test_main_no_git_binary`; H-22 3 test `test_design_doc.py`. Đóng H-22, H-23, H-24, H-25, H-28, H-29; H-27 đóng phần fetch/lỗi git (phần còn lại giữ mở); H-40 phần `screenshot`.
+
+### Ước tính ↔ thực tế (`metrics.py`)
+| | Ước tính | Thực tế | Lệch |
+|---|---|---|---|
+| Số task | 4 | 4 | 0 |
+| Phút worker | ~60–90 | 90 | B3 1,00 |
+| USD (worker + supervisor) | ~3,2 | 2,16 + ~1,34 (supervisor, tạm) | B3 ~1,09 |
+| Số vòng review | 4–6 | 4 | 0 |
+
+### Pre-mortem
+| Rủi ro | Chặn bằng |
+|---|---|
+| 1. `scrollWidth` làm D4 đỏ thật | D4 exit 0 trên `site/` thật, không phải sửa `style.css` |
+| 2. Báo tràn oan khung cuộn | `test_scroll_container_is_not_overflow` (`pre overflow-x:auto`) |
+| 3. Pages chờ test làm deploy hỏng | `test_workflow_test_job_and_needs_chain`, `test_workflow_permissions_triggers_concurrency`; run thật sau merge: test/build/deploy success |
+| 4. Test workflow chỉ regex | `test_version_step_writes_sha_once_per_page`, `..._fails_on_two_placeholders`, `..._missing_placeholder_fails` (chạy thật `sed`, shim `-i ''` trên macOS) |
+| 5. Kiểm HTTP chỉ ở `--url` | `test_site_pages_404_exit_2_khong_png`, `test_page_404_exit_2_khong_tao_file[site/url]` (đỏ trên cũ) |
+| 6. Hash `og.svg` lên ảnh URL ngoài | `test_page_url_khong_ghi_source_sha` (đỏ trên cũ), `test_page_site_ghi_source_sha` |
+| 7. `smoke_pages` so `origin/main` cũ | `test_git_sha_fetches_first` (repo bare đi trước, đỏ trên cũ) |
+| 8. Lỗi git/tham số traceback exit 1 | `test_bad_params_exit2`, `test_loi_tham_so_exit_2`, `test_main_not_a_repo_exit2`, `test_main_no_git_binary`, `test_lh_site_*` |
+| 9. Sửa spec làm D2 đỏ / mất D7 | 7 test D2 cũ giữ, xanh; grep D7 exit 0 |
+| 10. Spec còn hứa laptop/ngáp chỗ khác | `test_old_items_gone_outside_dropped_section` |
+
+### Kiểm biên độc lập
+- `smoke_pages.py --url http://127.0.0.1:9` trong thư mục không phải repo → `Lỗi: git fetch origin main lỗi (128): fatal: not a git repository…` exit 2.
+- `lh_check.py --site <tệp thường>` → `Lỗi: --site không phải thư mục` exit 2; `screenshot.py --widths ","` → usage, exit 2; `page_metrics.py --widths 360,abc` → `Lỗi: --widths không hợp lệ: 'abc'` exit 2.
+- `normalize_pages`: `/en` → `/en/index.html`; `/en/../../etc/passwd`, `..`, `/x/..` → "thoát khỏi site"; `/en/%2e%2e/index.html` → "không có trong site".
+- `contrast.parse_color`: `color(srgb 1 0 0)` → (255,0,0); có alpha `/ 0.5` → (128,128,128); `color(display-p3 …)` → `ValueError` → `main` exit 2.
+
+### Quyết định
+- **Merge PR #56** (merge commit, giữ nhánh). 8/8 tiêu chí có bằng chứng tự chạy (E3 sau merge). `lazy-landing` R16 `done`.
+- (c) tự quyết: H-27 chỉ đóng phần roadmap R16 (fetch trước, lỗi git exit 2); phần `main.js`/`robots.txt`/`sitemap.xml`, version `/en/` giữ mở (thu hẹp mô tả). H-40 thu hẹp còn phần `smoke_pages`.
+- Chấp nhận (a): `test_pages_workflow.py` viết lại theo YAML (2 test cũ giữ); shim `sed` trên macOS thay `skip`. Giả định `overflow-x` khác `visible` = khung cuộn hợp lệ.
+- Ghi chú reviewer (không chặn): `check_reachable` gọi lặp mỗi tổ hợp width × mode; test version-step cố định `PATH=/usr/bin:/bin`; chưa probe symlink trong `site/` trỏ ra ngoài.
+
 <!-- metrics:start (tự sinh bởi .autodev/metrics.py, đừng sửa tay) -->
 <!-- metrics:end -->

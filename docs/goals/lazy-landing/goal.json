@@ -50,7 +50,7 @@
     {"id": "R15", "title": "Hoàn thiện site: bản 360 giữ chấm dẫn và nút header, font tải thật, reduced-motion trong CSS, test bảo vệ cả bản Anh, ly hero dịch nguyên khối (audit H-03, H-04, H-05, H-11, H-20)", "depends_on": ["R14"], "metrics": ["D3", "D4", "D6", "E5", "L3"],
      "est_usd": 2.0, "est_hours": 0.4, "status": "done", "plan_file": "plan/R15.md"},
     {"id": "R16", "title": "Công cụ đo và deploy chặt: screenshot kiểm HTTP, overflow dùng scrollWidth, lh_check thiếu index báo lỗi, smoke fetch trước, Pages chờ test, exit 2 cho lỗi công cụ, spec hero theo trang đã duyệt (audit H-23, H-24, H-25, H-27, H-28, H-29, H-22)", "depends_on": ["R15"], "metrics": ["D1", "D2", "D4", "E2", "E3", "L3"],
-     "est_usd": 2.5, "est_hours": 0.5, "status": "planned"}
+     "est_usd": 2.5, "est_hours": 0.5, "status": "done", "plan_file": "plan/R16.md"}
   ],
   "cut_order": ["R11", "R13", "R10", "R9", "R12", "R7"],
   "human_only": [
