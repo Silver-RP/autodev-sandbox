@@ -99,7 +99,7 @@ def main(argv=None) -> int:
         if not (pages and widths and modes):
             raise RuntimeError("không có trang/độ rộng/chế độ nào để đo")
         bad = failures(pm.collect(a.site, widths, modes, pages=pages))
-    except (RuntimeError, ValueError) as e:
+    except (RuntimeError, OSError, ValueError) as e:
         print(f"Lỗi: {e}", file=sys.stderr)
         return 2
     if bad:

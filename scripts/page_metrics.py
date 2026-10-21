@@ -170,7 +170,10 @@ def measure(base: str, width: int, mode: str, height: int = 800, page: str = PAG
     m = re.search(rf'<pre id="{pid}"[^>]*>(.*?)</pre>', dom, re.DOTALL)
     if not m or not m.group(1).strip():
         raise RuntimeError(f"không đọc được số liệu ở {page} {width}/{mode}")
-    data = json.loads(html.unescape(m.group(1)))
+    try:
+        data = json.loads(html.unescape(m.group(1)))
+    except ValueError as e:  # JSONDecodeError, UnicodeDecodeError
+        raise RuntimeError(f"số liệu hỏng ở {page} {width}/{mode}: {e}") from None
     return {"page": page, "width": width, "mode": mode, **data}
 
 
@@ -214,7 +217,7 @@ def main(argv=None) -> int:
         if not (pages and widths and modes):
             raise RuntimeError("không có trang/độ rộng/chế độ nào để đo")
         results = collect(a.site, widths, modes, pages=pages)
-    except RuntimeError as e:
+    except (RuntimeError, OSError, ValueError) as e:
         print(f"Lỗi: {e}", file=sys.stderr)
         return 2
     for r in results:

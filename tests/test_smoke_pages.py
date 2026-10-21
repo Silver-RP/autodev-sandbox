@@ -28,13 +28,14 @@ def make_site(tmp_path):
     def make(remove_og=False):
         d = tmp_path / f"site{len(servers)}"
         shutil.copytree(SITE, d)
-        idx = d / "index.html"
-        idx.write_text(
-            idx.read_text(encoding="utf-8").replace(
-                'name="version" content="dev"', 'name="version" content="abc123"'
-            ),
-            encoding="utf-8",
-        )
+        for idx in (d / "index.html", d / "en" / "index.html"):
+            idx.write_text(
+                idx.read_text(encoding="utf-8").replace(
+                    'name="version" content="dev"',
+                    'name="version" content="abc123"',
+                ),
+                encoding="utf-8",
+            )
         if remove_og:
             (d / "og.png").unlink()
         s = _serve(d)

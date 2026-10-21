@@ -1,4 +1,9 @@
-"""Chụp trang qua Chrome headless: 360px (qua iframe) và 1280px, sáng và tối."""
+"""Chụp trang qua Chrome headless: 360px (qua iframe) và 1280px, sáng và tối.
+
+Mã thoát: 0 = chụp xong; 1 = (không dùng, chụp không có ngưỡng "trượt");
+2 = lỗi tham số/công cụ/môi trường (danh sách trang/chế độ rỗng, Chrome không có
+hoặc lỗi/timeout, URL sai, không ghi được tệp), một dòng `Lỗi: …` ra stderr.
+"""
 
 from __future__ import annotations
 
@@ -287,9 +292,13 @@ def main(argv=None) -> int:
         if ".." in p.replace("\\", "/").split("/"):
             ap.error(f"đường dẫn thoát khỏi site/: {p!r}")
 
+    if not modes or (not a.page and not pages):
+        print("Lỗi: không có trang/chế độ nào để chụp", file=sys.stderr)
+        return 2
+
     try:
         return _main(a, ap, widths, modes, out, pages)
-    except RuntimeError as e:
+    except (RuntimeError, OSError, ValueError) as e:
         print(f"Lỗi: {e}", file=sys.stderr)
         return 2
 

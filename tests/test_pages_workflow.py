@@ -33,18 +33,49 @@ def as_list(v):
     return [v] if isinstance(v, str) else list(v or [])
 
 
+def _perm_keys(node):
+    perms = node.get("permissions")
+    return perms if isinstance(perms, dict) else {}
+
+
 def workflow_problems(wf):
     """Danh sách lỗi cấu trúc về job test/build/deploy; rỗng là đạt."""
     out = []
     jobs = wf.get("jobs", {})
-    runs = [s.get("run", "") for s in jobs.get("test", {}).get("steps", [])]
+    test = jobs.get("test", {})
+    steps = test.get("steps", [])
+    runs = [str(s.get("run", "")).strip() for s in steps]
     for cmd in ("uv run ruff check .", "uv run pytest -q"):
-        if not any(cmd in r for r in runs):
-            out.append(f"jobs.test thiếu bước chạy `{cmd}`")
+        if cmd not in runs:
+            out.append(f"jobs.test thiếu bước chạy đúng `{cmd}`")
+    for key in ("continue-on-error", "if"):
+        if key in test:
+            out.append(f"jobs.test không được có `{key}`")
+        for s in steps:
+            if key in s:
+                out.append(f"bước của jobs.test không được có `{key}`: {s.get('run') or s.get('uses')}")
+    for name in ("build", "deploy"):
+        if "if" in jobs.get(name, {}):
+            out.append(f"jobs.{name} không được có `if`")
     if "test" not in as_list(jobs.get("build", {}).get("needs")):
         out.append("jobs.build.needs thiếu test")
     if "build" not in as_list(jobs.get("deploy", {}).get("needs")):
         out.append("jobs.deploy.needs thiếu build")
+    top = _perm_keys(wf)
+    for k in ("pages", "id-token"):
+        if k in top:
+            out.append(f"permissions cấp workflow không được có `{k}`")
+        if k in _perm_keys(test):
+            out.append(f"jobs.test.permissions không được có `{k}`")
+    bperm = _perm_keys(jobs.get("build", {}))
+    if "id-token" in bperm:
+        out.append("jobs.build.permissions không được có `id-token`")
+    if bperm.get("pages", "read") != "read":
+        out.append("jobs.build.permissions.pages chỉ được là `read`")
+    for name, job in jobs.items():
+        t = job.get("timeout-minutes")
+        if isinstance(t, bool) or not isinstance(t, (int, float)) or t <= 0:
+            out.append(f"jobs.{name} thiếu timeout-minutes dương")
     return out
 
 
@@ -87,7 +118,10 @@ def test_workflow_pins_four_actions():
 
 
 def test_workflow_permissions_triggers_concurrency():
-    assert WF["permissions"] == {"pages": "write", "id-token": "write", "contents": "read"}
+    assert WF["permissions"] == {"contents": "read"}
+    assert WF["jobs"]["deploy"]["permissions"] == {"pages": "write", "id-token": "write"}
+    bperm = WF["jobs"]["build"]["permissions"]
+    assert "id-token" not in bperm and bperm.get("pages") != "write"
     on = triggers(WF)
     assert on["push"]["branches"] == ["main"]
     assert "workflow_dispatch" in on
@@ -200,3 +234,52 @@ def test_pages_have_version_placeholder_once():
 @pytest.mark.parametrize("name", ["test", "build", "deploy"])
 def test_jobs_exist(name):
     assert name in WF["jobs"]
+
+
+def _mutate(fn):
+    bad = copy.deepcopy(WF)
+    fn(bad)
+    return workflow_problems(bad)
+
+
+def _pytest_step(wf):
+    return next(s for s in wf["jobs"]["test"]["steps"] if s.get("run", "").strip() == "uv run pytest -q")
+
+
+def test_workflow_real_has_no_problems():
+    assert workflow_problems(WF) == []
+
+
+@pytest.mark.parametrize(
+    "name,fn",
+    [
+        ("or-true", lambda w: _pytest_step(w).update(run="uv run pytest -q || true")),
+        ("echo", lambda w: _pytest_step(w).update(run='echo "uv run pytest -q"')),
+        ("semicolon", lambda w: _pytest_step(w).update(run="uv run pytest -q; true")),
+        ("step-coe", lambda w: _pytest_step(w).update({"continue-on-error": True})),
+        ("job-coe", lambda w: w["jobs"]["test"].update({"continue-on-error": True})),
+        ("step-if", lambda w: _pytest_step(w).update({"if": "false"})),
+        ("job-if", lambda w: w["jobs"]["test"].update({"if": "false"})),
+        ("build-always", lambda w: w["jobs"]["build"].update({"if": "always()"})),
+        ("deploy-always", lambda w: w["jobs"]["deploy"].update({"if": "always()"})),
+        ("no-timeout-test", lambda w: w["jobs"]["test"].pop("timeout-minutes", None)),
+        ("no-timeout-deploy", lambda w: w["jobs"]["deploy"].pop("timeout-minutes", None)),
+        ("zero-timeout", lambda w: w["jobs"]["build"].update({"timeout-minutes": 0})),
+        ("test-pages", lambda w: w["jobs"]["test"].update({"permissions": {"pages": "write"}})),
+        ("wf-pages", lambda w: w["permissions"].update({"pages": "write"})),
+        ("wf-idtoken", lambda w: w["permissions"].update({"id-token": "write"})),
+        ("build-idtoken", lambda w: w["jobs"]["build"].setdefault("permissions", {}).update({"id-token": "write"})),
+        ("build-pages-write", lambda w: w["jobs"]["build"].setdefault("permissions", {}).update({"pages": "write"})),
+    ],
+)
+def test_workflow_negative_cases(name, fn):
+    assert _mutate(fn), name
+    assert workflow_problems(WF) == []
+
+
+def test_workflow_timeouts_and_job_permissions():
+    jobs = WF["jobs"]
+    assert 0 < jobs["test"]["timeout-minutes"] <= 30
+    assert 0 < jobs["build"]["timeout-minutes"] <= 10
+    assert 0 < jobs["deploy"]["timeout-minutes"] <= 10
+    assert jobs["build"]["permissions"] == {"contents": "read", "pages": "read"}
