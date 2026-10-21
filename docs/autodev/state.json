@@ -13,14 +13,25 @@
     {"id": "H-31", "severity": "low", "text": "Đạt trên giấy: probe hero tự đẩy timeline, chờ lazySite 10x50 ms ảo, D6/D3 xanh bằng skip khi offline", "milestone": null},
     {"id": "H-32", "severity": "low", "text": "contrast.py: font-size:0, nền gradient, colors rỗng đạt im lặng; lh_check round() banker trượt oan biên 95", "milestone": null},
     {"id": "H-33", "severity": "low", "text": "Hết giờ chỉ giết tiến trình trực tiếp (npx-node-Chrome mồ côi); OSError khi dọn hồ sơ; chưa xác nhận, có thể góp H-21", "milestone": null},
-    {"id": "H-34", "severity": "low", "text": "todo: load chưa kiểm title (str), done (bool) -> list traceback KeyError (phần lỗi OS đóng gián tiếp ở R18: OSError -> exit 2)", "milestone": null},
+    {"id": "H-34", "severity": "medium", "text": "todo: load chưa kiểm title/done/due; thiếu khoá title hoặc done -> list/overdue KeyError Traceback exit 1 (trùng mã không có việc id); sai kiểu in rác. Phần lỗi OS đã đóng (R18)", "milestone": null},
     {"id": "H-39", "severity": "medium", "text": "Đóng H-04/05/11/20 yếu: 23 skip offline, H-11 mới 6/8 tệp, probe 360 đo trước font, ca âm rỗng, test tautology", "milestone": null},
     {"id": "H-41", "severity": "low", "text": "todo list: cột due rỗng vỡ shell read; title/due từ file không làm sạch; README thiếu hợp đồng CLI", "milestone": null},
     {"id": "H-42", "severity": "low", "text": "#luoi-nut: ghế đỏ không test; nhãn vi cứng trong main.js", "milestone": null},
     {"id": "H-47", "severity": "low", "text": "H-22 đóng bằng sửa spec: chưa hỏi lại leader về hero; dòng Leader duyệt không test", "milestone": null},
     {"id": "H-48", "severity": "low", "text": "Bản Anh không JSON-LD, og:image chữ Việt, không test", "milestone": null},
     {"id": "H-49", "severity": "low", "text": "page_metrics mặc định thu hẹp im lặng khi thiếu en/; scrollWidth báo oan off-canvas; check_reachable nhận mọi 2xx", "milestone": null},
-    {"id": "H-50", "severity": "low", "text": "smoke_pages --interval inf/1e12 -> OverflowError traceback; screenshot --pages \" , \" không strip; workflow_problems lọt permissions: write-all, shell: ... || true, working-directory; test TC 2 dev-03 R19 xanh cả trên code cũ", "milestone": null}
+    {"id": "H-50", "severity": "low", "text": "screenshot --pages \" , \" không strip (chụp trang tên rỗng); phần smoke_pages --interval và workflow_problems chuyển H-57, H-52", "milestone": null},
+    {"id": "H-51", "severity": "medium", "text": "screenshot.py --url: HTTPException (InvalidURL, BadStatusLine) -> Traceback exit 1, trái bảng 0/1/2", "milestone": null},
+    {"id": "H-52", "severity": "medium", "text": "workflow_problems còn lách: env PYTEST_ADDOPTS, defaults.run.shell, continue-on-error/if ở bước build/deploy, needs ở test, job lạ có pages: write, trigger lạ, timeout nan/99999, write-all (gồm H-50)", "milestone": null},
+    {"id": "H-53", "severity": "medium", "text": "todo list | head -1 (và overdue) thoát 120 kèm Exception ignored BrokenPipeError", "milestone": null},
+    {"id": "H-54", "severity": "medium", "text": "TODO_FILE là FIFO -> todo list treo vô hạn; không S_ISREG, không giới hạn kích thước đọc", "milestone": null},
+    {"id": "H-55", "severity": "medium", "text": "Hai test không chấp nhận deploy cũ (H-45) xanh cả trên code cũ; ca phân biệt chỉ ở probe /tmp (chưa xác nhận)", "milestone": null},
+    {"id": "H-56", "severity": "low", "text": "Đầu ra todo từ dữ liệu không làm sạch: title có xuống dòng/ESC/U+200B/U+202E; list in dở rồi exit 2 (surrogate); -h exit 2", "milestone": null},
+    {"id": "H-57", "severity": "low", "text": "smoke_pages: --sha rỗng rơi sang git fetch mạng; port 99999 thử lại 4,5 phút rồi exit 1; --interval inf/1e308 Traceback", "milestone": null},
+    {"id": "H-58", "severity": "low", "text": "screenshot/page_metrics độ rộng khổng lồ exit 0 nhưng đo ở cỡ khác (chưa xác nhận)", "milestone": null},
+    {"id": "H-59", "severity": "low", "text": "lh_check --runs 0 exit 0 OK khi chỉ đo /en/ (chưa xác nhận)", "milestone": null},
+    {"id": "H-60", "severity": "low", "text": "todo store biên: flock theo thư mục không chặn hard link khác thư mục; id 4300 chữ số kẹt add/done/due; 3 test phụ thuộc PYTHONINTMAXSTRDIGITS; test đỏ khi root (chưa xác nhận)", "milestone": null},
+    {"id": "H-61", "severity": "low", "text": "README/docstring todo thiếu due/overdue/env/mã thoát; PROJECT_STATE lệch L1 11 vs 18, E4 12 vs 24; ci.yml thiếu permissions/timeout", "milestone": null}
   ],
   "milestones": {
     "runs": [
@@ -48,6 +59,7 @@
   },
   "outlook": [],
   "decisions": [
+    {"date": "2026-10-21", "text": "Audit R18, R19 (docs/audits/2026-10-21-4.md): 11 lỗ mới H-51..H-61 (5 vừa, 6 thấp); H-35..H-38, H-27, H-40, H-43 xác nhận đóng (197 test tự chạy xanh); H-44, H-45, H-46 đóng một phần; H-34 nâng vừa (thiếu khoá title/done); lazy-landing thực tế ~80-84%, due-overdue ~94%; đề xuất R20 todo, R21 công cụ + cổng deploy, R22 kiểm chứng"},
     {"date": "2026-10-21", "text": "Merge R19 (PR #65); 7/7 tiêu chí tự chạy đạt (569 passed x2; Pages test->build->deploy xanh, smoke_pages OK @ 805cbe0 kiểm cả en/, main.js, robots, sitemap); test mới đỏ 56 ca trên code cũ; đóng H-27, H-40, H-43..H-46; (c) phần hở nhỏ gộp H-50 thay vì chặn"},
     {"date": "2026-10-21", "text": "Merge R18 (PR #62); 8/8 tiêu chí tự chạy đạt (verify lần 2 sạch, lần 1 đỏ 1 test site H-21; test_store_safety 5x23; CLI thật 4 ca exit 2 không traceback, file nguyên); 8 test roadmap đỏ trên code cũ (lock treo); đóng H-35..H-38; H-34 thu hẹp còn kiểu title/done"},
     {"date": "2026-10-21", "text": "Audit R16 (docs/audits/2026-10-21-3.md): 7 lỗ mới H-43..H-49 (4 vừa, 3 thấp); H-22..H-25, H-28 xác nhận đóng; H-29 mở lại một phần; H-40, H-21 nâng vừa; lazy-landing thực tế ~78-82%, due-overdue ~95%; đề xuất R18 todo, R19 kiểm chứng, R20 công cụ"},
