@@ -113,3 +113,124 @@ def test_lock_released_after_error(tmp_path):
     with pytest.raises(store.StoreError):
         store.add(path, "a")
     assert _probe(path) is True
+
+
+def _holder(path, held, release):
+    with store.lock(path):
+        held.set()
+        release.wait(30)
+
+
+def _hold(tmp_path):
+    ctx = multiprocessing.get_context("fork")
+    held, release = ctx.Event(), ctx.Event()
+    p = ctx.Process(target=_holder, args=(tmp_path / "todo.json", held, release))
+    p.start()
+    assert held.wait(10)
+    return p, release
+
+
+def _stop(p, release):
+    release.set()
+    p.join(10)
+    assert p.exitcode == 0
+
+
+@pytest.mark.parametrize(
+    "argv", [["add", "x"], ["done", "1"], ["due", "1", "2026-10-20"]], ids=["add", "done", "due"]
+)
+def test_lock_timeout_exit_2(tmp_path, monkeypatch, capsys, argv):
+    import time
+
+    path = tmp_path / "todo.json"
+    store.add(path, "a")
+    before = (path.read_bytes(), path.stat().st_mtime_ns)
+    monkeypatch.setenv("TODO_FILE", str(path))
+    monkeypatch.setenv("TODO_LOCK_TIMEOUT", "0.3")
+    p, release = _hold(tmp_path)
+    try:
+        t0 = time.monotonic()
+        code = cli.main(argv)
+        elapsed = time.monotonic() - t0
+    finally:
+        _stop(p, release)
+    err = capsys.readouterr()
+    assert code == 2
+    assert elapsed < 2
+    assert err.out == ""
+    assert "khoá" in err.err and str(tmp_path) in err.err
+    assert "Traceback" not in err.err
+    assert (path.read_bytes(), path.stat().st_mtime_ns) == before
+
+
+@pytest.mark.parametrize("bad", ["abc", "-1", "0", "nan", "inf", ""])
+def test_bad_lock_timeout_exit_2(tmp_path, monkeypatch, capsys, bad):
+    path = tmp_path / "todo.json"
+    monkeypatch.setenv("TODO_FILE", str(path))
+    monkeypatch.setenv("TODO_LOCK_TIMEOUT", bad)
+    assert cli.main(["add", "x"]) == 2
+    err = capsys.readouterr()
+    assert "TODO_LOCK_TIMEOUT" in err.err and "Traceback" not in err.err
+    assert not path.exists()
+
+
+def test_lock_waits_for_release(tmp_path, monkeypatch):
+    import threading
+
+    path = tmp_path / "todo.json"
+    monkeypatch.setenv("TODO_FILE", str(path))
+    monkeypatch.setenv("TODO_LOCK_TIMEOUT", "5")
+    p, release = _hold(tmp_path)
+    threading.Timer(0.3, release.set).start()
+    try:
+        assert cli.main(["add", "x"]) == 0
+    finally:
+        _stop(p, release)
+    assert [i["title"] for i in store.load(path)] == ["x"]
+    assert _probe(path) is True
+
+
+def _selflink(tmp_path, kind):
+    if kind == "self":
+        a = tmp_path / "a"
+        a.symlink_to("a")
+        return a, [a]
+    a, b = tmp_path / "a", tmp_path / "b"
+    a.symlink_to("b")
+    b.symlink_to("a")
+    return a, [a, b]
+
+
+@pytest.mark.parametrize("kind", ["self", "loop"])
+@pytest.mark.parametrize("argv", [["add", "x"], ["list"], ["done", "1"]])
+def test_self_symlink_exit_2(tmp_path, monkeypatch, capsys, kind, argv):
+    a, links = _selflink(tmp_path, kind)
+    targets = [os.readlink(x) for x in links]
+    names = sorted(p.name for p in tmp_path.iterdir())
+    monkeypatch.setenv("TODO_FILE", str(a))
+    assert cli.main(argv) == 2
+    cap = capsys.readouterr()
+    assert cap.err.strip() and "Traceback" not in cap.err and cap.out == ""
+    assert [os.readlink(x) for x in links] == targets
+    assert sorted(p.name for p in tmp_path.iterdir()) == names
+
+
+def test_unwritable_dir_and_long_name_exit_2(tmp_path, monkeypatch, capsys):
+    p = tmp_path / ("n" * 300)
+    monkeypatch.setenv("TODO_FILE", str(p))
+    assert cli.main(["add", "x"]) == 2
+    err = capsys.readouterr().err
+    assert len(err.strip().splitlines()) == 1 and "Traceback" not in err
+
+    d = tmp_path / "ro"
+    d.mkdir()
+    (d / "todo.json").write_text("[]", encoding="utf-8")
+    d.chmod(0o555)
+    try:
+        monkeypatch.setenv("TODO_FILE", str(d / "todo.json"))
+        assert cli.main(["add", "x"]) == 2
+        err = capsys.readouterr().err
+        assert len(err.strip().splitlines()) == 1 and "Traceback" not in err
+        assert (d / "todo.json").read_text(encoding="utf-8") == "[]"
+    finally:
+        d.chmod(0o755)

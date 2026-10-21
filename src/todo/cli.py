@@ -17,6 +17,21 @@ from pathlib import Path
 from todo import store
 
 
+def _fail(msg: str) -> int:
+    """In một dòng ra stderr (an toàn với surrogate), trả 2."""
+    line = " ".join(msg.split()) or "lỗi"
+    sys.stderr.write(line.encode("utf-8", "backslashreplace").decode("utf-8") + "\n")
+    return 2
+
+
+def _to_id(text: str) -> int | None:
+    """int(text), hoặc None khi quá dài so với giới hạn chuyển chuỗi -> số của Python."""
+    try:
+        return int(text)
+    except ValueError:
+        return None
+
+
 def _usage() -> int:
     print(__doc__, file=sys.stderr)
     return 2
@@ -47,6 +62,10 @@ def _add(path: Path, args: list[str]) -> int:
     if not title.strip():
         print("tiêu đề không được rỗng", file=sys.stderr)
         return 2
+    try:
+        title.encode("utf-8")
+    except UnicodeEncodeError:
+        return _fail("tiêu đề không phải UTF-8 hợp lệ")
     print(store.add(path, title, due=due)["id"])
     return 0
 
@@ -60,9 +79,8 @@ def main(argv: list[str] | None = None) -> int:
     path = Path(os.environ.get("TODO_FILE", "todo.json"))
     try:
         return _run(argv, path)
-    except store.StoreError as e:
-        print(e, file=sys.stderr)
-        return 2
+    except (store.StoreError, ValueError, RecursionError, UnicodeError, OSError) as e:
+        return _fail(str(e) or type(e).__name__)
 
 
 def _run(argv: list[str], path: Path) -> int:
@@ -82,14 +100,20 @@ def _run(argv: list[str], path: Path) -> int:
             print(_line(i))
         return 0
     if argv[:1] == ["done"] and len(argv) == 2 and _is_id(argv[1]):
-        if store.complete(path, int(argv[1])):
+        item_id = _to_id(argv[1])
+        if item_id is None:
+            return _fail(f"id không hợp lệ (quá dài): {len(argv[1])} chữ số")
+        if store.complete(path, item_id):
             return 0
         print(f"không có việc id {argv[1]}", file=sys.stderr)
         return 1
     if argv[:1] == ["due"] and len(argv) == 3 and _is_id(argv[1]):
         if not store.valid_due(argv[2]):
             return _bad_date(argv[2])
-        if store.set_due(path, int(argv[1]), argv[2]):
+        item_id = _to_id(argv[1])
+        if item_id is None:
+            return _fail(f"id không hợp lệ (quá dài): {len(argv[1])} chữ số")
+        if store.set_due(path, item_id, argv[2]):
             return 0
         print(f"không có việc id {argv[1]}", file=sys.stderr)
         return 1
