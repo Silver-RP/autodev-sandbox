@@ -15,7 +15,9 @@
     {"id": "R2", "title": "Lọc việc quá hạn: todo overdue", "depends_on": ["R1"], "metrics": ["A2", "A5", "A3", "A4"],
      "est_usd": 4, "est_hours": 0.4, "status": "done", "plan_file": "plan/R2.md"},
     {"id": "R17", "title": "Cứng hoá todo CLI: id lạ báo usage exit 2, lỗi không ghi file, ghi nguyên tử + khoá, JSON hỏng báo rõ (audit H-26, H-13, H-18)", "depends_on": ["R2"], "metrics": ["A1", "A2", "A3", "A4"],
-     "est_usd": 1.5, "est_hours": 0.3, "status": "done", "plan_file": "plan/R17.md"}
+     "est_usd": 1.5, "est_hours": 0.3, "status": "done", "plan_file": "plan/R17.md"},
+    {"id": "R18", "title": "Todo CLI không traceback, không treo, không ghi hỏng: đầu vào lạ exit 2, khoá có timeout, load từ chối id âm/trùng, save giữ quyền và link (audit H-35, H-36, H-37, H-38)", "depends_on": ["R17"], "metrics": ["A1", "A2", "A3", "A4"],
+     "est_usd": 3.0, "est_hours": 1.4, "status": "planned", "proposed": true}
   ],
   "cut_order": ["R2"],
   "human_only": ["Leader thử tay add --due / due / overdue trên todo.json thật", "Quyết ghi nguyên tử cho store.save (ngoài phạm vi)"]
