@@ -2,7 +2,7 @@
 
 Nguyên tắc: ưu tiên auto-dev nhưng không làm sai mục tiêu dự án thử.
 
-Cập nhật: 2026-10-21 (supervisor, sau khi merge R17).
+Cập nhật: 2026-10-21 (supervisor, sau khi merge R16).
 
 **Lộ trình chi tiết:**
 - `docs/goals/due-overdue/roadmap.md`: R1–R2, xong.
@@ -28,10 +28,11 @@ Cập nhật: 2026-10-21 (supervisor, sau khi merge R17).
 | R11 | lazy-landing | Triển khai GitHub Pages + smoke URL thật | merged 2026-10-20, PR #40; E3 đạt trên `https://silver-rp.github.io/autodev-sandbox/` | 3 | E3 | R10 | 1,3 | chế độ B: worker 33 phút; worker + supervisor 1,04 + ~1,26 USD (tạm) |
 | R15 | lazy-landing | Hoàn thiện site: 360 giữ chấm dẫn + nút header, font tải thật, reduced-motion CSS, test cả bản Anh, ly hero (audit H-03, H-04, H-05, H-11, H-20; H-21 chuyển mốc công cụ) | merged 2026-10-21, PR #48 | 4 | D3, D4, D6, E5, L3 | R14 | 2,0 | chế độ B: worker 85 phút; worker + supervisor 2,53 + ~1,28 USD (tạm) |
 | R17 | due-overdue | Cứng hoá todo CLI: id ASCII, tiêu đề rỗng/xuống dòng, `done` id không có, JSON hỏng exit 2, ghi qua symlink, khoá `flock` (audit H-26, H-13, H-18) | merged 2026-10-21, PR #52 | 3 | A1, A2, A3, A4 | R2 | 1,5 | chế độ B: worker 60 phút; worker + supervisor 1,20 + ~1,33 USD (tạm) |
+| R16 | lazy-landing | Công cụ đo và deploy chặt: screenshot kiểm HTTP, overflow `scrollWidth`, `lh_check` thiếu `index.html`, smoke fetch, Pages chờ test, exit 2 lỗi công cụ, spec hero theo trang đã duyệt (audit H-22..H-25, H-27 một phần, H-28, H-29) | merged 2026-10-21, PR #56; E3 đạt @ `ff8c12f` | 4 | D1, D2, D4, E2, E3, L3 | R15 | 2,5 (plan 3,2) | chế độ B: worker 90 phút; worker + supervisor 2,16 + ~1,34 USD (tạm) |
 
 **Tổng:**
-- Đã xong: R1–R4, R6–R15, R17, 54 task.
-- Còn lại: R16 (`lazy-landing`, công cụ đo và deploy chặt; chưa có plan). Chờ leader: H-22, H-34 (đề xuất R17).
+- Đã xong: R1–R4, R6–R17, 58 task. Mọi mốc trong hai `goal.json` đã `done`.
+- Còn lại: chưa có mốc lập sẵn. Đề xuất (audit 2026-10-21-2): mốc công cụ tiếp (H-21, H-27 phần còn lại, H-30, H-32, H-33, H-40), R18 todo (H-34..38, H-41), R19 kiểm chứng (H-31, H-39, H-42); cần leader lập roadmap/goal.
 - Mục tiêu `lazy-landing` hiện đạt 17/17 chỉ số (sau R11; D7 leader duyệt 2026-10-20); `due-overdue` đạt 5/5.
 
 ## Chạy tiếp (sau khi reset hạn mức)
