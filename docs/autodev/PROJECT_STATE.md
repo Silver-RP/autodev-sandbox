@@ -1,6 +1,6 @@
 # Trạng thái dự án (đọc trước plan mốc)
 
-Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`) + duyệt R15, R17, R16 (supervisor)
+Cập nhật: 2026-10-21 · Nguồn: audit sau R16 (`docs/audits/2026-10-21-3.md`) + duyệt R15, R17, R16 (supervisor)
 
 ## Mốc
 | Mốc | Trạng thái | Ghi chú |
@@ -25,7 +25,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 
 ## Mục tiêu và tiêu chí
 - `due-overdue`: 5/5 = **100%** theo lệnh đo; audit R15+R17 ước thực tế ≈ 95% (hở H-34..H-37).
-- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit R15+R17 ước thực tế ≈ 76–80% (đẹp ~70%, kỹ thuật ~85%, phát hành ~64%). R16 đóng 6 lỗ công cụ/deploy và H-22 (spec theo trang đã duyệt); chưa audit lại. `due-overdue` sau R17 còn hở H-34.
+- `lazy-landing` (`docs/goals/lazy-landing/criteria.md`, bản 2): 17/17 = **100%** theo lệnh đo; audit sau R16 ước thực tế ≈ 78–82% (đẹp ~73%, kỹ thuật ~88%, phát hành ~70%). `due-overdue` sau R17 còn hở H-34.
 
 | Mã | Lệnh đo | Ngưỡng | Hiện tại |
 |---|---|---|---|
@@ -87,8 +87,8 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 |---|---|---|---|
 | H-12 | vừa | D4, D5, E2, L5 không trong verify/smoke/CI; `contrast.py` mặc định 1280, bỏ `::before` | người (config) |
 | H-14 | vừa | Email `hello@example.com` giữ chỗ bị test khoá, không hiện thành chữ; `robots.txt` dưới `/autodev-sandbox/` crawler không đọc (URL `example.github.io` đã sửa ở R11) | leader |
-| H-19 | thấp | `due-overdue/goal.json` còn `planned`; `criteria.md` nền cũ | người |
-| H-21 | thấp | `test_tools.py` (Chrome thật) chập chờn khi máy tải nặng: Chrome quá 60 giây (hằng số) → exit 2; supervisor thấy 2/7 lần ở load ~14,5 | mốc công cụ |
+| H-19 | thấp | `lazy-landing/criteria.md` còn nền "4/17", "L3 nền 69"; `ROADMAP.md` còn "R3–R13", "Trước R11" cũ (`goal.json` đã sửa) | người |
+| H-21 | vừa | Cả bộ test chập chờn khi tải nặng (Chrome quá 60 giây → exit 2; audit R16: 1 failed, tải 27); Pages nay chờ cả bộ nên chặn deploy | mốc kiểm chứng |
 | H-27 | thấp | `smoke_pages.py` (E3) không kiểm `main.js`/`robots.txt`/`sitemap.xml`, `/en/` không kiểm version (phần fetch/lỗi git đóng ở R16) | mốc công cụ |
 | H-30 | thấp | L2 còn lọt `input type=image`, `video poster`, `srcset`, `meta refresh`, `iframe srcdoc`, `integrity=""`, `image-set()` | mốc công cụ |
 | H-31 | thấp | Đạt trên giấy: probe hero tự đẩy timeline, chờ `lazySite` 10×50 ms ảo, D6/D3 xanh bằng skip khi offline | mốc công cụ |
@@ -100,9 +100,16 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 | H-37 | vừa | `load` không từ chối id âm/trùng: `add` sinh id âm không `done` được; `done` đánh dấu cả hai id trùng | mốc todo |
 | H-38 | vừa | `save` tmp+replace: ghi đè file 0444, đứt hard link, symlink vòng bị thay, thư mục chỉ đọc/tên dài → traceback | mốc todo |
 | H-39 | vừa | Đóng H-04/05/11/20 yếu: 23 test skip offline (verify không đếm), H-11 mới 6/8 tệp (seo, share, visual, menu còn chỉ `index.html`), probe 360 đo trước font, ca âm rỗng, `test_site_ly.py:217` tautology | mốc kiểm chứng |
-| H-40 | thấp | `smoke_pages --url` sai/`--interval`/`--retries` âm → traceback exit 1 (phần `screenshot` đóng ở R16) | mốc công cụ |
+| H-40 | vừa | `smoke_pages --url foo`, `--interval` âm, `HTTPException` → traceback exit 1 (đã tái hiện; phần `screenshot` đóng ở R16) | mốc công cụ |
 | H-41 | thấp | `todo list` cột `due` rỗng vỡ shell `read`; title/due từ file không làm sạch; README thiếu hợp đồng CLI | mốc todo (leader duyệt) |
 | H-42 | thấp | `#luoi-nut`: ghế đỏ không test; nhãn vi cứng trong `main.js` | mốc kiểm chứng |
+| H-43 | vừa | `screenshot.py --modes ""`/`--pages ""` exit 0, không chụp gì | mốc công cụ |
+| H-44 | vừa | `CHROME` sai, lỗi ghi tệp, `screenshot --url foo` → traceback exit 1 (3 script); `screenshot.py` thiếu bảng mã 0/1/2 | mốc công cụ |
+| H-45 | vừa | `smoke_pages`: SHA lấy một lần, `origin/main` theo refspec, git không timeout, `--retries 0` im lặng (chưa tái hiện) | mốc công cụ |
+| H-46 | vừa | `test_pages_workflow` lách được (`\|\| true`, `continue-on-error`, `if: always()`); quyền Pages cấp workflow cho job `test` | mốc kiểm chứng |
+| H-47 | thấp | H-22 đóng bằng sửa spec: chưa hỏi lại leader về hero; dòng `Leader duyệt` không test | leader |
+| H-48 | thấp | Bản Anh không JSON-LD, `og:image` chữ Việt, không test | leader |
+| H-49 | thấp | `page_metrics` mặc định thu hẹp im lặng khi thiếu `en/`; `scrollWidth` báo oan off-canvas; `check_reachable` nhận mọi 2xx | mốc công cụ |
 
 ## Nợ không chặn
 - Tham số `today` của `store.overdue` che `store.today()`.
@@ -120,6 +127,7 @@ Cập nhật: 2026-10-21 · Nguồn: audit sau R14 (`docs/audits/2026-10-21.md`)
 - R15: chờ font cố định 800 ms trong `MEASURE_JS` (có thể chập chờn khi mạng chậm); `test_cup_reduced_motion_block_instant` có assert `json.dumps(d)` vô nghĩa; test `scrollWidth` 360 chỉ chạy sáng.
 
 ## Quyết định gần đây
+- 2026-10-21: audit R16 (`docs/audits/2026-10-21-3.md`): 7 lỗ mới H-43..H-49 (4 vừa, 3 thấp); H-22..H-25, H-28 xác nhận đóng (92 test tự chạy xanh); H-29 mở lại một phần (H-43, H-44); H-40, H-21 nâng vừa. Thực tế lazy-landing ~78–82%, due-overdue ~95%. Đề xuất R18 todo, R19 kiểm chứng (+H-21, H-46), R20 công cụ; leader: H-47, H-48.
 - 2026-10-21: merge R16 (PR #56). 8/8 tiêu chí tự chạy đạt (467 passed × 2; Pages test → build → deploy xanh, `smoke_pages` OK @ `ff8c12f`); test mới đỏ 42 ca trên code cũ. Đóng H-22 (spec theo trang đã duyệt), H-23, H-24, H-25, H-28, H-29. (c) H-27 chỉ đóng phần fetch/lỗi git, phần kiểm thêm tài nguyên giữ mở; H-40 thu hẹp còn `smoke_pages`.
 - 2026-10-21: audit R15, R17 (`docs/audits/2026-10-21-2.md`): 8 lỗ mới H-35..H-42 (5 vừa, 3 thấp), 0 đóng; xác nhận H-13, H-18, H-26, H-03 đóng thật; H-04, H-05, H-11, H-20 đóng một phần (H-39). Đề xuất: R16 công cụ (H-23..25, 27..30, 32, 33, 40), R18 todo (H-34..38, 41), R19 kiểm chứng (H-39, H-31, H-42); leader/người: H-22, H-14, H-12.
 - 2026-10-21: merge R17 (PR #52). 7/7 tiêu chí tự chạy đạt (412 passed; song song 5 lần xanh; CLI thật exit 2/2/1/2, không traceback); test mới đỏ 34 ca trên code cũ. Đóng H-13, H-18, H-26. (c) ghi H-34 (`title`/`done`, lỗi OS) thay vì chặn: ngoài phạm vi roadmap R17.
