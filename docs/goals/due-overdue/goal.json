@@ -19,7 +19,8 @@
     {"id": "R18", "title": "Todo CLI không traceback, không treo, không ghi hỏng: đầu vào lạ exit 2, khoá có timeout, load từ chối id âm/trùng, save giữ quyền và link (audit H-35, H-36, H-37, H-38)", "depends_on": ["R17"], "metrics": ["A1", "A2", "A3", "A4"],
      "est_usd": 3.0, "est_hours": 1.4, "status": "done", "plan_file": "plan/R18.md"},
     {"id": "R20", "title": "Todo CLI chịu file thiếu/sai kiểu khoá, pipe đóng, TODO_FILE không phải file thường: exit 2, không traceback, không treo (audit H-34, H-53, H-54)", "depends_on": ["R18"], "metrics": ["A1", "A2", "A3", "A4"],
-     "est_usd": 2.5, "est_hours": 1.0, "status": "planned", "proposed": true}
+     "reason": "Cắt 2026-10-25: mục tiêu đã đạt, chỉ còn lỗ mức vừa (H-34, H-53, H-54) là tồn đọng chấp nhận theo luật dừng P14",
+     "est_usd": 2.5, "est_hours": 1.0, "status": "cut", "proposed": true}
   ],
   "cut_order": ["R2"],
   "human_only": ["Leader thử tay add --due / due / overdue trên todo.json thật", "Quyết ghi nguyên tử cho store.save (ngoài phạm vi)"]

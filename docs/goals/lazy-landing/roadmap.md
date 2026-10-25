@@ -263,7 +263,7 @@ Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
   3. *Smoke tính lại SHA nên đạt khi deploy cũ treo*: test repo tạm có `main` đi tiếp; trang mang SHA cũ hơn SHA ban đầu vẫn phải trượt.
 
 ## R21: Cổng deploy và công cụ đo không lách được, lần 2
-Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 4).
+Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 4). **Cắt 2026-10-25:** mục tiêu đã đạt; H-51, H-52, H-55 (mức vừa) là tồn đọng chấp nhận theo luật dừng P14.
 - **Mục tiêu:** cổng "chờ test" của Pages không còn kiểu đột biến nào lọt `workflow_problems`; `screenshot.py` không ra traceback với lỗi HTTP; test "không chấp nhận deploy cũ" thật sự đỏ trên mã cũ.
 - **Phạm vi:**
   1. H-51: `screenshot.py --url` gặp `http.client.HTTPException` (`InvalidURL`, `BadStatusLine`, `IncompleteRead`) → exit 2, stderr `Lỗi:`, không `Traceback`, đúng bảng 0/1/2 trong docstring.

@@ -82,7 +82,7 @@ Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 3).
   3. *Bắt ngoại lệ quá rộng che lỗi lập trình*: chỉ bắt các lớp lỗi đã liệt kê (`ValueError`, `RecursionError`, `OSError`, `UnicodeError`) ở biên CLI, quy về `StoreError`; test không dùng `except Exception`.
 
 ## R20: Todo CLI chịu file thiếu khoá, pipe đóng, TODO_FILE không phải file thường
-Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 4).
+Thêm 2026-10-21 (supervisor đề xuất từ audit 2026-10-21 lần 4). **Cắt 2026-10-25:** mục tiêu đã đạt; H-34, H-53, H-54 (mức vừa) là tồn đọng chấp nhận theo luật dừng P14.
 - **Mục tiêu:** khép phần còn hở của lời R17/R18 "CLI không traceback, không treo": file thiếu/sai kiểu khoá, stdout bị đóng giữa chừng, `TODO_FILE` là FIFO hay thiết bị đều ra thông báo một dòng và mã thoát đúng hợp đồng.
 - **Phạm vi:**
   1. H-34: `store.load` từ chối phần tử thiếu `title`/`done` hoặc sai kiểu (`title` không phải chuỗi, `done` không phải bool, `due` có mà không phải chuỗi ngày hợp lệ) → `StoreError`, exit 2, không `Traceback`, cho cả `list`, `overdue`, `add`, `done`, `due`; file nguyên byte. Việc không có `due` vẫn hợp lệ (brief).
